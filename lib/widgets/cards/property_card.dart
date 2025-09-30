@@ -8,6 +8,7 @@ class PropertyCard extends StatelessWidget {
   final bool isFavorite;
   final VoidCallback? onFavoriteToggle;
   final VoidCallback? onCompare;
+  final bool isCompact;
 
   const PropertyCard({
     super.key,
@@ -15,6 +16,7 @@ class PropertyCard extends StatelessWidget {
     this.isFavorite = false,
     this.onFavoriteToggle,
     this.onCompare,
+    this.isCompact = false,
   });
 
   @override
@@ -49,7 +51,7 @@ class PropertyCard extends StatelessWidget {
         ClipRRect(
           borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
           child: Container(
-            height: 200,
+            height: isCompact ? 150 : 200,
             width: double.infinity,
             decoration: BoxDecoration(
               color: AppColors.surfaceVariant,
@@ -94,7 +96,7 @@ class PropertyCard extends StatelessWidget {
           right: 12,
           child: Row(
             children: [
-              if (onCompare != null)
+              if (onCompare != null && !isCompact)
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.9),
@@ -108,7 +110,7 @@ class PropertyCard extends StatelessWidget {
                     constraints: const BoxConstraints(),
                   ),
                 ),
-              const SizedBox(width: 8),
+              if (onCompare != null && !isCompact) const SizedBox(width: 8),
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.9),

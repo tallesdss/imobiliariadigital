@@ -93,6 +93,21 @@ class AppTypography {
     height: 1.4,
   );
   
+  // Subtítulos
+  static TextStyle get subtitle1 => GoogleFonts.poppins(
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    color: AppColors.textPrimary,
+    height: 1.5,
+  );
+  
+  static TextStyle get subtitle2 => GoogleFonts.poppins(
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    color: AppColors.textSecondary,
+    height: 1.4,
+  );
+  
   // Especiais
   static TextStyle get caption => GoogleFonts.poppins(
     fontSize: 12,

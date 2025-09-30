@@ -26,8 +26,8 @@
 - [x] Botões globais.
 - [x] Inputs padronizados.
 - [x] Cards para imóveis.
-- [ ] Chat bubbles.
-- [ ] Badge de status (ativo, arquivado, vendido).
+- [x] Chat bubbles.
+- [x] Badge de status (ativo, arquivado, vendido).
 
 ---
 
@@ -35,26 +35,26 @@
 - [x] **Login / Cadastro** (mock).
 - [x] **Seleção de Perfil** → Usuário / Corretor / Administrador.
 - [x] **Home Usuário**
-  - [ ] Carrosséis horizontais por categoria (Lançamentos, Casas, Apts, Comerciais).
+  - [x] Carrosséis horizontais por categoria (Lançamentos, Casas, Apts, Comerciais).
   - [x] Lista/grade vertical com todos os imóveis ativos.
   - [x] Filtro / Pesquisa (layout mock).
 - [x] **Detalhe do Imóvel**
   - [x] Carrossel de fotos.
-  - [ ] Playlist de vídeos.
+  - [x] Playlist de vídeos.
   - [x] Descrição completa.
   - [x] Preço e status.
   - [x] Botões:
     - ⭐ Favoritar
-    - [ ] 🔔 Criar Alerta (baixa preço / vendido)
-    - [ ] 💬 Mandar mensagem (chat com corretor e/ou ADM)
+    - [x] 🔔 Criar Alerta (baixa preço / vendido)
+    - [x] 💬 Mandar mensagem (chat com corretor e/ou ADM)
     - [x] 📞 Ligar para corretor (mock)
   - [x] Mostrar contatos:
     - Nome + contato do **Corretor**
-    - [ ] Nome + contato do **Administrador**
-- [ ] **Chat (Usuário)**
-  - [ ] Conversas com corretores ou ADM.
+    - [x] Nome + contato do **Administrador**
+- [x] **Chat (Usuário)**
+  - [x] Conversas com corretores ou ADM.
 - [x] **Meus Favoritos**
-- [ ] **Meus Alertas**
+- [x] **Meus Alertas**
 
 ---
 
@@ -134,17 +134,17 @@
 ## Etapa 7 — Componentes Reutilizáveis
 ### Globais
 - [x] AppBar customizada.
-- [ ] Bottom Navigation (usuário).
-- [ ] Drawer lateral (corretor e ADM).
+- [x] Bottom Navigation (usuário).
+- [x] Drawer lateral (corretor e ADM).
 - [x] Card de imóvel.
 - [x] Botões globais.
 - [x] Inputs customizados.
 
 ### Usuário
-- [ ] Carrossel horizontal.
+- [x] Carrossel horizontal.
 - [x] Feed vertical.
 - [x] Galeria + playlist.
-- [ ] Chat bubble.
+- [x] Chat bubble.
 
 ### Corretor
 - [ ] Lista de imóveis do corretor.

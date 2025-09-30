@@ -9,6 +9,7 @@ enum PropertyStatus {
   active,
   sold,
   archived,
+  suspended,
 }
 
 class Property {
@@ -32,6 +33,7 @@ class Property {
   final DateTime createdAt;
   final DateTime updatedAt;
   final bool isFeatured;
+  final bool isLaunch;
 
   Property({
     required this.id,
@@ -54,6 +56,7 @@ class Property {
     required this.createdAt,
     required this.updatedAt,
     this.isFeatured = false,
+    this.isLaunch = false,
   });
 
   Property copyWith({
@@ -77,6 +80,7 @@ class Property {
     DateTime? createdAt,
     DateTime? updatedAt,
     bool? isFeatured,
+    bool? isLaunch,
   }) {
     return Property(
       id: id ?? this.id,
@@ -99,6 +103,7 @@ class Property {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       isFeatured: isFeatured ?? this.isFeatured,
+      isLaunch: isLaunch ?? this.isLaunch,
     );
   }
 
@@ -130,6 +135,8 @@ class Property {
         return 'Vendido';
       case PropertyStatus.archived:
         return 'Arquivado';
+      case PropertyStatus.suspended:
+        return 'Suspenso';
     }
   }
 
@@ -155,6 +162,7 @@ class Property {
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'isFeatured': isFeatured,
+      'isLaunch': isLaunch,
     };
   }
 
@@ -180,6 +188,7 @@ class Property {
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
       isFeatured: json['isFeatured'] ?? false,
+      isLaunch: json['isLaunch'] ?? false,
     );
   }
 }

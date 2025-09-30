@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'mock_data_service.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/profile_selection_screen.dart';
 import '../screens/user/user_home_screen.dart';
@@ -80,9 +81,11 @@ class NavigationService {
           GoRoute(
             path: '/property/edit/:propertyId',
             name: 'property-edit',
-            builder: (context, state) => PropertyFormScreen(
-              propertyId: state.pathParameters['propertyId'],
-            ),
+            builder: (context, state) {
+              final propertyId = state.pathParameters['propertyId']!;
+              final property = MockDataService.getPropertyById(propertyId);
+              return PropertyFormScreen(property: property);
+            },
           ),
           GoRoute(
             path: '/profile',

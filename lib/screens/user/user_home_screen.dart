@@ -4,6 +4,7 @@ import '../../theme/app_typography.dart';
 import '../../services/mock_data_service.dart';
 import '../../models/property_model.dart';
 import '../../widgets/cards/property_card.dart';
+import '../../widgets/common/horizontal_carousel.dart';
 import 'property_detail_screen.dart';
 import 'favorites_screen.dart';
 
@@ -22,6 +23,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   String _searchQuery = '';
   PropertyType? _selectedType;
   bool _isLoading = true;
+  bool _showCarousels = true;
 
   @override
   void initState() {
@@ -66,6 +68,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
         return matchesSearch && matchesType;
       }).toList();
+      
+      // Mostrar carrosséis apenas quando não há busca ou filtro ativo
+      _showCarousels = _searchQuery.isEmpty && _selectedType == null;
     });
   }
 
@@ -97,6 +102,45 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     });
   }
 
+  Widget _buildMainContent() {
+    if (_showCarousels) {
+      return SingleChildScrollView(
+        child: Column(
+          children: [
+            const SizedBox(height: 16),
+            CategoryCarouselSection(
+              allProperties: _properties,
+              onPropertyTap: _navigateToPropertyDetail,
+              onFavoriteToggle: _toggleFavorite,
+              favoritePropertyIds: _favoritePropertyIds,
+            ),
+            const SizedBox(height: 24),
+            // Seção de todos os imóveis
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Todos os Imóveis',
+                    style: AppTypography.h6.copyWith(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildPropertiesList(),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    } else {
+      return _buildPropertiesList();
+    }
+  }
+
   void _navigateToPropertyDetail(String propertyId) {
     Navigator.push(
       context,
@@ -118,7 +162,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : _buildPropertiesList(),
+                : _buildMainContent(),
           ),
         ],
       ),

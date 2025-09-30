@@ -3,6 +3,9 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../services/mock_data_service.dart';
 import '../../models/property_model.dart';
+import '../../models/favorite_model.dart';
+import '../../widgets/common/media_gallery.dart';
+import 'user_chat_screen.dart';
 
 class PropertyDetailScreen extends StatefulWidget {
   final String propertyId;
@@ -20,7 +23,6 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
   Property? _property;
   bool _isLoading = true;
   bool _isFavorite = false;
-  int _currentImageIndex = 0;
 
   @override
   void initState() {
@@ -98,6 +100,35 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
     );
   }
 
+  void _openInternalChat() {
+    if (_property == null) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const UserChatScreen(),
+      ),
+    );
+  }
+
+  void _createAlert() {
+    if (_property == null) return;
+
+    showDialog(
+      context: context,
+      builder: (context) => CreatePropertyAlertDialog(
+        property: _property!,
+        onAlertCreated: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Alerta criado com sucesso!'),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -137,6 +168,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                 _buildPropertyInfo(),
                 _buildAttributes(),
                 _buildDescription(),
+                _buildActionButtons(),
                 _buildRealtorInfo(),
                 _buildLocationInfo(),
                 const SizedBox(height: 100), // Espaço para o botão fixo
@@ -169,92 +201,14 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
         ),
       ],
       flexibleSpace: FlexibleSpaceBar(
-        background: _property!.photos.isNotEmpty
-            ? _buildImageCarousel()
-            : Container(
-                color: AppColors.surfaceVariant,
-                child: const Icon(
-                  Icons.home_work_outlined,
-                  size: 64,
-                  color: AppColors.textHint,
-                ),
-              ),
+        background: MediaGallery(
+          photos: _property!.photos,
+          videos: _property!.videos,
+        ),
       ),
     );
   }
 
-  Widget _buildImageCarousel() {
-    if (_property!.photos.isEmpty) return const SizedBox.shrink();
-
-    return Stack(
-      children: [
-        PageView.builder(
-          itemCount: _property!.photos.length,
-          onPageChanged: (index) {
-            setState(() {
-              _currentImageIndex = index;
-            });
-          },
-          itemBuilder: (context, index) {
-            return Image.network(
-              _property!.photos[index],
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  color: AppColors.surfaceVariant,
-                  child: const Icon(
-                    Icons.image_not_supported,
-                    size: 64,
-                    color: AppColors.textHint,
-                  ),
-                );
-              },
-            );
-          },
-        ),
-        if (_property!.photos.length > 1)
-          Positioned(
-            bottom: 16,
-            left: 0,
-            right: 0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                _property!.photos.length,
-                (index) => Container(
-                  width: 8,
-                  height: 8,
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: index == _currentImageIndex
-                        ? Colors.white
-                        : Colors.white.withValues(alpha: 0.5),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        Positioned(
-          top: 16,
-          left: 16,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.7),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              'Cód: ${_property!.id.substring(0, 5)}',
-              style: AppTypography.labelSmall.copyWith(
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 
   Widget _buildPropertyInfo() {
     return Container(
@@ -446,6 +400,52 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
     );
   }
 
+  Widget _buildActionButtons() {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.all(16),
+      color: Colors.white,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Ações',
+            style: AppTypography.h6,
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _createAlert,
+                  icon: const Icon(Icons.add_alert),
+                  label: const Text('Criar Alerta'),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: AppColors.accent),
+                    foregroundColor: AppColors.accent,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _shareProperty,
+                  icon: const Icon(Icons.share),
+                  label: const Text('Compartilhar'),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: AppColors.primary),
+                    foregroundColor: AppColors.primary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildRealtorInfo() {
     return Container(
       width: double.infinity,
@@ -598,13 +598,25 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 8),
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: _openInternalChat,
+              icon: const Icon(Icons.chat_bubble),
+              label: const Text('Chat'),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: AppColors.accent),
+                foregroundColor: AppColors.accent,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
           Expanded(
             flex: 2,
             child: ElevatedButton.icon(
               onPressed: _contactRealtor,
-              icon: const Icon(Icons.chat),
-              label: const Text('Conversar pelo WhatsApp'),
+              icon: const Icon(Icons.message),
+              label: const Text('WhatsApp'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: AppColors.textOnPrimary,
@@ -614,5 +626,173 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
         ],
       ),
     );
+  }
+}
+
+class CreatePropertyAlertDialog extends StatefulWidget {
+  final Property property;
+  final VoidCallback onAlertCreated;
+
+  const CreatePropertyAlertDialog({
+    super.key,
+    required this.property,
+    required this.onAlertCreated,
+  });
+
+  @override
+  State<CreatePropertyAlertDialog> createState() => _CreatePropertyAlertDialogState();
+}
+
+class _CreatePropertyAlertDialogState extends State<CreatePropertyAlertDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _targetPriceController = TextEditingController();
+  AlertType _selectedType = AlertType.priceReduction;
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Criar Alerta'),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Informações do imóvel
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.background,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.property.title,
+                      style: AppTypography.subtitle2.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      widget.property.formattedPrice,
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Tipo de Alerta',
+                style: AppTypography.subtitle2,
+              ),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<AlertType>(
+                value: _selectedType,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
+                items: AlertType.values.map((type) {
+                  return DropdownMenuItem(
+                    value: type,
+                    child: Text(_getAlertDisplayName(type)),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedType = value!;
+                  });
+                },
+              ),
+              if (_selectedType == AlertType.priceReduction) ...[
+                const SizedBox(height: 16),
+                Text(
+                  'Preço Alvo (R\$)',
+                  style: AppTypography.subtitle2,
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _targetPriceController,
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    hintText: 'Digite o preço desejado',
+                    helperText: 'Preço atual: ${widget.property.formattedPrice}',
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Digite o preço alvo';
+                    }
+                    final price = double.tryParse(value);
+                    if (price == null) {
+                      return 'Digite um valor válido';
+                    }
+                    if (price >= widget.property.price) {
+                      return 'O preço alvo deve ser menor que o atual';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
+        ElevatedButton(
+          onPressed: _createAlert,
+          child: const Text('Criar Alerta'),
+        ),
+      ],
+    );
+  }
+
+  String _getAlertDisplayName(AlertType type) {
+    switch (type) {
+      case AlertType.priceReduction:
+        return 'Redução de Preço';
+      case AlertType.sold:
+        return 'Imóvel Vendido';
+      case AlertType.newSimilar:
+        return 'Imóvel Similar';
+    }
+  }
+
+  void _createAlert() {
+    if (_formKey.currentState!.validate()) {
+      final alert = PropertyAlert(
+        id: '',
+        userId: 'user1',
+        propertyId: widget.property.id,
+        propertyTitle: widget.property.title,
+        type: _selectedType,
+        targetPrice: _selectedType == AlertType.priceReduction
+            ? double.tryParse(_targetPriceController.text)
+            : null,
+        createdAt: DateTime.now(),
+      );
+
+      MockDataService.addAlert(alert);
+      widget.onAlertCreated();
+      Navigator.pop(context);
+    }
+  }
+
+  @override
+  void dispose() {
+    _targetPriceController.dispose();
+    super.dispose();
   }
 }
