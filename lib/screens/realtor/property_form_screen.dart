@@ -139,7 +139,7 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
             children: [
               Expanded(
                 child: DropdownButtonFormField<PropertyType>(
-                  value: _selectedType,
+                  initialValue: _selectedType,
                   decoration: const InputDecoration(
                     labelText: 'Tipo',
                     border: OutlineInputBorder(),

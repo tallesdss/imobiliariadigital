@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../services/mock_data_service.dart';
@@ -72,32 +75,134 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
     );
   }
 
-  void _shareProperty() {
-    // TODO: Implementar compartilhamento
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Compartilhamento em desenvolvimento'),
-      ),
-    );
-  }
-
-  void _contactRealtor() {
+  void _shareProperty() async {
     if (_property == null) return;
 
-    // TODO: Implementar abertura do WhatsApp quando url_launcher estiver disponível
+    final text = '''
+${_property!.title}
+
+${_property!.formattedPrice}
+${_property!.typeDisplayName}
+
+${_property!.address}, ${_property!.city} - ${_property!.state}
+
+Características:
+${_property!.attributes['bedrooms'] != null ? '• ${_property!.attributes['bedrooms']} quartos\n' : ''}${_property!.attributes['bathrooms'] != null ? '• ${_property!.attributes['bathrooms']} banheiros\n' : ''}${_property!.attributes['area'] != null ? '• ${_property!.attributes['area']}m² de área\n' : ''}${_property!.attributes['parking'] != null ? '• ${_property!.attributes['parking']} vagas\n' : ''}
+Contato: ${_property!.realtorName} - ${_property!.realtorPhone}
+''';
+
+    try {
+      await Share.share(
+        text,
+        subject: _property!.title,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Erro ao compartilhar imóvel'),
+          ),
+        );
+      }
+    }
+  }
+
+  void _contactRealtor() async {
+    if (_property == null) return;
+
     final phone = _property!.realtorPhone.replaceAll(RegExp(r'[^\d]'), '');
+    final message = 'Olá! Tenho interesse no imóvel: ${_property!.title}';
+    final whatsappUrl = Uri.parse('https://wa.me/55$phone?text=${Uri.encodeComponent(message)}');
     
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Contatar: ${_property!.realtorName} - $phone'),
-        action: SnackBarAction(
-          label: 'Copiar',
-          onPressed: () {
-            // TODO: Implementar cópia para clipboard
-          },
-        ),
-      ),
-    );
+    try {
+      if (await canLaunchUrl(whatsappUrl)) {
+        await launchUrl(
+          whatsappUrl,
+          mode: LaunchMode.externalApplication,
+        );
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('WhatsApp não disponível - ${_property!.realtorName} - $phone'),
+              action: SnackBarAction(
+                label: 'Copiar',
+                onPressed: () => _copyToClipboard(phone),
+              ),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao abrir WhatsApp - ${_property!.realtorName} - $phone'),
+            action: SnackBarAction(
+              label: 'Copiar',
+              onPressed: () => _copyToClipboard(phone),
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  void _copyToClipboard(String text) async {
+    try {
+      await Clipboard.setData(ClipboardData(text: text));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Copiado para a área de transferência'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Erro ao copiar para a área de transferência'),
+          ),
+        );
+      }
+    }
+  }
+
+  void _openMap() async {
+    if (_property == null) return;
+
+    final address = '${_property!.address}, ${_property!.city}, ${_property!.state}, ${_property!.zipCode}';
+    final encodedAddress = Uri.encodeComponent(address);
+    
+    // Tenta abrir no Google Maps
+    final googleMapsUrl = Uri.parse('https://www.google.com/maps/search/?api=1&query=$encodedAddress');
+    
+    try {
+      if (await canLaunchUrl(googleMapsUrl)) {
+        await launchUrl(
+          googleMapsUrl,
+          mode: LaunchMode.externalApplication,
+        );
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Não foi possível abrir o mapa'),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Erro ao abrir o mapa'),
+          ),
+        );
+      }
+    }
   }
 
   void _openInternalChat() {
@@ -555,14 +660,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
-              onPressed: () {
-                // TODO: Abrir mapa
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Mapa em desenvolvimento'),
-                  ),
-                );
-              },
+              onPressed: _openMap,
               icon: const Icon(Icons.map),
               label: const Text('Ver no Mapa'),
             ),
@@ -694,7 +792,7 @@ class _CreatePropertyAlertDialogState extends State<CreatePropertyAlertDialog> {
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<AlertType>(
-                value: _selectedType,
+                initialValue: _selectedType,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),

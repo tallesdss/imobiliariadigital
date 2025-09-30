@@ -302,7 +302,7 @@ class _CreateAlertDialogState extends State<CreateAlertDialog> {
               ),
               const SizedBox(height: AppSpacing.sm),
               DropdownButtonFormField<AlertType>(
-                value: _selectedType,
+                initialValue: _selectedType,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -326,7 +326,7 @@ class _CreateAlertDialogState extends State<CreateAlertDialog> {
               ),
               const SizedBox(height: AppSpacing.sm),
               DropdownButtonFormField<String>(
-                value: _selectedPropertyId,
+                initialValue: _selectedPropertyId,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),

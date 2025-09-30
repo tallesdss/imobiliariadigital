@@ -77,7 +77,7 @@ class _ProfileSelectionScreenState extends State<ProfileSelectionScreen> {
               
               // Profile Options
               Expanded(
-                child: Column(
+                child: ListView(
                   children: [
                     // Buyer Option
                     _ProfileCard(
