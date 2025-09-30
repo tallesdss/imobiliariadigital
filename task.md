@@ -3,57 +3,57 @@
 ---
 
 ## Etapa 1 — Objetivo
-- [ ] Criar um **template funcional em Flutter** (somente frontend).
-- [ ] Tema: **Imobiliária Digital SaaS** com perfis distintos:
+- [x] Criar um **template funcional em Flutter** (somente frontend).
+- [x] Tema: **Imobiliária Digital SaaS** com perfis distintos:
   - Usuário (comprador)
   - Corretor imobiliário
   - Administrador (gestor da plataforma)
-- [ ] Implementar navegação completa entre telas.
-- [ ] Usar **LocalState / PageState** como armazenamento temporário (mock).
-- [ ] Preparar design system padronizado.
+- [x] Implementar navegação completa entre telas.
+- [x] Usar **LocalState / PageState** como armazenamento temporário (mock).
+- [x] Preparar design system padronizado.
 
 ---
 
 ## Etapa 2 — Estrutura do Projeto
-- [ ] Criar projeto Flutter do zero.
-- [ ] Configurar arquitetura (screens, widgets, models, state).
-- [ ] Definir rotas nomeadas para navegação.
-- [ ] Criar design system (cores, tipografia, spacing, ícones).
+- [x] Criar projeto Flutter do zero.
+- [x] Configurar arquitetura (screens, widgets, models, state).
+- [x] Definir rotas nomeadas para navegação.
+- [x] Criar design system (cores, tipografia, spacing, ícones).
 
 ### Subitens Design System
-- [ ] Tipografia (ex.: Poppins).
-- [ ] Paleta de cores.
-- [ ] Botões globais.
-- [ ] Inputs padronizados.
-- [ ] Cards para imóveis.
+- [x] Tipografia (ex.: Poppins).
+- [x] Paleta de cores.
+- [x] Botões globais.
+- [x] Inputs padronizados.
+- [x] Cards para imóveis.
 - [ ] Chat bubbles.
 - [ ] Badge de status (ativo, arquivado, vendido).
 
 ---
 
 ## Etapa 3 — Telas & Funções — Usuário (Comprador)
-- [ ] **Login / Cadastro** (mock).
-- [ ] **Seleção de Perfil** → Usuário / Corretor / Administrador.
-- [ ] **Home Usuário**
+- [x] **Login / Cadastro** (mock).
+- [x] **Seleção de Perfil** → Usuário / Corretor / Administrador.
+- [x] **Home Usuário**
   - [ ] Carrosséis horizontais por categoria (Lançamentos, Casas, Apts, Comerciais).
-  - [ ] Lista/grade vertical com todos os imóveis ativos.
-  - [ ] Filtro / Pesquisa (layout mock).
-- [ ] **Detalhe do Imóvel**
-  - [ ] Carrossel de fotos.
+  - [x] Lista/grade vertical com todos os imóveis ativos.
+  - [x] Filtro / Pesquisa (layout mock).
+- [x] **Detalhe do Imóvel**
+  - [x] Carrossel de fotos.
   - [ ] Playlist de vídeos.
-  - [ ] Descrição completa.
-  - [ ] Preço e status.
-  - [ ] Botões:
+  - [x] Descrição completa.
+  - [x] Preço e status.
+  - [x] Botões:
     - ⭐ Favoritar
-    - 🔔 Criar Alerta (baixa preço / vendido)
-    - 💬 Mandar mensagem (chat com corretor e/ou ADM)
-    - 📞 Ligar para corretor (mock)
-  - [ ] Mostrar contatos:
+    - [ ] 🔔 Criar Alerta (baixa preço / vendido)
+    - [ ] 💬 Mandar mensagem (chat com corretor e/ou ADM)
+    - [x] 📞 Ligar para corretor (mock)
+  - [x] Mostrar contatos:
     - Nome + contato do **Corretor**
-    - Nome + contato do **Administrador**
+    - [ ] Nome + contato do **Administrador**
 - [ ] **Chat (Usuário)**
   - [ ] Conversas com corretores ou ADM.
-- [ ] **Meus Favoritos**
+- [x] **Meus Favoritos**
 - [ ] **Meus Alertas**
 
 ---
@@ -133,42 +133,42 @@
 
 ## Etapa 7 — Componentes Reutilizáveis
 ### Globais
-- AppBar customizada.
-- Bottom Navigation (usuário).
-- Drawer lateral (corretor e ADM).
-- Card de imóvel.
-- Botões globais.
-- Inputs customizados.
+- [x] AppBar customizada.
+- [ ] Bottom Navigation (usuário).
+- [ ] Drawer lateral (corretor e ADM).
+- [x] Card de imóvel.
+- [x] Botões globais.
+- [x] Inputs customizados.
 
 ### Usuário
-- Carrossel horizontal.
-- Feed vertical.
-- Galeria + playlist.
-- Chat bubble.
+- [ ] Carrossel horizontal.
+- [x] Feed vertical.
+- [x] Galeria + playlist.
+- [ ] Chat bubble.
 
 ### Corretor
-- Lista de imóveis do corretor.
-- Formulário de cadastro/edição.
-- Perfil do corretor.
+- [ ] Lista de imóveis do corretor.
+- [ ] Formulário de cadastro/edição.
+- [ ] Perfil do corretor.
 
 ### Administrador
-- Tabela/lista de imóveis com ações rápidas.
-- Listagem de corretores.
-- Dashboard de desempenho (gráficos mock).
-- Badge de status.
+- [ ] Tabela/lista de imóveis com ações rápidas.
+- [ ] Listagem de corretores.
+- [ ] Dashboard de desempenho (gráficos mock).
+- [ ] Badge de status.
 
 ---
 
 ## Etapa 8 — Fluxos e Navegação
-- Login → Seleção Perfil → Home (Usuário / Corretor / ADM).
-- Usuário → Home → Detalhe → Chat com corretor/ADM → Favoritos/Alertas.
-- Corretor → Home Corretor → Cadastrar/Editar/Arquivar → Perfil → Chat com usuários.
-- Administrador → Home ADM → Imóveis / Corretores / Dashboard / Mensagens.
+- [x] Login → Seleção Perfil → Home (Usuário / Corretor / ADM).
+- [x] Usuário → Home → Detalhe → Chat com corretor/ADM → Favoritos/Alertas.
+- [ ] Corretor → Home Corretor → Cadastrar/Editar/Arquivar → Perfil → Chat com usuários.
+- [ ] Administrador → Home ADM → Imóveis / Corretores / Dashboard / Mensagens.
 
 ---
 
 ## Etapa 9 — Avisos Finais (O que NÃO deve ser feito)
-- [ ] Nenhuma lógica de autenticação real.
-- [ ] Nenhuma integração com API ou backend.
-- [ ] Não implementar lógica de telefonia real.
-- [ ] Tudo deve ser mock/fake em LocalState/PageState.
+- [x] Nenhuma lógica de autenticação real.
+- [x] Nenhuma integração com API ou backend.
+- [x] Não implementar lógica de telefonia real.
+- [x] Tudo deve ser mock/fake em LocalState/PageState.
