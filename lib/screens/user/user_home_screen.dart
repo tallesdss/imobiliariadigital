@@ -7,6 +7,7 @@ import '../../widgets/cards/property_card.dart';
 import '../../widgets/common/horizontal_carousel.dart';
 import 'property_detail_screen.dart';
 import 'favorites_screen.dart';
+import 'property_comparison_screen.dart';
 
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});
@@ -24,6 +25,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   PropertyType? _selectedType;
   bool _isLoading = true;
   bool _showCarousels = true;
+  bool _showOnlyLaunches = false;
 
   @override
   void initState() {
@@ -65,13 +67,30 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             property.address.toLowerCase().contains(_searchQuery.toLowerCase());
 
         final matchesType = _selectedType == null || property.type == _selectedType;
+        final matchesLaunch = !_showOnlyLaunches || property.isLaunch;
 
-        return matchesSearch && matchesType;
+        return matchesSearch && matchesType && matchesLaunch;
       }).toList();
       
       // Mostrar carrosséis apenas quando não há busca ou filtro ativo
-      _showCarousels = _searchQuery.isEmpty && _selectedType == null;
+      _showCarousels = _searchQuery.isEmpty && _selectedType == null && !_showOnlyLaunches;
     });
+  }
+
+  void _filterByType(PropertyType? type) {
+    setState(() {
+      _selectedType = type;
+      _showOnlyLaunches = false;
+    });
+    _filterProperties();
+  }
+
+  void _filterByLaunches() {
+    setState(() {
+      _showOnlyLaunches = true;
+      _selectedType = null;
+    });
+    _filterProperties();
   }
 
   void _toggleFavorite(String propertyId) {
@@ -113,6 +132,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               onPropertyTap: _navigateToPropertyDetail,
               onFavoriteToggle: _toggleFavorite,
               favoritePropertyIds: _favoritePropertyIds,
+              onFilterByType: _filterByType,
+              onFilterByLaunches: _filterByLaunches,
             ),
             const SizedBox(height: 24),
             // Seção de todos os imóveis
@@ -146,6 +167,101 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => PropertyDetailScreen(propertyId: propertyId),
+      ),
+    );
+  }
+
+  void _showUserMenu() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.symmetric(vertical: 16),
+              decoration: BoxDecoration(
+                color: AppColors.textHint,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.person, color: AppColors.primary),
+              title: const Text('Meu Perfil'),
+              onTap: () {
+                Navigator.pop(context);
+                // Navegar para tela de perfil
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Tela de perfil em desenvolvimento')),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.favorite, color: AppColors.error),
+              title: const Text('Favoritos'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const FavoritesScreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.notifications, color: AppColors.accent),
+              title: const Text('Alertas'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/alerts');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.chat, color: AppColors.primary),
+              title: const Text('Mensagens'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/user-chat');
+              },
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.settings, color: AppColors.textSecondary),
+              title: const Text('Configurações'),
+              onTap: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Configurações em desenvolvimento')),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.logout, color: AppColors.error),
+              title: const Text('Sair'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+              },
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _navigateToComparison() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PropertyComparisonScreen(
+          propertyIds: _comparePropertyIds.toList(),
+        ),
       ),
     );
   }
@@ -229,9 +345,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           ),
         ),
         IconButton(
-          onPressed: () {
-            // TODO: Implementar menu do usuário
-          },
+          onPressed: _showUserMenu,
           icon: const Icon(Icons.account_circle),
         ),
       ],
@@ -344,14 +458,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           ),
           TextButton(
             onPressed: _comparePropertyIds.length >= 2
-                ? () {
-                    // TODO: Implementar tela de comparação
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Comparação em desenvolvimento'),
-                      ),
-                    );
-                  }
+                ? _navigateToComparison
                 : null,
             child: Text(
               'Comparar',

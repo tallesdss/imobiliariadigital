@@ -96,6 +96,8 @@ class CategoryCarouselSection extends StatelessWidget {
   final Function(String) onPropertyTap;
   final Function(String) onFavoriteToggle;
   final Set<String> favoritePropertyIds;
+  final Function(PropertyType?)? onFilterByType;
+  final VoidCallback? onFilterByLaunches;
 
   const CategoryCarouselSection({
     super.key,
@@ -103,6 +105,8 @@ class CategoryCarouselSection extends StatelessWidget {
     required this.onPropertyTap,
     required this.onFavoriteToggle,
     required this.favoritePropertyIds,
+    this.onFilterByType,
+    this.onFilterByLaunches,
   });
 
   @override
@@ -137,9 +141,7 @@ class CategoryCarouselSection extends StatelessWidget {
             onPropertyTap: onPropertyTap,
             onFavoriteToggle: onFavoriteToggle,
             favoritePropertyIds: favoritePropertyIds,
-            onSeeAll: () {
-              // TODO: Implementar filtro por lançamentos
-            },
+            onSeeAll: onFilterByLaunches,
           ),
           const SizedBox(height: AppSpacing.xl),
         ],
@@ -150,9 +152,7 @@ class CategoryCarouselSection extends StatelessWidget {
             onPropertyTap: onPropertyTap,
             onFavoriteToggle: onFavoriteToggle,
             favoritePropertyIds: favoritePropertyIds,
-            onSeeAll: () {
-              // TODO: Implementar filtro por casas
-            },
+            onSeeAll: onFilterByType != null ? () => onFilterByType!(PropertyType.house) : null,
           ),
           const SizedBox(height: AppSpacing.xl),
         ],
@@ -163,9 +163,7 @@ class CategoryCarouselSection extends StatelessWidget {
             onPropertyTap: onPropertyTap,
             onFavoriteToggle: onFavoriteToggle,
             favoritePropertyIds: favoritePropertyIds,
-            onSeeAll: () {
-              // TODO: Implementar filtro por apartamentos
-            },
+            onSeeAll: onFilterByType != null ? () => onFilterByType!(PropertyType.apartment) : null,
           ),
           const SizedBox(height: AppSpacing.xl),
         ],
@@ -176,9 +174,7 @@ class CategoryCarouselSection extends StatelessWidget {
             onPropertyTap: onPropertyTap,
             onFavoriteToggle: onFavoriteToggle,
             favoritePropertyIds: favoritePropertyIds,
-            onSeeAll: () {
-              // TODO: Implementar filtro por comercial
-            },
+            onSeeAll: onFilterByType != null ? () => onFilterByType!(PropertyType.commercial) : null,
           ),
           const SizedBox(height: AppSpacing.xl),
         ],

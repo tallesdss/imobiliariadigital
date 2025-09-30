@@ -61,6 +61,10 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
           Navigator.pop(context);
           _archiveProperty(property);
         },
+        onReactivate: () {
+          Navigator.pop(context);
+          _reactivateProperty(property);
+        },
         onDelete: () {
           Navigator.pop(context);
           _deleteProperty(property);
@@ -90,6 +94,42 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
               _loadProperties();
             },
             child: const Text('Arquivar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _reactivateProperty(Property property) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Reativar Imóvel'),
+        content: Text('Deseja reativar "${property.title}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final updatedProperty = property.copyWith(
+                status: PropertyStatus.active,
+              );
+              MockDataService.updateProperty(updatedProperty);
+              Navigator.pop(context);
+              _loadProperties();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Imóvel reativado com sucesso!'),
+                  backgroundColor: AppColors.success,
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.success,
+            ),
+            child: const Text('Reativar'),
           ),
         ],
       ),
@@ -401,6 +441,7 @@ class PropertyActionsSheet extends StatelessWidget {
   final Property property;
   final VoidCallback onEdit;
   final VoidCallback onArchive;
+  final VoidCallback onReactivate;
   final VoidCallback onDelete;
 
   const PropertyActionsSheet({
@@ -408,6 +449,7 @@ class PropertyActionsSheet extends StatelessWidget {
     required this.property,
     required this.onEdit,
     required this.onArchive,
+    required this.onReactivate,
     required this.onDelete,
   });
 
@@ -459,10 +501,7 @@ class PropertyActionsSheet extends StatelessWidget {
                   ListTile(
                     leading: const Icon(Icons.unarchive, color: AppColors.success),
                     title: const Text('Reativar Imóvel'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      // TODO: Implementar reativação
-                    },
+                    onTap: onReactivate,
                     contentPadding: EdgeInsets.zero,
                   ),
                 ListTile(
