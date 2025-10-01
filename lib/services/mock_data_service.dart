@@ -36,7 +36,8 @@ class MockDataService {
       email: 'carlos@imobiliaria.com',
       phone: '(11) 99999-3333',
       creci: 'CRECI-SP 12345',
-      bio: 'Corretor especializado em imóveis residenciais na zona sul de São Paulo.',
+      bio:
+          'Corretor especializado em imóveis residenciais na zona sul de São Paulo.',
       createdAt: DateTime.now().subtract(const Duration(days: 365)),
       totalProperties: 25,
       soldProperties: 18,
@@ -59,7 +60,8 @@ class MockDataService {
     Property(
       id: 'prop1',
       title: 'Apartamento 3 quartos - Vila Madalena',
-      description: 'Lindo apartamento de 3 quartos, 2 banheiros, sala ampla com varanda. Prédio com portaria 24h, academia e piscina.',
+      description:
+          'Lindo apartamento de 3 quartos, 2 banheiros, sala ampla com varanda. Prédio com portaria 24h, academia e piscina.',
       price: 850000.00,
       type: PropertyType.apartment,
       status: PropertyStatus.active,
@@ -92,7 +94,8 @@ class MockDataService {
     Property(
       id: 'prop2',
       title: 'Casa 4 quartos - Jardins',
-      description: 'Casa térrea com 4 quartos, 3 banheiros, sala de estar, sala de jantar, cozinha ampla, quintal com churrasqueira.',
+      description:
+          'Casa térrea com 4 quartos, 3 banheiros, sala de estar, sala de jantar, cozinha ampla, quintal com churrasqueira.',
       price: 1200000.00,
       type: PropertyType.house,
       status: PropertyStatus.active,
@@ -125,7 +128,8 @@ class MockDataService {
     Property(
       id: 'prop3',
       title: 'Loft Studio - Pinheiros',
-      description: 'Loft moderno tipo studio, mobiliado, com cozinha americana e banheiro. Ideal para jovens profissionais.',
+      description:
+          'Loft moderno tipo studio, mobiliado, com cozinha americana e banheiro. Ideal para jovens profissionais.',
       price: 450000.00,
       type: PropertyType.apartment,
       status: PropertyStatus.active,
@@ -157,7 +161,8 @@ class MockDataService {
     Property(
       id: 'prop4',
       title: 'Sala Comercial - Centro',
-      description: 'Sala comercial de 60m² no centro da cidade, com 2 banheiros, recepção e copa. Prédio comercial com elevador.',
+      description:
+          'Sala comercial de 60m² no centro da cidade, com 2 banheiros, recepção e copa. Prédio comercial com elevador.',
       price: 320000.00,
       type: PropertyType.commercial,
       status: PropertyStatus.sold,
@@ -170,12 +175,7 @@ class MockDataService {
         'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800',
       ],
       videos: [],
-      attributes: {
-        'area': 60,
-        'bathrooms': 2,
-        'parking': 1,
-        'floor': 12,
-      },
+      attributes: {'area': 60, 'bathrooms': 2, 'parking': 1, 'floor': 12},
       realtorId: 'realtor2',
       realtorName: 'Ana Costa',
       realtorPhone: '(11) 99999-4444',
@@ -188,7 +188,8 @@ class MockDataService {
     Property(
       id: 'prop5',
       title: 'Residencial Vista Verde - LANÇAMENTO',
-      description: 'Novo lançamento! Apartamentos de 2 e 3 quartos com varanda gourmet. Área de lazer completa com piscina, academia e playground.',
+      description:
+          'Novo lançamento! Apartamentos de 2 e 3 quartos com varanda gourmet. Área de lazer completa com piscina, academia e playground.',
       price: 680000.00,
       type: PropertyType.apartment,
       status: PropertyStatus.active,
@@ -200,7 +201,9 @@ class MockDataService {
         'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800',
         'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800',
       ],
-      videos: ['https://sample-videos.com/zip/10/mp4/SampleVideo_360x240_1mb.mp4'],
+      videos: [
+        'https://sample-videos.com/zip/10/mp4/SampleVideo_360x240_1mb.mp4',
+      ],
       attributes: {
         'bedrooms': 3,
         'bathrooms': 2,
@@ -220,7 +223,8 @@ class MockDataService {
     Property(
       id: 'prop6',
       title: 'Condomínio Harmony - LANÇAMENTO',
-      description: 'Casas em condomínio fechado com segurança 24h. 3 quartos, suíte master, jardim privativo e área gourmet.',
+      description:
+          'Casas em condomínio fechado com segurança 24h. 3 quartos, suíte master, jardim privativo e área gourmet.',
       price: 950000.00,
       type: PropertyType.house,
       status: PropertyStatus.active,
@@ -252,7 +256,8 @@ class MockDataService {
     Property(
       id: 'prop7',
       title: 'Sobrado Moderno - Moema',
-      description: 'Sobrado com 4 suítes, escritório, sala de estar e jantar integradas, cozinha gourmet, quintal com piscina.',
+      description:
+          'Sobrado com 4 suítes, escritório, sala de estar e jantar integradas, cozinha gourmet, quintal com piscina.',
       price: 1800000.00,
       type: PropertyType.house,
       status: PropertyStatus.active,
@@ -284,7 +289,8 @@ class MockDataService {
     Property(
       id: 'prop8',
       title: 'Terreno Comercial - Brooklin',
-      description: 'Terreno comercial de 500m² em localização privilegiada. Ideal para construção de edifício comercial ou residencial.',
+      description:
+          'Terreno comercial de 500m² em localização privilegiada. Ideal para construção de edifício comercial ou residencial.',
       price: 1200000.00,
       type: PropertyType.land,
       status: PropertyStatus.active,
@@ -296,10 +302,7 @@ class MockDataService {
         'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800',
       ],
       videos: [],
-      attributes: {
-        'area': 500,
-        'zoning': 'Comercial/Residencial',
-      },
+      attributes: {'area': 500, 'zoning': 'Comercial/Residencial'},
       realtorId: 'realtor2',
       realtorName: 'Ana Costa',
       realtorPhone: '(11) 99999-4444',
@@ -355,7 +358,8 @@ class MockDataService {
       id: 'msg2',
       senderId: 'realtor1',
       senderName: 'Carlos Oliveira',
-      content: 'Olá João! Fico feliz com seu interesse. O apartamento está disponível para visita. Quando seria melhor para você?',
+      content:
+          'Olá João! Fico feliz com seu interesse. O apartamento está disponível para visita. Quando seria melhor para você?',
       type: MessageType.text,
       timestamp: DateTime.now().subtract(const Duration(hours: 1)),
       isRead: true,
@@ -392,11 +396,12 @@ class MockDataService {
   static List<User> get users => List.unmodifiable(_users);
   static List<Realtor> get realtors => List.unmodifiable(_realtors);
   static List<Property> get properties => List.unmodifiable(_properties);
-  static List<Property> get activeProperties => 
+  static List<Property> get activeProperties =>
       _properties.where((p) => p.status == PropertyStatus.active).toList();
   static List<Favorite> get favorites => List.unmodifiable(_favorites);
   static List<PropertyAlert> get alerts => List.unmodifiable(_alerts);
-  static List<ChatConversation> get conversations => List.unmodifiable(_conversations);
+  static List<ChatConversation> get conversations =>
+      List.unmodifiable(_conversations);
 
   // Methods
   static User? getUserById(String id) {
@@ -440,7 +445,10 @@ class MockDataService {
     return _alerts.where((a) => a.userId == userId && a.isActive).toList();
   }
 
-  static List<ChatConversation> getUserConversations(String userId, UserType userType) {
+  static List<ChatConversation> getUserConversations(
+    String userId,
+    UserType userType,
+  ) {
     if (userType == UserType.buyer) {
       return _conversations.where((c) => c.buyerId == userId).toList();
     } else if (userType == UserType.realtor) {
@@ -450,7 +458,9 @@ class MockDataService {
   }
 
   static bool isPropertyFavorited(String userId, String propertyId) {
-    return _favorites.any((f) => f.userId == userId && f.propertyId == propertyId);
+    return _favorites.any(
+      (f) => f.userId == userId && f.propertyId == propertyId,
+    );
   }
 
   // Add methods (simulate API calls)
@@ -487,14 +497,13 @@ class MockDataService {
   }
 
   static void removeFavorite(String userId, String propertyId) {
-    _favorites.removeWhere((f) => f.userId == userId && f.propertyId == propertyId);
+    _favorites.removeWhere(
+      (f) => f.userId == userId && f.propertyId == propertyId,
+    );
   }
 
   static String addAlert(PropertyAlert alert) {
-    final newAlert = alert.copyWith(
-      id: _uuid.v4(),
-      createdAt: DateTime.now(),
-    );
+    final newAlert = alert.copyWith(id: _uuid.v4(), createdAt: DateTime.now());
     _alerts.add(newAlert);
     return newAlert.id;
   }

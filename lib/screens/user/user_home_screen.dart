@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
+import '../../theme/app_spacing.dart';
 import '../../services/mock_data_service.dart';
 import '../../models/property_model.dart';
 import '../../widgets/cards/property_card.dart';
-import '../../widgets/common/horizontal_carousel.dart';
 import 'property_detail_screen.dart';
 import 'favorites_screen.dart';
 import 'property_comparison_screen.dart';
@@ -17,7 +17,7 @@ class UserHomeScreen extends StatefulWidget {
 }
 
 class _UserHomeScreenState extends State<UserHomeScreen> {
-  List<Property> _properties = [];
+  List<Property> _allProperties = [];
   List<Property> _filteredProperties = [];
   final Set<String> _favoritePropertyIds = {};
   final Set<String> _comparePropertyIds = {};
@@ -30,37 +30,36 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   @override
   void initState() {
     super.initState();
-    _loadProperties();
-    _loadFavorites();
+    _loadData();
   }
 
-  void _loadProperties() {
+  void _loadData() {
     setState(() {
       _isLoading = true;
     });
 
-    // Simular carregamento
-    Future.delayed(const Duration(milliseconds: 500), () {
-      setState(() {
-        _properties = MockDataService.activeProperties;
-        _filteredProperties = _properties;
-        _isLoading = false;
-      });
-    });
-  }
-
-  void _loadFavorites() {
-    // Simular usuário logado
-    final favorites = MockDataService.getFavoriteProperties('user1');
-    setState(() {
-      _favoritePropertyIds.clear();
-      _favoritePropertyIds.addAll(favorites.map((p) => p.id));
+    // Carregar dados
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        final activeProps = MockDataService.activeProperties;
+        final favorites = MockDataService.getFavoriteProperties('user1');
+        
+        setState(() {
+          _allProperties = activeProps;
+          _filteredProperties = activeProps;
+          _favoritePropertyIds.clear();
+          _favoritePropertyIds.addAll(favorites.map((p) => p.id));
+          _isLoading = false;
+        });
+        
+        print('Loaded ${_allProperties.length} properties'); // Debug
+      }
     });
   }
 
   void _filterProperties() {
     setState(() {
-      _filteredProperties = _properties.where((property) {
+      _filteredProperties = _allProperties.where((property) {
         final matchesSearch = _searchQuery.isEmpty ||
             property.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
             property.city.toLowerCase().contains(_searchQuery.toLowerCase()) ||
@@ -71,26 +70,10 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
         return matchesSearch && matchesType && matchesLaunch;
       }).toList();
-      
+
       // Mostrar carrosséis apenas quando não há busca ou filtro ativo
       _showCarousels = _searchQuery.isEmpty && _selectedType == null && !_showOnlyLaunches;
     });
-  }
-
-  void _filterByType(PropertyType? type) {
-    setState(() {
-      _selectedType = type;
-      _showOnlyLaunches = false;
-    });
-    _filterProperties();
-  }
-
-  void _filterByLaunches() {
-    setState(() {
-      _showOnlyLaunches = true;
-      _selectedType = null;
-    });
-    _filterProperties();
   }
 
   void _toggleFavorite(String propertyId) {
@@ -126,19 +109,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       return SingleChildScrollView(
         child: Column(
           children: [
-            const SizedBox(height: 16),
-            CategoryCarouselSection(
-              allProperties: _properties,
-              onPropertyTap: _navigateToPropertyDetail,
-              onFavoriteToggle: _toggleFavorite,
-              favoritePropertyIds: _favoritePropertyIds,
-              onFilterByType: _filterByType,
-              onFilterByLaunches: _filterByLaunches,
-            ),
-            const SizedBox(height: 24),
-            // Seção de todos os imóveis
+            const SizedBox(height: AppSpacing.md),
+            _buildCarousels(),
+            const SizedBox(height: AppSpacing.xl),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -149,17 +124,121 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  _buildPropertiesList(),
+                  const SizedBox(height: AppSpacing.md),
                 ],
               ),
             ),
+            _buildPropertiesGrid(),
+            const SizedBox(height: AppSpacing.xl),
           ],
         ),
       );
     } else {
-      return _buildPropertiesList();
+      return _buildPropertiesGrid();
     }
+  }
+
+  Widget _buildCarousels() {
+    // Separar propriedades por categoria
+    final launches = _allProperties.where((p) => p.isLaunch).toList();
+    final houses = _allProperties.where((p) => p.type == PropertyType.house).toList();
+    final apartments = _allProperties.where((p) => p.type == PropertyType.apartment).toList();
+
+    return Column(
+      children: [
+        if (launches.isNotEmpty) ...[
+          _buildCarousel('🚀 Lançamentos', launches, () {
+            setState(() {
+              _showOnlyLaunches = true;
+              _selectedType = null;
+              _filterProperties();
+            });
+          }),
+          const SizedBox(height: AppSpacing.xl),
+        ],
+        if (houses.isNotEmpty) ...[
+          _buildCarousel('🏠 Casas', houses, () {
+            setState(() {
+              _selectedType = PropertyType.house;
+              _showOnlyLaunches = false;
+              _filterProperties();
+            });
+          }),
+          const SizedBox(height: AppSpacing.xl),
+        ],
+        if (apartments.isNotEmpty) ...[
+          _buildCarousel('🏢 Apartamentos', apartments, () {
+            setState(() {
+              _selectedType = PropertyType.apartment;
+              _showOnlyLaunches = false;
+              _filterProperties();
+            });
+          }),
+          const SizedBox(height: AppSpacing.xl),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildCarousel(String title, List<Property> properties, VoidCallback onSeeAll) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: AppTypography.h6.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              TextButton(
+                onPressed: onSeeAll,
+                child: Text(
+                  'Ver todos',
+                  style: AppTypography.labelMedium.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        SizedBox(
+          height: 300,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            itemCount: properties.length > 5 ? 5 : properties.length,
+            itemBuilder: (context, index) {
+              final property = properties[index];
+              return Container(
+                width: 280,
+                margin: EdgeInsets.only(
+                  right: index == properties.length - 1 ? 0 : AppSpacing.md,
+                ),
+                child: GestureDetector(
+                  onTap: () => _navigateToPropertyDetail(property.id),
+                  child: PropertyCard(
+                    property: property,
+                    isFavorite: _favoritePropertyIds.contains(property.id),
+                    onFavoriteToggle: () => _toggleFavorite(property.id),
+                    onCompare: () {},
+                    isCompact: true,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
   }
 
   void _navigateToPropertyDetail(String propertyId) {
@@ -198,7 +277,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 Navigator.pop(context);
                 // Navegar para tela de perfil
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Tela de perfil em desenvolvimento')),
+                  const SnackBar(
+                    content: Text('Tela de perfil em desenvolvimento'),
+                  ),
                 );
               },
             ),
@@ -209,7 +290,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const FavoritesScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const FavoritesScreen(),
+                  ),
                 );
               },
             ),
@@ -231,12 +314,17 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             ),
             const Divider(),
             ListTile(
-              leading: const Icon(Icons.settings, color: AppColors.textSecondary),
+              leading: const Icon(
+                Icons.settings,
+                color: AppColors.textSecondary,
+              ),
               title: const Text('Configurações'),
               onTap: () {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Configurações em desenvolvimento')),
+                  const SnackBar(
+                    content: Text('Configurações em desenvolvimento'),
+                  ),
                 );
               },
             ),
@@ -245,7 +333,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               title: const Text('Sair'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/',
+                  (route) => false,
+                );
               },
             ),
             const SizedBox(height: 16),
@@ -259,9 +351,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => PropertyComparisonScreen(
-          propertyIds: _comparePropertyIds.toList(),
-        ),
+        builder: (context) =>
+            PropertyComparisonScreen(propertyIds: _comparePropertyIds.toList()),
       ),
     );
   }
@@ -308,9 +399,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => const FavoritesScreen(),
-              ),
+              MaterialPageRoute(builder: (context) => const FavoritesScreen()),
             );
           },
           icon: Stack(
@@ -487,39 +576,39 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
-  Widget _buildPropertiesList() {
+  Widget _buildPropertiesGrid() {
     if (_filteredProperties.isEmpty) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.search_off,
-              size: 64,
-              color: AppColors.textHint,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Nenhum imóvel encontrado',
-              style: AppTypography.h6.copyWith(
-                color: AppColors.textSecondary,
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.search_off, size: 64, color: AppColors.textHint),
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                'Nenhum imóvel encontrado',
+                style: AppTypography.h6.copyWith(color: AppColors.textSecondary),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Tente ajustar os filtros de busca',
-              style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.textHint,
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                'Tente ajustar os filtros de busca',
+                style: AppTypography.bodyMedium.copyWith(
+                  color: AppColors.textHint,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       itemCount: _filteredProperties.length,
+      separatorBuilder: (context, index) => const SizedBox(height: AppSpacing.md),
       itemBuilder: (context, index) {
         final property = _filteredProperties[index];
         return GestureDetector(
@@ -535,3 +624,4 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 }
+

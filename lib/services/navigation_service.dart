@@ -18,7 +18,8 @@ import '../screens/admin/admin_dashboard_screen.dart';
 import '../screens/admin/admin_chat_screen.dart';
 
 class NavigationService {
-  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  static final GlobalKey<NavigatorState> navigatorKey =
+      GlobalKey<NavigatorState>();
 
   static final GoRouter router = GoRouter(
     navigatorKey: navigatorKey,
@@ -125,23 +126,14 @@ class NavigationService {
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
-      appBar: AppBar(
-        title: const Text('Página não encontrada'),
-      ),
+      appBar: AppBar(title: const Text('Página não encontrada')),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.grey,
-            ),
+            const Icon(Icons.error_outline, size: 64, color: Colors.grey),
             const SizedBox(height: 16),
-            const Text(
-              'Página não encontrada',
-              style: TextStyle(fontSize: 18),
-            ),
+            const Text('Página não encontrada', style: TextStyle(fontSize: 18)),
             const SizedBox(height: 8),
             Text(
               'Rota: ${state.uri}',

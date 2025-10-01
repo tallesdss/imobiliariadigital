@@ -126,9 +126,7 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
                 ),
               );
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.success,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.success),
             child: const Text('Reativar'),
           ),
         ],
@@ -141,7 +139,9 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Excluir Imóvel'),
-        content: Text('Tem certeza que deseja excluir "${property.title}"? Esta ação não pode ser desfeita.'),
+        content: Text(
+          'Tem certeza que deseja excluir "${property.title}"? Esta ação não pode ser desfeita.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -163,7 +163,7 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
 
   void _onDrawerNavigate(String route) {
     Navigator.pop(context); // Fechar drawer
-    
+
     switch (route) {
       case '/property-form':
         _navigateToPropertyForm();
@@ -226,9 +226,7 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
             const SizedBox(height: AppSpacing.lg),
             Text(
               'Nenhum imóvel cadastrado',
-              style: AppTypography.h6.copyWith(
-                color: AppColors.textSecondary,
-              ),
+              style: AppTypography.h6.copyWith(color: AppColors.textSecondary),
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
@@ -261,9 +259,15 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
   }
 
   Widget _buildStatsHeader() {
-    final activeCount = _properties.where((p) => p.status == PropertyStatus.active).length;
-    final soldCount = _properties.where((p) => p.status == PropertyStatus.sold).length;
-    final archivedCount = _properties.where((p) => p.status == PropertyStatus.archived).length;
+    final activeCount = _properties
+        .where((p) => p.status == PropertyStatus.active)
+        .length;
+    final soldCount = _properties
+        .where((p) => p.status == PropertyStatus.sold)
+        .length;
+    final archivedCount = _properties
+        .where((p) => p.status == PropertyStatus.archived)
+        .length;
 
     return Container(
       color: Colors.white,
@@ -279,7 +283,11 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
-            child: _buildStatCard('Arquivados', archivedCount, AppColors.textHint),
+            child: _buildStatCard(
+              'Arquivados',
+              archivedCount,
+              AppColors.textHint,
+            ),
           ),
         ],
       ),
@@ -304,12 +312,7 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
             ),
           ),
           const SizedBox(height: 4),
-          Text(
-            label,
-            style: AppTypography.labelMedium.copyWith(
-              color: color,
-            ),
-          ),
+          Text(label, style: AppTypography.labelMedium.copyWith(color: color)),
         ],
       ),
     );
@@ -345,7 +348,9 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
           // Imagem do imóvel
           if (property.photos.isNotEmpty)
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(12),
+              ),
               child: AspectRatio(
                 aspectRatio: 16 / 9,
                 child: Image.network(
@@ -394,7 +399,11 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
                 const SizedBox(height: AppSpacing.sm),
                 Row(
                   children: [
-                    const Icon(Icons.location_on_outlined, size: 16, color: AppColors.textSecondary),
+                    const Icon(
+                      Icons.location_on_outlined,
+                      size: 16,
+                      color: AppColors.textSecondary,
+                    ),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
@@ -411,7 +420,8 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
                   children: [
                     Expanded(
                       child: OutlinedButton.icon(
-                        onPressed: () => _navigateToPropertyForm(property: property),
+                        onPressed: () =>
+                            _navigateToPropertyForm(property: property),
                         icon: const Icon(Icons.edit, size: 16),
                         label: const Text('Editar'),
                         style: OutlinedButton.styleFrom(
@@ -492,14 +502,20 @@ class PropertyActionsSheet extends StatelessWidget {
                 ),
                 if (property.status == PropertyStatus.active)
                   ListTile(
-                    leading: const Icon(Icons.archive, color: AppColors.warning),
+                    leading: const Icon(
+                      Icons.archive,
+                      color: AppColors.warning,
+                    ),
                     title: const Text('Arquivar Imóvel'),
                     onTap: onArchive,
                     contentPadding: EdgeInsets.zero,
                   ),
                 if (property.status == PropertyStatus.archived)
                   ListTile(
-                    leading: const Icon(Icons.unarchive, color: AppColors.success),
+                    leading: const Icon(
+                      Icons.unarchive,
+                      color: AppColors.success,
+                    ),
                     title: const Text('Reativar Imóvel'),
                     onTap: onReactivate,
                     contentPadding: EdgeInsets.zero,

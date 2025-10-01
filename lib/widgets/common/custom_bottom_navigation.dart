@@ -2,13 +2,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 
-enum UserNavigationTab {
-  home,
-  search,
-  favorites,
-  alerts,
-  chat,
-}
+enum UserNavigationTab { home, search, favorites, alerts, chat }
 
 class CustomBottomNavigation extends StatelessWidget {
   final UserNavigationTab currentTab;
@@ -83,7 +77,7 @@ class CustomBottomNavigation extends StatelessWidget {
     String label,
   ) {
     final isSelected = currentTab == tab;
-    
+
     return GestureDetector(
       onTap: () => onTabChanged(tab),
       behavior: HitTestBehavior.opaque,

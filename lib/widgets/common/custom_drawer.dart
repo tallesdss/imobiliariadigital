@@ -3,10 +3,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_spacing.dart';
 
-enum DrawerUserType {
-  realtor,
-  admin,
-}
+enum DrawerUserType { realtor, admin }
 
 class CustomDrawer extends StatelessWidget {
   final DrawerUserType userType;
@@ -49,9 +46,7 @@ class CustomDrawer extends StatelessWidget {
   Widget _buildHeader() {
     return Container(
       height: 180,
-      decoration: const BoxDecoration(
-        gradient: AppColors.primaryGradient,
-      ),
+      decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.lg),
@@ -97,7 +92,9 @@ class CustomDrawer extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  userType == DrawerUserType.realtor ? 'Corretor' : 'Administrador',
+                  userType == DrawerUserType.realtor
+                      ? 'Corretor'
+                      : 'Administrador',
                   style: AppTypography.labelSmall.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
@@ -114,11 +111,7 @@ class CustomDrawer extends StatelessWidget {
   List<Widget> _buildMenuItems() {
     if (userType == DrawerUserType.realtor) {
       return [
-        _buildMenuItem(
-          Icons.dashboard_outlined,
-          'Dashboard',
-          '/realtor-home',
-        ),
+        _buildMenuItem(Icons.dashboard_outlined, 'Dashboard', '/realtor-home'),
         _buildMenuItem(
           Icons.business_outlined,
           'Meus Imóveis',
@@ -129,16 +122,8 @@ class CustomDrawer extends StatelessWidget {
           'Cadastrar Imóvel',
           '/property-form',
         ),
-        _buildMenuItem(
-          Icons.person_outline,
-          'Meu Perfil',
-          '/realtor-profile',
-        ),
-        _buildMenuItem(
-          Icons.chat_bubble_outline,
-          'Mensagens',
-          '/realtor-chat',
-        ),
+        _buildMenuItem(Icons.person_outline, 'Meu Perfil', '/realtor-profile'),
+        _buildMenuItem(Icons.chat_bubble_outline, 'Mensagens', '/realtor-chat'),
         _buildMenuItem(
           Icons.analytics_outlined,
           'Relatórios',
@@ -167,11 +152,7 @@ class CustomDrawer extends StatelessWidget {
           'Cadastrar Imóvel',
           '/property-form',
         ),
-        _buildMenuItem(
-          Icons.chat_bubble_outline,
-          'Mensagens',
-          '/admin-chat',
-        ),
+        _buildMenuItem(Icons.chat_bubble_outline, 'Mensagens', '/admin-chat'),
         _buildMenuItem(
           Icons.settings_outlined,
           'Configurações',
@@ -183,15 +164,10 @@ class CustomDrawer extends StatelessWidget {
 
   Widget _buildMenuItem(IconData icon, String title, String route) {
     return ListTile(
-      leading: Icon(
-        icon,
-        color: AppColors.textSecondary,
-      ),
+      leading: Icon(icon, color: AppColors.textSecondary),
       title: Text(
         title,
-        style: AppTypography.bodyMedium.copyWith(
-          color: AppColors.textPrimary,
-        ),
+        style: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary),
       ),
       onTap: () => onNavigate(route),
       contentPadding: const EdgeInsets.symmetric(
@@ -203,21 +179,15 @@ class CustomDrawer extends StatelessWidget {
 
   Widget _buildLogoutItem(BuildContext context) {
     return ListTile(
-      leading: const Icon(
-        Icons.logout,
-        color: AppColors.error,
-      ),
+      leading: const Icon(Icons.logout, color: AppColors.error),
       title: Text(
         'Sair',
-        style: AppTypography.bodyMedium.copyWith(
-          color: AppColors.error,
-        ),
+        style: AppTypography.bodyMedium.copyWith(color: AppColors.error),
       ),
       onTap: () {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          '/login',
-          (route) => false,
-        );
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil('/login', (route) => false);
       },
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,

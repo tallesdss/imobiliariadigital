@@ -84,9 +84,7 @@ class PropertyCard extends StatelessWidget {
             ),
             child: Text(
               'Cód: ${property.id.substring(0, 5)}',
-              style: AppTypography.labelSmall.copyWith(
-                color: Colors.white,
-              ),
+              style: AppTypography.labelSmall.copyWith(color: Colors.white),
             ),
           ),
         ),
@@ -185,10 +183,7 @@ class PropertyCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           // Preço
-          Text(
-            property.formattedPrice,
-            style: AppTypography.priceSecondary,
-          ),
+          Text(property.formattedPrice, style: AppTypography.priceSecondary),
           const SizedBox(height: 8),
           // Descrição resumida
           if (property.description.isNotEmpty)
@@ -205,37 +200,45 @@ class PropertyCard extends StatelessWidget {
 
   Widget _buildAttributesSection() {
     final attributes = <Widget>[];
-    
+
     if (property.attributes['bedrooms'] != null) {
-      attributes.add(_buildAttributeItem(
-        Icons.bed_outlined,
-        '${property.attributes['bedrooms']}',
-        'quartos',
-      ));
+      attributes.add(
+        _buildAttributeItem(
+          Icons.bed_outlined,
+          '${property.attributes['bedrooms']}',
+          'quartos',
+        ),
+      );
     }
-    
+
     if (property.attributes['bathrooms'] != null) {
-      attributes.add(_buildAttributeItem(
-        Icons.bathroom_outlined,
-        '${property.attributes['bathrooms']}',
-        'banheiros',
-      ));
+      attributes.add(
+        _buildAttributeItem(
+          Icons.bathroom_outlined,
+          '${property.attributes['bathrooms']}',
+          'banheiros',
+        ),
+      );
     }
-    
+
     if (property.attributes['area'] != null) {
-      attributes.add(_buildAttributeItem(
-        Icons.square_foot_outlined,
-        '${property.attributes['area']}m²',
-        '',
-      ));
+      attributes.add(
+        _buildAttributeItem(
+          Icons.square_foot_outlined,
+          '${property.attributes['area']}m²',
+          '',
+        ),
+      );
     }
-    
+
     if (property.attributes['parking'] != null) {
-      attributes.add(_buildAttributeItem(
-        Icons.directions_car_outlined,
-        '${property.attributes['parking']}',
-        'vagas',
-      ));
+      attributes.add(
+        _buildAttributeItem(
+          Icons.directions_car_outlined,
+          '${property.attributes['parking']}',
+          'vagas',
+        ),
+      );
     }
 
     if (attributes.isEmpty) return const SizedBox.shrink();
@@ -243,9 +246,7 @@ class PropertyCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: const BoxDecoration(
-        border: Border(
-          top: BorderSide(color: AppColors.border, width: 1),
-        ),
+        border: Border(top: BorderSide(color: AppColors.border, width: 1)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -257,21 +258,10 @@ class PropertyCard extends StatelessWidget {
   Widget _buildAttributeItem(IconData icon, String value, String label) {
     return Column(
       children: [
-        Icon(
-          icon,
-          size: 20,
-          color: AppColors.textSecondary,
-        ),
+        Icon(icon, size: 20, color: AppColors.textSecondary),
         const SizedBox(height: 4),
-        Text(
-          value,
-          style: AppTypography.labelMedium,
-        ),
-        if (label.isNotEmpty)
-          Text(
-            label,
-            style: AppTypography.overline,
-          ),
+        Text(value, style: AppTypography.labelMedium),
+        if (label.isNotEmpty) Text(label, style: AppTypography.overline),
       ],
     );
   }

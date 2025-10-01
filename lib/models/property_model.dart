@@ -1,16 +1,6 @@
-enum PropertyType {
-  house,
-  apartment,
-  commercial,
-  land,
-}
+enum PropertyType { house, apartment, commercial, land }
 
-enum PropertyStatus {
-  active,
-  sold,
-  archived,
-  suspended,
-}
+enum PropertyStatus { active, sold, archived, suspended }
 
 class Property {
   final String id;
@@ -108,10 +98,7 @@ class Property {
   }
 
   String get formattedPrice {
-    return 'R\$ ${price.toStringAsFixed(2).replaceAllMapped(
-      RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-      (Match m) => '${m[1]}.',
-    )}';
+    return 'R\$ ${price.toStringAsFixed(2).replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}';
   }
 
   String get typeDisplayName {

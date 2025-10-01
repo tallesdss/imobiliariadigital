@@ -18,25 +18,19 @@ class StatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final config = _getStatusConfig(status);
-    
+
     return Container(
-      padding: padding ?? const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding:
+          padding ?? const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: config.backgroundColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: config.borderColor,
-          width: 1,
-        ),
+        border: Border.all(color: config.borderColor, width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            config.icon,
-            size: fontSize ?? 12,
-            color: config.textColor,
-          ),
+          Icon(config.icon, size: fontSize ?? 12, color: config.textColor),
           const SizedBox(width: 4),
           Text(
             config.label,
@@ -123,7 +117,8 @@ class SimpleBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: padding ?? const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding:
+          padding ?? const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: backgroundColor ?? AppColors.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),

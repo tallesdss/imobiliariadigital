@@ -3,32 +3,21 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_spacing.dart';
 
-enum MediaType {
-  photo,
-  video,
-}
+enum MediaType { photo, video }
 
 class MediaItem {
   final String url;
   final MediaType type;
   final String? thumbnail;
 
-  MediaItem({
-    required this.url,
-    required this.type,
-    this.thumbnail,
-  });
+  MediaItem({required this.url, required this.type, this.thumbnail});
 }
 
 class MediaGallery extends StatefulWidget {
   final List<String> photos;
   final List<String> videos;
 
-  const MediaGallery({
-    super.key,
-    required this.photos,
-    required this.videos,
-  });
+  const MediaGallery({super.key, required this.photos, required this.videos});
 
   @override
   State<MediaGallery> createState() => _MediaGalleryState();
@@ -202,9 +191,7 @@ class _MediaGalleryState extends State<MediaGallery>
             ),
             child: Text(
               '${_currentImageIndex + 1}/${widget.photos.length}',
-              style: AppTypography.labelSmall.copyWith(
-                color: Colors.white,
-              ),
+              style: AppTypography.labelSmall.copyWith(color: Colors.white),
             ),
           ),
         ),
@@ -321,14 +308,18 @@ class _MediaGalleryState extends State<MediaGallery>
                         children: [
                           Icon(
                             Icons.play_circle_outline,
-                            color: isSelected ? AppColors.primary : Colors.white,
+                            color: isSelected
+                                ? AppColors.primary
+                                : Colors.white,
                             size: 32,
                           ),
                           const SizedBox(height: 4),
                           Text(
                             'Vídeo ${index + 1}',
                             style: AppTypography.labelSmall.copyWith(
-                              color: isSelected ? AppColors.primary : Colors.white,
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : Colors.white,
                             ),
                           ),
                         ],

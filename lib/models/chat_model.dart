@@ -1,8 +1,4 @@
-enum MessageType {
-  text,
-  image,
-  document,
-}
+enum MessageType { text, image, document }
 
 class ChatMessage {
   final String id;

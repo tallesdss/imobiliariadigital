@@ -83,7 +83,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
   @override
   Widget build(BuildContext context) {
     final hasError = widget.errorText != null;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -92,11 +92,11 @@ class _CustomTextFieldState extends State<CustomTextField> {
           Text(
             widget.label!,
             style: AppTypography.labelMedium.copyWith(
-              color: hasError 
-                  ? AppColors.error 
-                  : _isFocused 
-                      ? AppColors.primary 
-                      : AppColors.textSecondary,
+              color: hasError
+                  ? AppColors.error
+                  : _isFocused
+                  ? AppColors.primary
+                  : AppColors.textSecondary,
             ),
           ),
           AppSpacing.verticalSM,
@@ -119,8 +119,8 @@ class _CustomTextFieldState extends State<CustomTextField> {
           onTap: widget.onTap,
           onFieldSubmitted: widget.onSubmitted,
           style: AppTypography.bodyMedium.copyWith(
-            color: widget.enabled 
-                ? AppColors.textPrimary 
+            color: widget.enabled
+                ? AppColors.textPrimary
                 : AppColors.textSecondary,
           ),
           decoration: InputDecoration(
@@ -129,57 +129,53 @@ class _CustomTextFieldState extends State<CustomTextField> {
               color: AppColors.textHint,
             ),
             filled: true,
-            fillColor: widget.fillColor ??
+            fillColor:
+                widget.fillColor ??
                 (widget.enabled
                     ? AppColors.surfaceVariant
                     : AppColors.surfaceVariant.withValues(alpha: 0.5 * 255)),
-            
+
             // Prefix Icon
             prefixIcon: widget.prefixIcon != null
                 ? Icon(
                     widget.prefixIcon,
-                    color: hasError 
-                        ? AppColors.error 
-                        : _isFocused 
-                            ? AppColors.primary 
-                            : AppColors.textSecondary,
+                    color: hasError
+                        ? AppColors.error
+                        : _isFocused
+                        ? AppColors.primary
+                        : AppColors.textSecondary,
                     size: 20,
                   )
                 : null,
-            
+
             // Suffix Icon
             suffixIcon: widget.suffixIcon,
-            
+
             // Content Padding
-            contentPadding: widget.contentPadding ?? 
+            contentPadding:
+                widget.contentPadding ??
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            
+
             // Borders
-            border: OutlineInputBorder(
+            border: const OutlineInputBorder(
               borderRadius: AppSpacing.borderRadiusSM,
-              borderSide: const BorderSide(color: AppColors.border),
+              borderSide: BorderSide(color: AppColors.border),
             ),
-            enabledBorder: OutlineInputBorder(
+            enabledBorder: const OutlineInputBorder(
               borderRadius: AppSpacing.borderRadiusSM,
-              borderSide: const BorderSide(color: AppColors.border),
+              borderSide: BorderSide(color: AppColors.border),
             ),
-            focusedBorder: OutlineInputBorder(
+            focusedBorder: const OutlineInputBorder(
               borderRadius: AppSpacing.borderRadiusSM,
-              borderSide: const BorderSide(
-                color: AppColors.primary, 
-                width: 2,
-              ),
+              borderSide: BorderSide(color: AppColors.primary, width: 2),
             ),
-            errorBorder: OutlineInputBorder(
+            errorBorder: const OutlineInputBorder(
               borderRadius: AppSpacing.borderRadiusSM,
-              borderSide: const BorderSide(color: AppColors.error),
+              borderSide: BorderSide(color: AppColors.error),
             ),
-            focusedErrorBorder: OutlineInputBorder(
+            focusedErrorBorder: const OutlineInputBorder(
               borderRadius: AppSpacing.borderRadiusSM,
-              borderSide: const BorderSide(
-                color: AppColors.error, 
-                width: 2,
-              ),
+              borderSide: BorderSide(color: AppColors.error, width: 2),
             ),
             disabledBorder: OutlineInputBorder(
               borderRadius: AppSpacing.borderRadiusSM,
@@ -187,7 +183,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
                 color: AppColors.border.withValues(alpha: 0.5 * 255),
               ),
             ),
-            
+
             // Error Text (hide default, we'll show custom)
             errorText: null,
             errorMaxLines: 2,

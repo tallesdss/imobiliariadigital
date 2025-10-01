@@ -81,7 +81,9 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(widget.property == null ? 'Cadastrar Imóvel' : 'Editar Imóvel'),
+        title: Text(
+          widget.property == null ? 'Cadastrar Imóvel' : 'Editar Imóvel',
+        ),
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.textOnPrimary,
       ),
@@ -89,8 +91,8 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
         key: _formKey,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          children: [
+          child: Column(
+            children: [
               _buildBasicInfoSection(),
               const SizedBox(height: AppSpacing.xl),
               _buildLocationSection(),
@@ -145,7 +147,10 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
                     border: OutlineInputBorder(),
                   ),
                   items: PropertyType.values.map((type) {
-                    return DropdownMenuItem(value: type, child: Text(type.name));
+                    return DropdownMenuItem(
+                      value: type,
+                      child: Text(type.name),
+                    );
                   }).toList(),
                   onChanged: (value) => setState(() => _selectedType = value!),
                 ),
@@ -156,7 +161,8 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
                   controller: _priceController,
                   label: 'Preço',
                   keyboardType: TextInputType.number,
-                  validator: (value) => value?.isEmpty == true ? 'Obrigatório' : null,
+                  validator: (value) =>
+                      value?.isEmpty == true ? 'Obrigatório' : null,
                 ),
               ),
             ],
@@ -191,7 +197,8 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
                 child: CustomTextField(
                   controller: _cityController,
                   label: 'Cidade',
-                  validator: (value) => value?.isEmpty == true ? 'Obrigatório' : null,
+                  validator: (value) =>
+                      value?.isEmpty == true ? 'Obrigatório' : null,
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
@@ -199,7 +206,8 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
                 child: CustomTextField(
                   controller: _stateController,
                   label: 'Estado',
-                  validator: (value) => value?.isEmpty == true ? 'Obrigatório' : null,
+                  validator: (value) =>
+                      value?.isEmpty == true ? 'Obrigatório' : null,
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
@@ -325,9 +333,7 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
                 border: Border.all(color: AppColors.border),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Center(
-                child: Text('Nenhuma mídia adicionada'),
-              ),
+              child: const Center(child: Text('Nenhuma mídia adicionada')),
             ),
         ],
       ),

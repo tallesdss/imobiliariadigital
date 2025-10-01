@@ -31,7 +31,10 @@ class _UserChatScreenState extends State<UserChatScreen> {
 
     Future.delayed(const Duration(milliseconds: 500), () {
       setState(() {
-        _conversations = MockDataService.getUserConversations('user1', UserType.buyer);
+        _conversations = MockDataService.getUserConversations(
+          'user1',
+          UserType.buyer,
+        );
         _isLoading = false;
       });
     });
@@ -75,9 +78,7 @@ class _UserChatScreenState extends State<UserChatScreen> {
             const SizedBox(height: AppSpacing.lg),
             Text(
               'Nenhuma conversa ainda',
-              style: AppTypography.h6.copyWith(
-                color: AppColors.textSecondary,
-              ),
+              style: AppTypography.h6.copyWith(color: AppColors.textSecondary),
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
@@ -104,7 +105,7 @@ class _UserChatScreenState extends State<UserChatScreen> {
 
   Widget _buildConversationCard(ChatConversation conversation) {
     final lastMessage = conversation.lastMessage;
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
@@ -123,8 +124,8 @@ class _UserChatScreenState extends State<UserChatScreen> {
         leading: CircleAvatar(
           backgroundColor: AppColors.primary.withValues(alpha: 0.2),
           child: Text(
-            conversation.realtorName.isNotEmpty 
-                ? conversation.realtorName[0].toUpperCase() 
+            conversation.realtorName.isNotEmpty
+                ? conversation.realtorName[0].toUpperCase()
                 : '?',
             style: AppTypography.subtitle2.copyWith(
               color: AppColors.primary,
@@ -213,10 +214,7 @@ class _UserChatScreenState extends State<UserChatScreen> {
 class ConversationScreen extends StatefulWidget {
   final ChatConversation conversation;
 
-  const ConversationScreen({
-    super.key,
-    required this.conversation,
-  });
+  const ConversationScreen({super.key, required this.conversation});
 
   @override
   State<ConversationScreen> createState() => _ConversationScreenState();
@@ -271,7 +269,8 @@ class _ConversationScreenState extends State<ConversationScreen> {
         id: '',
         senderId: widget.conversation.realtorId,
         senderName: widget.conversation.realtorName,
-        content: 'Obrigado pela mensagem! Vou verificar e te respondo em breve.',
+        content:
+            'Obrigado pela mensagem! Vou verificar e te respondo em breve.',
         type: MessageType.text,
         timestamp: DateTime.now(),
       );

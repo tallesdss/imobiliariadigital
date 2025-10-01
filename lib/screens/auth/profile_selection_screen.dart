@@ -57,7 +57,7 @@ class _ProfileSelectionScreenState extends State<ProfileSelectionScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               AppSpacing.verticalLG,
-              
+
               // Title and Subtitle
               Text(
                 'Como você deseja usar a plataforma?',
@@ -72,9 +72,9 @@ class _ProfileSelectionScreenState extends State<ProfileSelectionScreen> {
                 ),
                 textAlign: TextAlign.center,
               ),
-              
+
               AppSpacing.verticalXL,
-              
+
               // Profile Options
               Expanded(
                 child: ListView(
@@ -84,38 +84,41 @@ class _ProfileSelectionScreenState extends State<ProfileSelectionScreen> {
                       title: 'Comprador',
                       subtitle: 'Procuro um imóvel para comprar',
                       icon: Icons.person_outline,
-                      description: 'Navegue por imóveis, favorite seus preferidos, entre em contato com corretores e receba alertas.',
+                      description:
+                          'Navegue por imóveis, favorite seus preferidos, entre em contato com corretores e receba alertas.',
                       isSelected: _selectedUserType == UserType.buyer,
                       onTap: () => _selectUserType(UserType.buyer),
                     ),
-                    
+
                     AppSpacing.verticalLG,
-                    
+
                     // Realtor Option
                     _ProfileCard(
                       title: 'Corretor',
                       subtitle: 'Sou um corretor imobiliário',
                       icon: Icons.business_center_outlined,
-                      description: 'Cadastre e gerencie seus imóveis, converse com clientes interessados e acompanhe suas vendas.',
+                      description:
+                          'Cadastre e gerencie seus imóveis, converse com clientes interessados e acompanhe suas vendas.',
                       isSelected: _selectedUserType == UserType.realtor,
                       onTap: () => _selectUserType(UserType.realtor),
                     ),
-                    
+
                     AppSpacing.verticalLG,
-                    
+
                     // Admin Option
                     _ProfileCard(
                       title: 'Administrador',
                       subtitle: 'Gerencio a plataforma',
                       icon: Icons.admin_panel_settings_outlined,
-                      description: 'Gerencie todos os imóveis, corretores, visualize relatórios e administre a plataforma.',
+                      description:
+                          'Gerencie todos os imóveis, corretores, visualize relatórios e administre a plataforma.',
                       isSelected: _selectedUserType == UserType.admin,
                       onTap: () => _selectUserType(UserType.admin),
                     ),
                   ],
                 ),
               ),
-              
+
               // Continue Button
               Container(
                 padding: AppSpacing.paddingVerticalLG,
@@ -129,10 +132,7 @@ class _ProfileSelectionScreenState extends State<ProfileSelectionScreen> {
                       borderRadius: AppSpacing.borderRadiusSM,
                     ),
                   ),
-                  child: Text(
-                    'Continuar',
-                    style: AppTypography.buttonLarge,
-                  ),
+                  child: Text('Continuar', style: AppTypography.buttonLarge),
                 ),
               ),
             ],
@@ -190,22 +190,22 @@ class _ProfileCard extends StatelessWidget {
               width: 60,
               height: 60,
               decoration: BoxDecoration(
-                color: isSelected 
-                    ? AppColors.primary 
+                color: isSelected
+                    ? AppColors.primary
                     : AppColors.surfaceVariant,
                 borderRadius: AppSpacing.borderRadiusMD,
               ),
               child: Icon(
                 icon,
                 size: 32,
-                color: isSelected 
-                    ? AppColors.textOnPrimary 
+                color: isSelected
+                    ? AppColors.textOnPrimary
                     : AppColors.textSecondary,
               ),
             ),
-            
+
             AppSpacing.horizontalMD,
-            
+
             // Content
             Expanded(
               child: Column(
@@ -214,8 +214,8 @@ class _ProfileCard extends StatelessWidget {
                   Text(
                     title,
                     style: AppTypography.h6.copyWith(
-                      color: isSelected 
-                          ? AppColors.primary 
+                      color: isSelected
+                          ? AppColors.primary
                           : AppColors.textPrimary,
                     ),
                   ),
@@ -236,7 +236,7 @@ class _ProfileCard extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             // Selection Indicator
             if (isSelected)
               Container(

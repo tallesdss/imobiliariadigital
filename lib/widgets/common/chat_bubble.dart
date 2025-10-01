@@ -46,7 +46,9 @@ class ChatBubble extends StatelessWidget {
                       : null,
                   child: senderAvatar == null
                       ? Text(
-                          senderName.isNotEmpty ? senderName[0].toUpperCase() : '?',
+                          senderName.isNotEmpty
+                              ? senderName[0].toUpperCase()
+                              : '?',
                           style: AppTypography.bodySmall.copyWith(
                             color: AppColors.primary,
                             fontWeight: FontWeight.bold,
@@ -85,10 +87,7 @@ class ChatBubble extends StatelessWidget {
                 ),
               ],
             ),
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

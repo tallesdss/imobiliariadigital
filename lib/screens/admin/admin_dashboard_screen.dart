@@ -21,7 +21,12 @@ class AdminDashboardScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Text('Dashboard Administrativo', style: AppTypography.h4),
             const SizedBox(height: 8),
-            Text('Em desenvolvimento...', style: AppTypography.bodyLarge.copyWith(color: AppColors.textSecondary)),
+            Text(
+              'Em desenvolvimento...',
+              style: AppTypography.bodyLarge.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
           ],
         ),
       ),

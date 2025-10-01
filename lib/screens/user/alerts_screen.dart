@@ -113,9 +113,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
             const SizedBox(height: AppSpacing.lg),
             Text(
               'Nenhum alerta criado',
-              style: AppTypography.h6.copyWith(
-                color: AppColors.textSecondary,
-              ),
+              style: AppTypography.h6.copyWith(color: AppColors.textSecondary),
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
@@ -211,10 +209,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   Text(
-                    'Preço alvo: R\$ ${alert.targetPrice!.toStringAsFixed(2).replaceAllMapped(
-                      RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-                      (Match m) => '${m[1]}.',
-                    )}',
+                    'Preço alvo: R\$ ${alert.targetPrice!.toStringAsFixed(2).replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}',
                     style: AppTypography.bodyMedium.copyWith(
                       color: AppColors.accent,
                       fontWeight: FontWeight.w600,
@@ -238,7 +233,9 @@ class _AlertsScreenState extends State<AlertsScreen> {
                   backgroundColor: alert.isActive
                       ? AppColors.success.withValues(alpha: 0.1)
                       : AppColors.textHint.withValues(alpha: 0.1),
-                  textColor: alert.isActive ? AppColors.success : AppColors.textHint,
+                  textColor: alert.isActive
+                      ? AppColors.success
+                      : AppColors.textHint,
                 ),
               ],
             ),
@@ -267,10 +264,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
 class CreateAlertDialog extends StatefulWidget {
   final Function(PropertyAlert) onAlertCreated;
 
-  const CreateAlertDialog({
-    super.key,
-    required this.onAlertCreated,
-  });
+  const CreateAlertDialog({super.key, required this.onAlertCreated});
 
   @override
   State<CreateAlertDialog> createState() => _CreateAlertDialogState();
@@ -296,16 +290,16 @@ class _CreateAlertDialogState extends State<CreateAlertDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Tipo de Alerta',
-                style: AppTypography.subtitle2,
-              ),
+              Text('Tipo de Alerta', style: AppTypography.subtitle2),
               const SizedBox(height: AppSpacing.sm),
               DropdownButtonFormField<AlertType>(
                 initialValue: _selectedType,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                 ),
                 items: AlertType.values.map((type) {
                   return DropdownMenuItem(
@@ -320,16 +314,16 @@ class _CreateAlertDialogState extends State<CreateAlertDialog> {
                 },
               ),
               const SizedBox(height: AppSpacing.md),
-              Text(
-                'Imóvel',
-                style: AppTypography.subtitle2,
-              ),
+              Text('Imóvel', style: AppTypography.subtitle2),
               const SizedBox(height: AppSpacing.sm),
               DropdownButtonFormField<String>(
                 initialValue: _selectedPropertyId,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                 ),
                 hint: const Text('Selecione um imóvel'),
                 items: properties.map((property) {
@@ -356,16 +350,16 @@ class _CreateAlertDialogState extends State<CreateAlertDialog> {
               ),
               if (_selectedType == AlertType.priceReduction) ...[
                 const SizedBox(height: AppSpacing.md),
-                Text(
-                  'Preço Alvo (R\$)',
-                  style: AppTypography.subtitle2,
-                ),
+                Text('Preço Alvo (R\$)', style: AppTypography.subtitle2),
                 const SizedBox(height: AppSpacing.sm),
                 TextFormField(
                   controller: _targetPriceController,
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     hintText: 'Ex: 800000',
                   ),
                   keyboardType: TextInputType.number,

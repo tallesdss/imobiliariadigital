@@ -1,8 +1,4 @@
-enum UserType {
-  buyer,
-  realtor,
-  admin,
-}
+enum UserType { buyer, realtor, admin }
 
 class User {
   final String id;

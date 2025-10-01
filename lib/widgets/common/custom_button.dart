@@ -3,17 +3,9 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_spacing.dart';
 
-enum ButtonType {
-  filled,
-  outlined,
-  text,
-}
+enum ButtonType { filled, outlined, text }
 
-enum ButtonSize {
-  small,
-  medium,
-  large,
-}
+enum ButtonSize { small, medium, large }
 
 class CustomButton extends StatelessWidget {
   final String text;
@@ -42,7 +34,7 @@ class CustomButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDisabled = onPressed == null || isLoading;
-    
+
     EdgeInsets padding;
     TextStyle textStyle;
     double height;
@@ -76,8 +68,8 @@ class CustomButton extends StatelessWidget {
             child: CircularProgressIndicator(
               strokeWidth: 2,
               valueColor: AlwaysStoppedAnimation<Color>(
-                type == ButtonType.filled 
-                    ? AppColors.textOnPrimary 
+                type == ButtonType.filled
+                    ? AppColors.textOnPrimary
                     : AppColors.primary,
               ),
             ),
@@ -91,9 +83,11 @@ class CustomButton extends StatelessWidget {
           child: Text(
             text,
             style: textStyle.copyWith(
-              color: textColor ?? (type == ButtonType.filled 
-                  ? AppColors.textOnPrimary 
-                  : AppColors.primary),
+              color:
+                  textColor ??
+                  (type == ButtonType.filled
+                      ? AppColors.textOnPrimary
+                      : AppColors.primary),
             ),
             overflow: TextOverflow.ellipsis,
           ),
@@ -116,7 +110,7 @@ class CustomButton extends StatelessWidget {
             shadowColor: AppColors.primary.withValues(alpha: 0.3 * 255),
             padding: padding,
             minimumSize: Size(width ?? 0, height),
-            shape: RoundedRectangleBorder(
+            shape: const RoundedRectangleBorder(
               borderRadius: AppSpacing.borderRadiusSM,
             ),
           ),
@@ -131,14 +125,14 @@ class CustomButton extends StatelessWidget {
             foregroundColor: textColor ?? AppColors.primary,
             disabledForegroundColor: AppColors.textHint,
             side: BorderSide(
-              color: isDisabled 
-                  ? AppColors.textHint 
+              color: isDisabled
+                  ? AppColors.textHint
                   : (backgroundColor ?? AppColors.primary),
               width: 1.5,
             ),
             padding: padding,
             minimumSize: Size(width ?? 0, height),
-            shape: RoundedRectangleBorder(
+            shape: const RoundedRectangleBorder(
               borderRadius: AppSpacing.borderRadiusSM,
             ),
           ),
@@ -154,7 +148,7 @@ class CustomButton extends StatelessWidget {
             disabledForegroundColor: AppColors.textHint,
             padding: padding,
             minimumSize: Size(width ?? 0, height),
-            shape: RoundedRectangleBorder(
+            shape: const RoundedRectangleBorder(
               borderRadius: AppSpacing.borderRadiusSM,
             ),
           ),

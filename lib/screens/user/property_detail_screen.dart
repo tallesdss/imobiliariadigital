@@ -13,10 +13,7 @@ import 'user_chat_screen.dart';
 class PropertyDetailScreen extends StatefulWidget {
   final String propertyId;
 
-  const PropertyDetailScreen({
-    super.key,
-    required this.propertyId,
-  });
+  const PropertyDetailScreen({super.key, required this.propertyId});
 
   @override
   State<PropertyDetailScreen> createState() => _PropertyDetailScreenState();
@@ -41,8 +38,11 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
     // Simular carregamento
     Future.delayed(const Duration(milliseconds: 500), () {
       final property = MockDataService.getPropertyById(widget.propertyId);
-      final isFavorite = MockDataService.isPropertyFavorited('user1', widget.propertyId);
-      
+      final isFavorite = MockDataService.isPropertyFavorited(
+        'user1',
+        widget.propertyId,
+      );
+
       setState(() {
         _property = property;
         _isFavorite = isFavorite;
@@ -67,7 +67,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          _isFavorite 
+          _isFavorite
               ? 'Imóvel adicionado aos favoritos'
               : 'Imóvel removido dos favoritos',
         ),
@@ -78,7 +78,8 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
   void _shareProperty() async {
     if (_property == null) return;
 
-    final text = '''
+    final text =
+        '''
 ${_property!.title}
 
 ${_property!.formattedPrice}
@@ -92,16 +93,11 @@ Contato: ${_property!.realtorName} - ${_property!.realtorPhone}
 ''';
 
     try {
-      await Share.share(
-        text,
-        subject: _property!.title,
-      );
+      await Share.share(text, subject: _property!.title);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Erro ao compartilhar imóvel'),
-          ),
+          const SnackBar(content: Text('Erro ao compartilhar imóvel')),
         );
       }
     }
@@ -112,19 +108,20 @@ Contato: ${_property!.realtorName} - ${_property!.realtorPhone}
 
     final phone = _property!.realtorPhone.replaceAll(RegExp(r'[^\d]'), '');
     final message = 'Olá! Tenho interesse no imóvel: ${_property!.title}';
-    final whatsappUrl = Uri.parse('https://wa.me/55$phone?text=${Uri.encodeComponent(message)}');
-    
+    final whatsappUrl = Uri.parse(
+      'https://wa.me/55$phone?text=${Uri.encodeComponent(message)}',
+    );
+
     try {
       if (await canLaunchUrl(whatsappUrl)) {
-        await launchUrl(
-          whatsappUrl,
-          mode: LaunchMode.externalApplication,
-        );
+        await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('WhatsApp não disponível - ${_property!.realtorName} - $phone'),
+              content: Text(
+                'WhatsApp não disponível - ${_property!.realtorName} - $phone',
+              ),
               action: SnackBarAction(
                 label: 'Copiar',
                 onPressed: () => _copyToClipboard(phone),
@@ -137,7 +134,9 @@ Contato: ${_property!.realtorName} - ${_property!.realtorPhone}
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao abrir WhatsApp - ${_property!.realtorName} - $phone'),
+            content: Text(
+              'Erro ao abrir WhatsApp - ${_property!.realtorName} - $phone',
+            ),
             action: SnackBarAction(
               label: 'Copiar',
               onPressed: () => _copyToClipboard(phone),
@@ -173,34 +172,30 @@ Contato: ${_property!.realtorName} - ${_property!.realtorPhone}
   void _openMap() async {
     if (_property == null) return;
 
-    final address = '${_property!.address}, ${_property!.city}, ${_property!.state}, ${_property!.zipCode}';
+    final address =
+        '${_property!.address}, ${_property!.city}, ${_property!.state}, ${_property!.zipCode}';
     final encodedAddress = Uri.encodeComponent(address);
-    
+
     // Tenta abrir no Google Maps
-    final googleMapsUrl = Uri.parse('https://www.google.com/maps/search/?api=1&query=$encodedAddress');
-    
+    final googleMapsUrl = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=$encodedAddress',
+    );
+
     try {
       if (await canLaunchUrl(googleMapsUrl)) {
-        await launchUrl(
-          googleMapsUrl,
-          mode: LaunchMode.externalApplication,
-        );
+        await launchUrl(googleMapsUrl, mode: LaunchMode.externalApplication);
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Não foi possível abrir o mapa'),
-            ),
+            const SnackBar(content: Text('Não foi possível abrir o mapa')),
           );
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Erro ao abrir o mapa'),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Erro ao abrir o mapa')));
       }
     }
   }
@@ -210,9 +205,7 @@ Contato: ${_property!.realtorName} - ${_property!.realtorPhone}
 
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const UserChatScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const UserChatScreen()),
     );
   }
 
@@ -225,9 +218,7 @@ Contato: ${_property!.realtorName} - ${_property!.realtorPhone}
         property: _property!,
         onAlertCreated: () {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Alerta criado com sucesso!'),
-            ),
+            const SnackBar(content: Text('Alerta criado com sucesso!')),
           );
         },
       ),
@@ -243,9 +234,7 @@ Contato: ${_property!.realtorName} - ${_property!.realtorPhone}
           backgroundColor: AppColors.primary,
           foregroundColor: AppColors.textOnPrimary,
         ),
-        body: const Center(
-          child: CircularProgressIndicator(),
-        ),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -256,9 +245,7 @@ Contato: ${_property!.realtorName} - ${_property!.realtorPhone}
           backgroundColor: AppColors.primary,
           foregroundColor: AppColors.textOnPrimary,
         ),
-        body: const Center(
-          child: Text('Imóvel não encontrado'),
-        ),
+        body: const Center(child: Text('Imóvel não encontrado')),
       );
     }
 
@@ -300,10 +287,7 @@ Contato: ${_property!.realtorName} - ${_property!.realtorPhone}
             color: _isFavorite ? Colors.red : AppColors.textOnPrimary,
           ),
         ),
-        IconButton(
-          onPressed: _shareProperty,
-          icon: const Icon(Icons.share),
-        ),
+        IconButton(onPressed: _shareProperty, icon: const Icon(Icons.share)),
       ],
       flexibleSpace: FlexibleSpaceBar(
         background: MediaGallery(
@@ -313,7 +297,6 @@ Contato: ${_property!.realtorName} - ${_property!.realtorPhone}
       ),
     );
   }
-
 
   Widget _buildPropertyInfo() {
     return Container(
@@ -342,18 +325,12 @@ Contato: ${_property!.realtorName} - ${_property!.realtorPhone}
                   ),
                 ),
               ),
-              Text(
-                _property!.formattedPrice,
-                style: AppTypography.priceMain,
-              ),
+              Text(_property!.formattedPrice, style: AppTypography.priceMain),
             ],
           ),
           const SizedBox(height: 16),
           // Título
-          Text(
-            _property!.title,
-            style: AppTypography.h4,
-          ),
+          Text(_property!.title, style: AppTypography.h4),
           const SizedBox(height: 8),
           // Localização
           Row(
@@ -381,53 +358,65 @@ Contato: ${_property!.realtorName} - ${_property!.realtorPhone}
 
   Widget _buildAttributes() {
     final attributes = <Widget>[];
-    
+
     if (_property!.attributes['bedrooms'] != null) {
-      attributes.add(_buildAttributeItem(
-        Icons.bed_outlined,
-        '${_property!.attributes['bedrooms']}',
-        _property!.attributes['bedrooms'] == 1 ? 'Quarto' : 'Quartos',
-      ));
+      attributes.add(
+        _buildAttributeItem(
+          Icons.bed_outlined,
+          '${_property!.attributes['bedrooms']}',
+          _property!.attributes['bedrooms'] == 1 ? 'Quarto' : 'Quartos',
+        ),
+      );
     }
-    
+
     if (_property!.attributes['bathrooms'] != null) {
-      attributes.add(_buildAttributeItem(
-        Icons.bathroom_outlined,
-        '${_property!.attributes['bathrooms']}',
-        _property!.attributes['bathrooms'] == 1 ? 'Banheiro' : 'Banheiros',
-      ));
+      attributes.add(
+        _buildAttributeItem(
+          Icons.bathroom_outlined,
+          '${_property!.attributes['bathrooms']}',
+          _property!.attributes['bathrooms'] == 1 ? 'Banheiro' : 'Banheiros',
+        ),
+      );
     }
-    
+
     if (_property!.attributes['area'] != null) {
-      attributes.add(_buildAttributeItem(
-        Icons.square_foot_outlined,
-        '${_property!.attributes['area']}m²',
-        'Área',
-      ));
+      attributes.add(
+        _buildAttributeItem(
+          Icons.square_foot_outlined,
+          '${_property!.attributes['area']}m²',
+          'Área',
+        ),
+      );
     }
-    
+
     if (_property!.attributes['parking'] != null) {
-      attributes.add(_buildAttributeItem(
-        Icons.directions_car_outlined,
-        '${_property!.attributes['parking']}',
-        _property!.attributes['parking'] == 1 ? 'Vaga' : 'Vagas',
-      ));
+      attributes.add(
+        _buildAttributeItem(
+          Icons.directions_car_outlined,
+          '${_property!.attributes['parking']}',
+          _property!.attributes['parking'] == 1 ? 'Vaga' : 'Vagas',
+        ),
+      );
     }
 
     if (_property!.attributes['floor'] != null) {
-      attributes.add(_buildAttributeItem(
-        Icons.layers_outlined,
-        '${_property!.attributes['floor']}º',
-        'Andar',
-      ));
+      attributes.add(
+        _buildAttributeItem(
+          Icons.layers_outlined,
+          '${_property!.attributes['floor']}º',
+          'Andar',
+        ),
+      );
     }
 
     if (_property!.attributes['land_area'] != null) {
-      attributes.add(_buildAttributeItem(
-        Icons.landscape_outlined,
-        '${_property!.attributes['land_area']}m²',
-        'Terreno',
-      ));
+      attributes.add(
+        _buildAttributeItem(
+          Icons.landscape_outlined,
+          '${_property!.attributes['land_area']}m²',
+          'Terreno',
+        ),
+      );
     }
 
     if (attributes.isEmpty) return const SizedBox.shrink();
@@ -440,16 +429,9 @@ Contato: ${_property!.realtorName} - ${_property!.realtorPhone}
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Características',
-            style: AppTypography.h6,
-          ),
+          Text('Características', style: AppTypography.h6),
           const SizedBox(height: 16),
-          Wrap(
-            spacing: 16,
-            runSpacing: 16,
-            children: attributes,
-          ),
+          Wrap(spacing: 16, runSpacing: 16, children: attributes),
         ],
       ),
     );
@@ -460,16 +442,9 @@ Contato: ${_property!.realtorName} - ${_property!.realtorPhone}
       width: 80,
       child: Column(
         children: [
-          Icon(
-            icon,
-            size: 24,
-            color: AppColors.primary,
-          ),
+          Icon(icon, size: 24, color: AppColors.primary),
           const SizedBox(height: 8),
-          Text(
-            value,
-            style: AppTypography.labelLarge,
-          ),
+          Text(value, style: AppTypography.labelLarge),
           Text(
             label,
             style: AppTypography.caption,
@@ -491,15 +466,9 @@ Contato: ${_property!.realtorName} - ${_property!.realtorPhone}
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Descrição',
-            style: AppTypography.h6,
-          ),
+          Text('Descrição', style: AppTypography.h6),
           const SizedBox(height: 12),
-          Text(
-            _property!.description,
-            style: AppTypography.bodyMedium,
-          ),
+          Text(_property!.description, style: AppTypography.bodyMedium),
         ],
       ),
     );
@@ -514,10 +483,7 @@ Contato: ${_property!.realtorName} - ${_property!.realtorPhone}
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Ações',
-            style: AppTypography.h6,
-          ),
+          Text('Ações', style: AppTypography.h6),
           const SizedBox(height: 16),
           Row(
             children: [
@@ -560,10 +526,7 @@ Contato: ${_property!.realtorName} - ${_property!.realtorPhone}
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Corretor Responsável',
-            style: AppTypography.h6,
-          ),
+          Text('Corretor Responsável', style: AppTypography.h6),
           const SizedBox(height: 12),
           Row(
             children: [
@@ -598,10 +561,7 @@ Contato: ${_property!.realtorName} - ${_property!.realtorPhone}
               ),
               IconButton(
                 onPressed: _contactRealtor,
-                icon: const Icon(
-                  Icons.chat,
-                  color: AppColors.primary,
-                ),
+                icon: const Icon(Icons.chat, color: AppColors.primary),
               ),
             ],
           ),
@@ -619,26 +579,17 @@ Contato: ${_property!.realtorName} - ${_property!.realtorPhone}
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Localização',
-            style: AppTypography.h6,
-          ),
+          Text('Localização', style: AppTypography.h6),
           const SizedBox(height: 12),
           Row(
             children: [
-              const Icon(
-                Icons.location_on,
-                color: AppColors.primary,
-              ),
+              const Icon(Icons.location_on, color: AppColors.primary),
               const SizedBox(width: 8),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      _property!.address,
-                      style: AppTypography.bodyMedium,
-                    ),
+                    Text(_property!.address, style: AppTypography.bodyMedium),
                     Text(
                       '${_property!.city} - ${_property!.state}',
                       style: AppTypography.bodySmall.copyWith(
@@ -738,7 +689,8 @@ class CreatePropertyAlertDialog extends StatefulWidget {
   });
 
   @override
-  State<CreatePropertyAlertDialog> createState() => _CreatePropertyAlertDialogState();
+  State<CreatePropertyAlertDialog> createState() =>
+      _CreatePropertyAlertDialogState();
 }
 
 class _CreatePropertyAlertDialogState extends State<CreatePropertyAlertDialog> {
@@ -786,16 +738,16 @@ class _CreatePropertyAlertDialogState extends State<CreatePropertyAlertDialog> {
                 ),
               ),
               const SizedBox(height: 16),
-              Text(
-                'Tipo de Alerta',
-                style: AppTypography.subtitle2,
-              ),
+              Text('Tipo de Alerta', style: AppTypography.subtitle2),
               const SizedBox(height: 8),
               DropdownButtonFormField<AlertType>(
                 initialValue: _selectedType,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                 ),
                 items: AlertType.values.map((type) {
                   return DropdownMenuItem(
@@ -811,18 +763,19 @@ class _CreatePropertyAlertDialogState extends State<CreatePropertyAlertDialog> {
               ),
               if (_selectedType == AlertType.priceReduction) ...[
                 const SizedBox(height: 16),
-                Text(
-                  'Preço Alvo (R\$)',
-                  style: AppTypography.subtitle2,
-                ),
+                Text('Preço Alvo (R\$)', style: AppTypography.subtitle2),
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _targetPriceController,
                   decoration: InputDecoration(
                     border: const OutlineInputBorder(),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     hintText: 'Digite o preço desejado',
-                    helperText: 'Preço atual: ${widget.property.formattedPrice}',
+                    helperText:
+                        'Preço atual: ${widget.property.formattedPrice}',
                   ),
                   keyboardType: TextInputType.number,
                   validator: (value) {

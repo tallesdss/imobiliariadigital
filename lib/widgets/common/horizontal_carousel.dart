@@ -116,19 +116,30 @@ class CategoryCarouselSection extends StatelessWidget {
         .where((p) => p.isLaunch && p.status == PropertyStatus.active)
         .take(10)
         .toList();
-    
+
     final houseProperties = allProperties
-        .where((p) => p.type == PropertyType.house && p.status == PropertyStatus.active)
+        .where(
+          (p) =>
+              p.type == PropertyType.house && p.status == PropertyStatus.active,
+        )
         .take(10)
         .toList();
-    
+
     final apartmentProperties = allProperties
-        .where((p) => p.type == PropertyType.apartment && p.status == PropertyStatus.active)
+        .where(
+          (p) =>
+              p.type == PropertyType.apartment &&
+              p.status == PropertyStatus.active,
+        )
         .take(10)
         .toList();
-    
+
     final commercialProperties = allProperties
-        .where((p) => p.type == PropertyType.commercial && p.status == PropertyStatus.active)
+        .where(
+          (p) =>
+              p.type == PropertyType.commercial &&
+              p.status == PropertyStatus.active,
+        )
         .take(10)
         .toList();
 
@@ -152,7 +163,9 @@ class CategoryCarouselSection extends StatelessWidget {
             onPropertyTap: onPropertyTap,
             onFavoriteToggle: onFavoriteToggle,
             favoritePropertyIds: favoritePropertyIds,
-            onSeeAll: onFilterByType != null ? () => onFilterByType!(PropertyType.house) : null,
+            onSeeAll: onFilterByType != null
+                ? () => onFilterByType!(PropertyType.house)
+                : null,
           ),
           const SizedBox(height: AppSpacing.xl),
         ],
@@ -163,7 +176,9 @@ class CategoryCarouselSection extends StatelessWidget {
             onPropertyTap: onPropertyTap,
             onFavoriteToggle: onFavoriteToggle,
             favoritePropertyIds: favoritePropertyIds,
-            onSeeAll: onFilterByType != null ? () => onFilterByType!(PropertyType.apartment) : null,
+            onSeeAll: onFilterByType != null
+                ? () => onFilterByType!(PropertyType.apartment)
+                : null,
           ),
           const SizedBox(height: AppSpacing.xl),
         ],
@@ -174,7 +189,9 @@ class CategoryCarouselSection extends StatelessWidget {
             onPropertyTap: onPropertyTap,
             onFavoriteToggle: onFavoriteToggle,
             favoritePropertyIds: favoritePropertyIds,
-            onSeeAll: onFilterByType != null ? () => onFilterByType!(PropertyType.commercial) : null,
+            onSeeAll: onFilterByType != null
+                ? () => onFilterByType!(PropertyType.commercial)
+                : null,
           ),
           const SizedBox(height: AppSpacing.xl),
         ],

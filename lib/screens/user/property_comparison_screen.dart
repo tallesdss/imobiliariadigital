@@ -7,13 +7,11 @@ import '../../models/property_model.dart';
 class PropertyComparisonScreen extends StatefulWidget {
   final List<String> propertyIds;
 
-  const PropertyComparisonScreen({
-    super.key,
-    required this.propertyIds,
-  });
+  const PropertyComparisonScreen({super.key, required this.propertyIds});
 
   @override
-  State<PropertyComparisonScreen> createState() => _PropertyComparisonScreenState();
+  State<PropertyComparisonScreen> createState() =>
+      _PropertyComparisonScreenState();
 }
 
 class _PropertyComparisonScreenState extends State<PropertyComparisonScreen> {
@@ -56,8 +54,8 @@ class _PropertyComparisonScreenState extends State<PropertyComparisonScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _properties.isEmpty
-              ? _buildEmptyState()
-              : _buildComparisonTable(),
+          ? _buildEmptyState()
+          : _buildComparisonTable(),
     );
   }
 
@@ -66,17 +64,11 @@ class _PropertyComparisonScreenState extends State<PropertyComparisonScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.compare_arrows,
-            size: 64,
-            color: AppColors.textHint,
-          ),
+          const Icon(Icons.compare_arrows, size: 64, color: AppColors.textHint),
           const SizedBox(height: 16),
           Text(
             'Nenhum imóvel para comparar',
-            style: AppTypography.h6.copyWith(
-              color: AppColors.textSecondary,
-            ),
+            style: AppTypography.h6.copyWith(color: AppColors.textSecondary),
           ),
         ],
       ),
@@ -89,7 +81,7 @@ class _PropertyComparisonScreenState extends State<PropertyComparisonScreen> {
         children: [
           // Imagens dos imóveis
           _buildPropertyImages(),
-          
+
           // Tabela de comparação
           _buildDataTable(),
         ],
@@ -109,7 +101,9 @@ class _PropertyComparisonScreenState extends State<PropertyComparisonScreen> {
           final property = _properties[index];
           return Container(
             width: 280,
-            margin: EdgeInsets.only(right: index == _properties.length - 1 ? 0 : 16),
+            margin: EdgeInsets.only(
+              right: index == _properties.length - 1 ? 0 : 16,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -177,15 +171,17 @@ class _PropertyComparisonScreenState extends State<PropertyComparisonScreen> {
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
-            ..._properties.map((property) => DataColumn(
-                  label: SizedBox(
-                    width: 120,
-                    child: Text(
-                      'Imóvel ${_properties.indexOf(property) + 1}',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
+            ..._properties.map(
+              (property) => DataColumn(
+                label: SizedBox(
+                  width: 120,
+                  child: Text(
+                    'Imóvel ${_properties.indexOf(property) + 1}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                )),
+                ),
+              ),
+            ),
           ],
           rows: [
             _buildDataRow(
@@ -197,39 +193,48 @@ class _PropertyComparisonScreenState extends State<PropertyComparisonScreen> {
               'Tipo',
               _properties.map((p) => p.typeDisplayName).toList(),
             ),
-            _buildDataRow(
-              'Cidade',
-              _properties.map((p) => p.city).toList(),
-            ),
+            _buildDataRow('Cidade', _properties.map((p) => p.city).toList()),
             _buildDataRow(
               'Bairro',
               _properties.map((p) => p.address.split(',').first).toList(),
             ),
             _buildDataRow(
               'Quartos',
-              _properties.map((p) => p.attributes['bedrooms']?.toString() ?? '-').toList(),
+              _properties
+                  .map((p) => p.attributes['bedrooms']?.toString() ?? '-')
+                  .toList(),
             ),
             _buildDataRow(
               'Banheiros',
-              _properties.map((p) => p.attributes['bathrooms']?.toString() ?? '-').toList(),
+              _properties
+                  .map((p) => p.attributes['bathrooms']?.toString() ?? '-')
+                  .toList(),
             ),
             _buildDataRow(
               'Área (m²)',
-              _properties.map((p) => p.attributes['area']?.toString() ?? '-').toList(),
+              _properties
+                  .map((p) => p.attributes['area']?.toString() ?? '-')
+                  .toList(),
             ),
             _buildDataRow(
               'Vagas',
-              _properties.map((p) => p.attributes['parking']?.toString() ?? '-').toList(),
+              _properties
+                  .map((p) => p.attributes['parking']?.toString() ?? '-')
+                  .toList(),
             ),
             if (_properties.any((p) => p.attributes['floor'] != null))
               _buildDataRow(
                 'Andar',
-                _properties.map((p) => p.attributes['floor']?.toString() ?? '-').toList(),
+                _properties
+                    .map((p) => p.attributes['floor']?.toString() ?? '-')
+                    .toList(),
               ),
             if (_properties.any((p) => p.attributes['land_area'] != null))
               _buildDataRow(
                 'Terreno (m²)',
-                _properties.map((p) => p.attributes['land_area']?.toString() ?? '-').toList(),
+                _properties
+                    .map((p) => p.attributes['land_area']?.toString() ?? '-')
+                    .toList(),
               ),
             _buildDataRow(
               'Status',
@@ -249,7 +254,11 @@ class _PropertyComparisonScreenState extends State<PropertyComparisonScreen> {
     );
   }
 
-  DataRow _buildDataRow(String label, List<String> values, {bool isHighlight = false}) {
+  DataRow _buildDataRow(
+    String label,
+    List<String> values, {
+    bool isHighlight = false,
+  }) {
     return DataRow(
       color: isHighlight
           ? WidgetStateProperty.all(AppColors.accent.withValues(alpha: 0.05))
@@ -263,18 +272,22 @@ class _PropertyComparisonScreenState extends State<PropertyComparisonScreen> {
             ),
           ),
         ),
-        ...values.map((value) => DataCell(
-              SizedBox(
-                width: 120,
-                child: Text(
-                  value,
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: isHighlight ? AppColors.primary : AppColors.textPrimary,
-                    fontWeight: isHighlight ? FontWeight.w600 : FontWeight.normal,
-                  ),
+        ...values.map(
+          (value) => DataCell(
+            SizedBox(
+              width: 120,
+              child: Text(
+                value,
+                style: AppTypography.bodyMedium.copyWith(
+                  color: isHighlight
+                      ? AppColors.primary
+                      : AppColors.textPrimary,
+                  fontWeight: isHighlight ? FontWeight.w600 : FontWeight.normal,
                 ),
               ),
-            )),
+            ),
+          ),
+        ),
       ],
     );
   }

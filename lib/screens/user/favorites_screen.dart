@@ -45,9 +45,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Imóvel removido dos favoritos'),
-      ),
+      const SnackBar(content: Text('Imóvel removido dos favoritos')),
     );
   }
 
@@ -127,9 +125,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             const SizedBox(height: 16),
             Text(
               'Nenhum favorito ainda',
-              style: AppTypography.h6.copyWith(
-                color: AppColors.textSecondary,
-              ),
+              style: AppTypography.h6.copyWith(color: AppColors.textSecondary),
             ),
             const SizedBox(height: 8),
             Text(
@@ -165,10 +161,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           color: Colors.white,
           child: Row(
             children: [
-              const Icon(
-                Icons.favorite,
-                color: Colors.red,
-              ),
+              const Icon(Icons.favorite, color: Colors.red),
               const SizedBox(width: 8),
               Text(
                 '${_favoriteProperties.length} ${_favoriteProperties.length == 1 ? 'imóvel favorito' : 'imóveis favoritos'}',
@@ -203,15 +196,13 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     for (final property in _favoriteProperties) {
       MockDataService.removeFavorite('user1', property.id);
     }
-    
+
     setState(() {
       _favoriteProperties.clear();
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Todos os favoritos foram removidos'),
-      ),
+      const SnackBar(content: Text('Todos os favoritos foram removidos')),
     );
   }
 }

@@ -66,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               AppSpacing.verticalXXL,
-              
+
               // Logo and Title
               Column(
                 children: [
@@ -86,9 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   AppSpacing.verticalLG,
                   Text(
                     'Imobiliária Digital',
-                    style: AppTypography.h2.copyWith(
-                      color: AppColors.primary,
-                    ),
+                    style: AppTypography.h2.copyWith(color: AppColors.primary),
                   ),
                   AppSpacing.verticalSM,
                   Text(
@@ -99,21 +97,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ],
               ),
-              
+
               AppSpacing.verticalXXL,
-              
+
               // Login Form
               Form(
                 key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
-                      'Entrar',
-                      style: AppTypography.h4,
-                    ),
+                    Text('Entrar', style: AppTypography.h4),
                     AppSpacing.verticalLG,
-                    
+
                     CustomTextField(
                       controller: _emailController,
                       label: 'E-mail',
@@ -124,15 +119,17 @@ class _LoginScreenState extends State<LoginScreen> {
                         if (value == null || value.isEmpty) {
                           return 'Por favor, digite seu e-mail';
                         }
-                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                        if (!RegExp(
+                          r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                        ).hasMatch(value)) {
                           return 'Por favor, digite um e-mail válido';
                         }
                         return null;
                       },
                     ),
-                    
+
                     AppSpacing.verticalMD,
-                    
+
                     CustomTextField(
                       controller: _passwordController,
                       label: 'Senha',
@@ -141,7 +138,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       prefixIcon: Icons.lock_outlined,
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                          _obscurePassword
+                              ? Icons.visibility
+                              : Icons.visibility_off,
                         ),
                         onPressed: () {
                           setState(() {
@@ -159,9 +158,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         return null;
                       },
                     ),
-                    
+
                     AppSpacing.verticalSM,
-                    
+
                     // Forgot Password
                     Align(
                       alignment: Alignment.centerRight,
@@ -169,7 +168,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         onPressed: () {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('Funcionalidade será implementada em breve'),
+                              content: Text(
+                                'Funcionalidade será implementada em breve',
+                              ),
                             ),
                           );
                         },
@@ -181,9 +182,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-                    
+
                     AppSpacing.verticalLG,
-                    
+
                     // Login Button
                     CustomButton(
                       text: 'Entrar',
@@ -191,9 +192,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       isLoading: _isLoading,
                       size: ButtonSize.large,
                     ),
-                    
+
                     AppSpacing.verticalLG,
-                    
+
                     // Divider
                     Row(
                       children: [
@@ -210,9 +211,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         const Expanded(child: Divider()),
                       ],
                     ),
-                    
+
                     AppSpacing.verticalLG,
-                    
+
                     // Register Button
                     CustomButton(
                       text: 'Criar conta',
@@ -223,9 +224,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
               ),
-              
+
               AppSpacing.verticalXXL,
-              
+
               // Demo Info
               Container(
                 padding: AppSpacing.paddingMD,

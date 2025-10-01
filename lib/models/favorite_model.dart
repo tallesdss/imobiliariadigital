@@ -44,11 +44,7 @@ class Favorite {
   }
 }
 
-enum AlertType {
-  priceReduction,
-  sold,
-  newSimilar,
-}
+enum AlertType { priceReduction, sold, newSimilar }
 
 class PropertyAlert {
   final String id;
