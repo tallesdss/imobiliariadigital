@@ -51,8 +51,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           _favoritePropertyIds.addAll(favorites.map((p) => p.id));
           _isLoading = false;
         });
-        
-        print('Loaded ${_allProperties.length} properties'); // Debug
       }
     });
   }
