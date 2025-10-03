@@ -59,24 +59,24 @@
 ---
 
 ## Etapa 4 — Telas & Funções — Corretor Imobiliário
-- [ ] **Cadastro de Corretor**
-  - [ ] Perfil com dados básicos (nome, foto, telefone, email, CRECI).
-- [ ] **Home Corretor**
-  - [ ] Listagem de imóveis que ele cadastrou.
-  - [ ] Ações rápidas por item: Editar / Arquivar / Excluir.
-  - [ ] Botão ➕ Cadastrar Novo Imóvel.
-- [ ] **Cadastro de Imóvel**
-  - [ ] Formulário mock (título, descrição, preço, endereço, atributos).
-  - [ ] Upload fake de fotos.
-  - [ ] Upload fake de vídeos (playlist).
-- [ ] **Detalhe do Imóvel (Corretor)**
-  - [ ] Igual ao do usuário, mas com botões de gestão.
-  - [ ] Ações: Editar, Arquivar, Excluir.
-- [ ] **Perfil do Corretor**
-  - [ ] Foto, bio, contato.
-  - [ ] Lista de imóveis cadastrados.
-- [ ] **Chat (Corretor)**
-  - [ ] Conversas com usuários interessados nos seus imóveis.
+- [x] **Cadastro de Corretor**
+  - [x] Perfil com dados básicos (nome, foto, telefone, email, CRECI).
+- [x] **Home Corretor**
+  - [x] Listagem de imóveis que ele cadastrou.
+  - [x] Ações rápidas por item: Editar / Arquivar / Excluir.
+  - [x] Botão ➕ Cadastrar Novo Imóvel.
+- [x] **Cadastro de Imóvel**
+  - [x] Formulário mock (título, descrição, preço, endereço, atributos).
+  - [x] Upload fake de fotos.
+  - [x] Upload fake de vídeos (playlist).
+- [x] **Detalhe do Imóvel (Corretor)**
+  - [x] Igual ao do usuário, mas com botões de gestão.
+  - [x] Ações: Editar, Arquivar, Excluir.
+- [x] **Perfil do Corretor**
+  - [x] Foto, bio, contato.
+  - [x] Lista de imóveis cadastrados.
+- [x] **Chat (Corretor)**
+  - [x] Conversas com usuários interessados nos seus imóveis.
 
 ---
 
@@ -147,9 +147,9 @@
 - [x] Chat bubble.
 
 ### Corretor
-- [ ] Lista de imóveis do corretor.
-- [ ] Formulário de cadastro/edição.
-- [ ] Perfil do corretor.
+- [x] Lista de imóveis do corretor.
+- [x] Formulário de cadastro/edição.
+- [x] Perfil do corretor.
 
 ### Administrador
 - [ ] Tabela/lista de imóveis com ações rápidas.
@@ -162,7 +162,7 @@
 ## Etapa 8 — Fluxos e Navegação
 - [x] Login → Seleção Perfil → Home (Usuário / Corretor / ADM).
 - [x] Usuário → Home → Detalhe → Chat com corretor/ADM → Favoritos/Alertas.
-- [ ] Corretor → Home Corretor → Cadastrar/Editar/Arquivar → Perfil → Chat com usuários.
+- [x] Corretor → Home Corretor → Cadastrar/Editar/Arquivar → Perfil → Chat com usuários.
 - [ ] Administrador → Home ADM → Imóveis / Corretores / Dashboard / Mensagens.
 
 ---
