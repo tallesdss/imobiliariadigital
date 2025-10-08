@@ -209,7 +209,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         ),
         const SizedBox(height: AppSpacing.sm),
         SizedBox(
-          height: 300,
+          height: 320,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),

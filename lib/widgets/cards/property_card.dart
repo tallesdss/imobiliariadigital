@@ -134,7 +134,7 @@ class PropertyCard extends StatelessWidget {
 
   Widget _buildContentSection() {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(isCompact ? 12 : 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -153,15 +153,15 @@ class PropertyCard extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: isCompact ? 6 : 8),
           // Título
           Text(
             property.title,
-            style: AppTypography.h6,
-            maxLines: 2,
+            style: isCompact ? AppTypography.bodyLarge : AppTypography.h6,
+            maxLines: isCompact ? 1 : 2,
             overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: isCompact ? 2 : 4),
           // Localização
           Row(
             children: [
@@ -181,18 +181,25 @@ class PropertyCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: isCompact ? 8 : 12),
           // Preço
-          Text(property.formattedPrice, style: AppTypography.priceSecondary),
-          const SizedBox(height: 8),
-          // Descrição resumida
-          if (property.description.isNotEmpty)
+          Text(
+            property.formattedPrice, 
+            style: isCompact ? AppTypography.bodyLarge.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.bold,
+            ) : AppTypography.priceSecondary,
+          ),
+          // Descrição resumida (apenas para cards não compactos)
+          if (property.description.isNotEmpty && !isCompact) ...[
+            const SizedBox(height: 8),
             Text(
               property.description,
               style: AppTypography.bodySmall,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
+          ],
         ],
       ),
     );
@@ -244,13 +251,13 @@ class PropertyCard extends StatelessWidget {
     if (attributes.isEmpty) return const SizedBox.shrink();
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(isCompact ? 12 : 16),
       decoration: const BoxDecoration(
         border: Border(top: BorderSide(color: AppColors.border, width: 1)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: attributes.take(4).toList(),
+        children: attributes.take(isCompact ? 3 : 4).toList(),
       ),
     );
   }
@@ -258,10 +265,17 @@ class PropertyCard extends StatelessWidget {
   Widget _buildAttributeItem(IconData icon, String value, String label) {
     return Column(
       children: [
-        Icon(icon, size: 20, color: AppColors.textSecondary),
-        const SizedBox(height: 4),
-        Text(value, style: AppTypography.labelMedium),
-        if (label.isNotEmpty) Text(label, style: AppTypography.overline),
+        Icon(icon, size: isCompact ? 18 : 20, color: AppColors.textSecondary),
+        SizedBox(height: isCompact ? 2 : 4),
+        Text(
+          value, 
+          style: isCompact ? AppTypography.labelSmall : AppTypography.labelMedium,
+        ),
+        if (label.isNotEmpty) 
+          Text(
+            label, 
+            style: isCompact ? AppTypography.caption : AppTypography.overline,
+          ),
       ],
     );
   }
