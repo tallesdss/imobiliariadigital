@@ -81,31 +81,31 @@
 ---
 
 ## Etapa 5 — Telas & Funções — Administrador
-- [ ] **Home Administrador**
-  - [ ] Listagem de todos os imóveis cadastrados (por corretores ou ADM).
-  - [ ] Filtros por status (Ativo / Arquivado / Vendido).
-  - [ ] Ações: Editar, Arquivar, Excluir, Ativar.
+- [x] **Home Administrador**
+  - [x] Listagem de todos os imóveis cadastrados (por corretores ou ADM).
+  - [x] Filtros por status (Ativo / Arquivado / Vendido).
+  - [x] Ações: Editar, Arquivar, Excluir, Ativar.
 - [ ] **Cadastro de Imóvel (ADM)**
   - [ ] Igual ao do corretor (formulário + upload mock).
-- [ ] **Gestão de Corretores**
-  - [ ] Listagem de corretores cadastrados.
-  - [ ] Ações: 
+- [x] **Gestão de Corretores**
+  - [x] Listagem de corretores cadastrados.
+  - [x] Ações: 
     - ➕ Adicionar novo corretor (mock de cadastro)
     - ✏️ Editar dados do corretor
     - 🚫 Suspender corretor
     - ❌ Excluir corretor
-- [ ] **Dashboard Administrativo**
-  - [ ] Estatísticas gerais:
+- [x] **Dashboard Administrativo**
+  - [x] Estatísticas gerais:
     - Total de imóveis ativos / vendidos / arquivados
     - Total de corretores ativos
-  - [ ] Ranking de corretores:
+  - [x] Ranking de corretores:
     - Quantidade de imóveis cadastrados
     - Quantidade de imóveis vendidos (mock)
     - Status dos imóveis (ativos/arquivados)
-  - [ ] Gráficos mock de desempenho por corretor.
-- [ ] **Mensagens (ADM)**
-  - [ ] Conversas com usuários ou corretores.
-  - [ ] Chat vinculado ao imóvel ou usuário.
+  - [x] Gráficos mock de desempenho por corretor.
+- [x] **Mensagens (ADM)**
+  - [x] Conversas com usuários ou corretores.
+  - [x] Chat vinculado ao imóvel ou usuário.
 
 ---
 
@@ -152,10 +152,10 @@
 - [x] Perfil do corretor.
 
 ### Administrador
-- [ ] Tabela/lista de imóveis com ações rápidas.
-- [ ] Listagem de corretores.
-- [ ] Dashboard de desempenho (gráficos mock).
-- [ ] Badge de status.
+- [x] Tabela/lista de imóveis com ações rápidas.
+- [x] Listagem de corretores.
+- [x] Dashboard de desempenho (gráficos mock).
+- [x] Badge de status.
 
 ---
 
@@ -163,7 +163,7 @@
 - [x] Login → Seleção Perfil → Home (Usuário / Corretor / ADM).
 - [x] Usuário → Home → Detalhe → Chat com corretor/ADM → Favoritos/Alertas.
 - [x] Corretor → Home Corretor → Cadastrar/Editar/Arquivar → Perfil → Chat com usuários.
-- [ ] Administrador → Home ADM → Imóveis / Corretores / Dashboard / Mensagens.
+- [x] Administrador → Home ADM → Imóveis / Corretores / Dashboard / Mensagens.
 
 ---
 

@@ -4,6 +4,7 @@ import '../../models/property_model.dart';
 import '../../services/mock_data_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
+import '../../widgets/common/custom_drawer.dart';
 
 class AdminRealtorsScreen extends StatefulWidget {
   const AdminRealtorsScreen({super.key});
@@ -49,6 +50,12 @@ class _AdminRealtorsScreenState extends State<AdminRealtorsScreen> {
             tooltip: 'Adicionar Corretor',
           ),
         ],
+      ),
+      drawer: const CustomDrawer(
+        userType: DrawerUserType.admin,
+        userName: 'Administrador',
+        userEmail: 'admin@imobiliaria.com',
+        currentRoute: '/admin/realtors',
       ),
       body: Column(
         children: [

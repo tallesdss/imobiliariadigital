@@ -3,6 +3,7 @@ import '../../models/property_model.dart';
 import '../../services/mock_data_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
+import '../../widgets/common/custom_drawer.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({super.key});
@@ -55,6 +56,12 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             tooltip: 'Adicionar Imóvel',
           ),
         ],
+      ),
+      drawer: const CustomDrawer(
+        userType: DrawerUserType.admin,
+        userName: 'Administrador',
+        userEmail: 'admin@imobiliaria.com',
+        currentRoute: '/admin',
       ),
       body: Column(
         children: [

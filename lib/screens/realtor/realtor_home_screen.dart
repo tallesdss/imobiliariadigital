@@ -161,24 +161,6 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
     );
   }
 
-  void _onDrawerNavigate(String route) {
-    Navigator.pop(context); // Fechar drawer
-
-    switch (route) {
-      case '/property-form':
-        _navigateToPropertyForm();
-        break;
-      case '/realtor-profile':
-        Navigator.pushNamed(context, '/realtor-profile');
-        break;
-      case '/realtor-chat':
-        Navigator.pushNamed(context, '/realtor-chat');
-        break;
-      default:
-        // Outras rotas
-        break;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -199,7 +181,8 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
         userType: DrawerUserType.realtor,
         userName: 'Carlos Oliveira',
         userEmail: 'carlos@imobiliaria.com',
-        onNavigate: _onDrawerNavigate,
+        userCreci: 'CRECI-SP 12345',
+        currentRoute: '/realtor',
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())

@@ -4,6 +4,7 @@ import '../../models/realtor_model.dart';
 import '../../services/mock_data_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
+import '../../widgets/common/custom_drawer.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
@@ -27,6 +28,12 @@ class AdminDashboardScreen extends StatelessWidget {
         title: const Text('Dashboard Administrativo'),
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.textOnPrimary,
+      ),
+      drawer: const CustomDrawer(
+        userType: DrawerUserType.admin,
+        userName: 'Administrador',
+        userEmail: 'admin@imobiliaria.com',
+        currentRoute: '/admin/dashboard',
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),

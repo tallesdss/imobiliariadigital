@@ -5,6 +5,7 @@ import '../../theme/app_spacing.dart';
 import '../../services/mock_data_service.dart';
 import '../../models/property_model.dart';
 import '../../widgets/cards/property_card.dart';
+import '../../widgets/common/custom_drawer.dart';
 import 'realtor_profile_edit_screen.dart';
 
 class RealtorProfileScreen extends StatefulWidget {
@@ -73,6 +74,13 @@ class _RealtorProfileScreenState extends State<RealtorProfileScreen> {
             icon: const Icon(Icons.edit),
           ),
         ],
+      ),
+      drawer: CustomDrawer(
+        userType: DrawerUserType.realtor,
+        userName: _realtorData['name'],
+        userEmail: _realtorData['email'],
+        userCreci: _realtorData['creci'],
+        currentRoute: '/realtor/profile',
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
