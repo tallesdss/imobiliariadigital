@@ -16,6 +16,10 @@ import '../screens/admin/admin_home_screen.dart';
 import '../screens/admin/admin_realtors_screen.dart';
 import '../screens/admin/admin_dashboard_screen.dart';
 import '../screens/admin/admin_chat_screen.dart';
+import '../screens/admin/admin_property_form_screen.dart';
+import '../screens/admin/admin_reports_screen.dart';
+import '../screens/admin/admin_settings_screen.dart';
+import '../screens/admin/admin_help_screen.dart';
 
 class NavigationService {
   static final GlobalKey<NavigatorState> navigatorKey =
@@ -121,6 +125,35 @@ class NavigationService {
             path: '/chat',
             name: 'admin-chat',
             builder: (context, state) => const AdminChatScreen(),
+          ),
+          GoRoute(
+            path: '/property/new',
+            name: 'admin-property-new',
+            builder: (context, state) => const AdminPropertyFormScreen(),
+          ),
+          GoRoute(
+            path: '/property/edit/:propertyId',
+            name: 'admin-property-edit',
+            builder: (context, state) {
+              final propertyId = state.pathParameters['propertyId']!;
+              final property = MockDataService.getPropertyById(propertyId);
+              return AdminPropertyFormScreen(property: property);
+            },
+          ),
+          GoRoute(
+            path: '/reports',
+            name: 'admin-reports',
+            builder: (context, state) => const AdminReportsScreen(),
+          ),
+          GoRoute(
+            path: '/settings',
+            name: 'admin-settings',
+            builder: (context, state) => const AdminSettingsScreen(),
+          ),
+          GoRoute(
+            path: '/help',
+            name: 'admin-help',
+            builder: (context, state) => const AdminHelpScreen(),
           ),
         ],
       ),

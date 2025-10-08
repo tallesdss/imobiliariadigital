@@ -172,3 +172,29 @@
 - [x] Nenhuma integração com API ou backend.
 - [x] Não implementar lógica de telefonia real.
 - [x] Tudo deve ser mock/fake em LocalState/PageState.
+
+## Etapa 10 -  Funcionalidades da Drawer.
+# 📂 Funcionalidades do Drawer
+
+## 📱 Para Corretores
+
+- [ ] **Meus Imóveis** — Lista de imóveis cadastrados  
+- [ ] **Cadastrar Imóvel** — Formulário para adicionar um novo imóvel  
+- [ ] **Meu Perfil** — Dados pessoais e estatísticas de desempenho  
+- [ ] **Mensagens** — Chat com usuários interessados  
+- [ ] **Relatórios** — Visualização e análise de desempenho individual  
+- [ ] **Ajuda** — Acesso a suporte e documentação  
+
+---
+
+## 👨‍💼 Para Administradores
+
+- [x] **Dashboard** — Visão geral e estatísticas da plataforma  
+- [x] **Gestão de Imóveis** — Controle de todos os imóveis da plataforma  
+- [x] **Gestão de Corretores** — CRUD (criar, ler, atualizar e deletar) de corretores  
+- [x] **Cadastrar Imóvel** — Adicionar imóveis como administrador  
+- [x] **Mensagens** — Chat com usuários e corretores  
+- [x] **Relatórios** — Análises gerais da plataforma  
+- [x] **Configurações** — Ajustes e preferências do sistema  
+- [x] **Ajuda** — Suporte administrativo e documentação  
+
