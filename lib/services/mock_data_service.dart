@@ -541,7 +541,12 @@ class MockDataService {
         id: _uuid.v4(),
         timestamp: DateTime.now(),
       );
-      _conversations[convIndex].messages.add(newMessage);
+      final conversation = _conversations[convIndex];
+      final updatedMessages = List<ChatMessage>.from(conversation.messages)..add(newMessage);
+      _conversations[convIndex] = conversation.copyWith(
+        messages: updatedMessages,
+        lastMessageAt: DateTime.now(),
+      );
     }
   }
 }

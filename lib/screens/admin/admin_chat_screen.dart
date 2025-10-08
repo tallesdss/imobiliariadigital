@@ -12,18 +12,39 @@ class AdminChatScreen extends StatefulWidget {
   State<AdminChatScreen> createState() => _AdminChatScreenState();
 }
 
-class _AdminChatScreenState extends State<AdminChatScreen> {
+class _AdminChatScreenState extends State<AdminChatScreen> with TickerProviderStateMixin {
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+  String _selectedFilter = 'todos'; // 'todos', 'corretores', 'usuarios'
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+  }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 
   List<ChatConversation> get _filteredConversations {
     var conversations = MockDataService.conversations;
+    
+    // Filtrar por tipo de conversa
+    if (_selectedFilter == 'corretores') {
+      conversations = conversations.where((c) => 
+          c.realtorName.isNotEmpty && c.buyerName.isEmpty).toList();
+    } else if (_selectedFilter == 'usuarios') {
+      conversations = conversations.where((c) => 
+          c.buyerName.isNotEmpty).toList();
+    } else if (_selectedFilter == 'nao_lidas') {
+      conversations = conversations.where((c) => 
+          c.messages.any((m) => !m.isRead && m.senderId != 'admin')).toList();
+    }
     
     if (_searchQuery.isNotEmpty) {
       conversations = conversations.where((c) =>
@@ -45,6 +66,32 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
         title: const Text('Mensagens'),
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.textOnPrimary,
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: AppColors.textOnPrimary,
+          labelColor: AppColors.textOnPrimary,
+          unselectedLabelColor: AppColors.textOnPrimary.withValues(alpha: 0.7),
+          onTap: (index) {
+            setState(() {
+              switch (index) {
+                case 0:
+                  _selectedFilter = 'todos';
+                  break;
+                case 1:
+                  _selectedFilter = 'corretores';
+                  break;
+                case 2:
+                  _selectedFilter = 'usuarios';
+                  break;
+              }
+            });
+          },
+          tabs: const [
+            Tab(text: 'Todas'),
+            Tab(text: 'Corretores'),
+            Tab(text: 'Usuários'),
+          ],
+        ),
       ),
       drawer: const CustomDrawer(
         userType: DrawerUserType.admin,
@@ -55,6 +102,7 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
       body: Column(
         children: [
           _buildSearchSection(),
+          _buildFilterChips(),
           Expanded(
             child: _buildConversationsList(),
           ),
@@ -73,7 +121,11 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
       child: TextField(
         controller: _searchController,
         decoration: InputDecoration(
-          hintText: 'Buscar conversas...',
+          hintText: _selectedFilter == 'corretores' 
+              ? 'Buscar conversas com corretores...'
+              : _selectedFilter == 'usuarios'
+                  ? 'Buscar conversas com usuários...'
+                  : 'Buscar conversas...',
           prefixIcon: const Icon(Icons.search),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
@@ -100,6 +152,60 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
             _searchQuery = value;
           });
         },
+      ),
+    );
+  }
+
+  Widget _buildFilterChips() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          Text(
+            'Filtros: ',
+            style: AppTypography.bodyMedium.copyWith(
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _buildFilterChip('Todas', 'todos'),
+                  const SizedBox(width: 8),
+                  _buildFilterChip('Com Corretores', 'corretores'),
+                  const SizedBox(width: 8),
+                  _buildFilterChip('Com Usuários', 'usuarios'),
+                  const SizedBox(width: 8),
+                  _buildFilterChip('Não Lidas', 'nao_lidas'),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(String label, String value) {
+    final isSelected = _selectedFilter == value;
+    
+    return FilterChip(
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (selected) {
+        setState(() {
+          _selectedFilter = value;
+        });
+      },
+      selectedColor: AppColors.primary.withValues(alpha: 0.2),
+      checkmarkColor: AppColors.primary,
+      labelStyle: AppTypography.bodySmall.copyWith(
+        color: isSelected ? AppColors.primary : AppColors.textSecondary,
+        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
       ),
     );
   }
@@ -150,12 +256,17 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
     final lastMessage = conversation.messages.isNotEmpty 
         ? conversation.messages.last 
         : null;
+    final hasUnreadMessages = conversation.messages.any((m) => !m.isRead && m.senderId != 'admin');
+    final isRealtorConversation = conversation.realtorName.isNotEmpty && conversation.buyerName.isEmpty;
     
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
+        border: isRealtorConversation 
+            ? Border.all(color: AppColors.primary.withValues(alpha: 0.3), width: 2)
+            : null,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
@@ -173,12 +284,16 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                // Avatar do usuário
+                // Avatar
                 CircleAvatar(
                   radius: 24,
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: isRealtorConversation 
+                      ? AppColors.primary 
+                      : AppColors.secondary,
                   child: Text(
-                    conversation.buyerName.substring(0, 1).toUpperCase(),
+                    isRealtorConversation 
+                        ? conversation.realtorName.substring(0, 1).toUpperCase()
+                        : conversation.buyerName.substring(0, 1).toUpperCase(),
                     style: AppTypography.bodyLarge.copyWith(
                       color: AppColors.textOnPrimary,
                       fontWeight: FontWeight.bold,
@@ -191,17 +306,34 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Nome do usuário e corretor
+                      // Nome e badge
                       Row(
                         children: [
                           Expanded(
                             child: Text(
-                              conversation.buyerName,
+                              isRealtorConversation 
+                                  ? conversation.realtorName
+                                  : conversation.buyerName,
                               style: AppTypography.bodyLarge.copyWith(
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
+                          if (isRealtorConversation)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                'Corretor',
+                                style: AppTypography.labelSmall.copyWith(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
                           if (conversation.unreadCount > 0)
                             Container(
                               padding: const EdgeInsets.symmetric(
@@ -234,23 +366,42 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
-                      // Corretor
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.person_outline,
-                            size: 14,
-                            color: AppColors.textSecondary,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Corretor: ${conversation.realtorName}',
-                            style: AppTypography.bodySmall.copyWith(
+                      // Informações adicionais
+                      if (!isRealtorConversation)
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.person_outline,
+                              size: 14,
                               color: AppColors.textSecondary,
                             ),
-                          ),
-                        ],
-                      ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Corretor: ${conversation.realtorName}',
+                              style: AppTypography.bodySmall.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      if (isRealtorConversation)
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.business_outlined,
+                              size: 14,
+                              color: AppColors.primary,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Conversa direta com corretor',
+                              style: AppTypography.bodySmall.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
                       const SizedBox(height: 8),
                       // Última mensagem
                       if (lastMessage != null) ...[
@@ -260,7 +411,12 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
                               child: Text(
                                 lastMessage.content,
                                 style: AppTypography.bodySmall.copyWith(
-                                  color: AppColors.textSecondary,
+                                  color: hasUnreadMessages 
+                                      ? AppColors.textPrimary 
+                                      : AppColors.textSecondary,
+                                  fontWeight: hasUnreadMessages 
+                                      ? FontWeight.w500 
+                                      : FontWeight.normal,
                                 ),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
@@ -270,7 +426,12 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
                             Text(
                               _formatTime(lastMessage.timestamp),
                               style: AppTypography.labelSmall.copyWith(
-                                color: AppColors.textHint,
+                                color: hasUnreadMessages 
+                                    ? AppColors.primary 
+                                    : AppColors.textHint,
+                                fontWeight: hasUnreadMessages 
+                                    ? FontWeight.w600 
+                                    : FontWeight.normal,
                               ),
                             ),
                           ],
@@ -292,17 +453,26 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
                   children: [
                     Icon(
                       Icons.chevron_right,
-                      color: AppColors.textHint,
+                      color: hasUnreadMessages 
+                          ? AppColors.primary 
+                          : AppColors.textHint,
                       size: 20,
                     ),
                     const SizedBox(height: 4),
-                    if (conversation.unreadCount > 0)
+                    if (hasUnreadMessages)
                       Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
                           color: AppColors.primary,
                           shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.3),
+                              blurRadius: 4,
+                              spreadRadius: 1,
+                            ),
+                          ],
                         ),
                       ),
                   ],
