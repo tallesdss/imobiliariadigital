@@ -178,12 +178,12 @@
 
 ## 📱 Para Corretores
 
-- [ ] **Meus Imóveis** — Lista de imóveis cadastrados  
-- [ ] **Cadastrar Imóvel** — Formulário para adicionar um novo imóvel  
-- [ ] **Meu Perfil** — Dados pessoais e estatísticas de desempenho  
-- [ ] **Mensagens** — Chat com usuários interessados  
-- [ ] **Relatórios** — Visualização e análise de desempenho individual  
-- [ ] **Ajuda** — Acesso a suporte e documentação  
+- [x] **Meus Imóveis** — Lista de imóveis cadastrados  
+- [x] **Cadastrar Imóvel** — Formulário para adicionar um novo imóvel  
+- [x] **Meu Perfil** — Dados pessoais e estatísticas de desempenho  
+- [x] **Mensagens** — Chat com usuários interessados  
+- [x] **Relatórios** — Visualização e análise de desempenho individual  
+- [x] **Ajuda** — Acesso a suporte e documentação  
 
 ---
 
