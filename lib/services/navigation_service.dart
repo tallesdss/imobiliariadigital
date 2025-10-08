@@ -12,6 +12,8 @@ import '../screens/realtor/realtor_home_screen.dart';
 import '../screens/realtor/property_form_screen.dart';
 import '../screens/realtor/realtor_profile_screen.dart';
 import '../screens/realtor/realtor_chat_screen.dart';
+import '../screens/realtor/realtor_reports_screen.dart';
+import '../screens/realtor/realtor_help_screen.dart';
 import '../screens/admin/admin_home_screen.dart';
 import '../screens/admin/admin_realtors_screen.dart';
 import '../screens/admin/admin_dashboard_screen.dart';
@@ -101,6 +103,16 @@ class NavigationService {
             path: '/chat',
             name: 'realtor-chat',
             builder: (context, state) => const RealtorChatScreen(),
+          ),
+          GoRoute(
+            path: '/reports',
+            name: 'realtor-reports',
+            builder: (context, state) => const RealtorReportsScreen(),
+          ),
+          GoRoute(
+            path: '/help',
+            name: 'realtor-help',
+            builder: (context, state) => const RealtorHelpScreen(),
           ),
         ],
       ),
