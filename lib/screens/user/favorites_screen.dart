@@ -112,42 +112,57 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   }
 
   Widget _buildContent() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600;
+    final isDesktop = screenWidth > 1024;
+    
     if (_favoriteProperties.isEmpty) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.favorite_border,
-              size: 64,
-              color: AppColors.textHint,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Nenhum favorito ainda',
-              style: AppTypography.h6.copyWith(color: AppColors.textSecondary),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Adicione imóveis aos favoritos para vê-los aqui',
-              style: AppTypography.bodyMedium.copyWith(
+        child: Padding(
+          padding: EdgeInsets.all(isTablet ? 32 : 24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.favorite_border,
+                size: isTablet ? 80 : 64,
                 color: AppColors.textHint,
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              icon: const Icon(Icons.search),
-              label: const Text('Buscar Imóveis'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.textOnPrimary,
+              SizedBox(height: isTablet ? 24 : 16),
+              Text(
+                'Nenhum favorito ainda',
+                style: AppTypography.h6.copyWith(
+                  color: AppColors.textSecondary,
+                  fontSize: isTablet ? 20 : 18,
+                ),
               ),
-            ),
-          ],
+              SizedBox(height: isTablet ? 12 : 8),
+              Text(
+                'Adicione imóveis aos favoritos para vê-los aqui',
+                style: AppTypography.bodyMedium.copyWith(
+                  color: AppColors.textHint,
+                  fontSize: isTablet ? 16 : 14,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: isTablet ? 32 : 24),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                icon: const Icon(Icons.search),
+                label: const Text('Buscar Imóveis'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.textOnPrimary,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isTablet ? 32 : 24,
+                    vertical: isTablet ? 16 : 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -157,36 +172,64 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         // Header com contador
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(isTablet ? 24 : 16),
           color: Colors.white,
           child: Row(
             children: [
-              const Icon(Icons.favorite, color: Colors.red),
-              const SizedBox(width: 8),
+              Icon(
+                Icons.favorite, 
+                color: Colors.red,
+                size: isTablet ? 28 : 24,
+              ),
+              SizedBox(width: isTablet ? 12 : 8),
               Text(
                 '${_favoriteProperties.length} ${_favoriteProperties.length == 1 ? 'imóvel favorito' : 'imóveis favoritos'}',
-                style: AppTypography.labelLarge,
+                style: AppTypography.labelLarge.copyWith(
+                  fontSize: isTablet ? 18 : 16,
+                ),
               ),
             ],
           ),
         ),
         // Lista de favoritos
         Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: _favoriteProperties.length,
-            itemBuilder: (context, index) {
-              final property = _favoriteProperties[index];
-              return GestureDetector(
-                onTap: () => _navigateToPropertyDetail(property.id),
-                child: PropertyCard(
-                  property: property,
-                  isFavorite: true,
-                  onFavoriteToggle: () => _removeFavorite(property.id),
+          child: isTablet && _favoriteProperties.length > 2
+              ? GridView.builder(
+                  padding: EdgeInsets.all(isTablet ? 24 : 16),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: isDesktop ? 3 : 2,
+                    childAspectRatio: 0.8,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                  ),
+                  itemCount: _favoriteProperties.length,
+                  itemBuilder: (context, index) {
+                    final property = _favoriteProperties[index];
+                    return GestureDetector(
+                      onTap: () => _navigateToPropertyDetail(property.id),
+                      child: PropertyCard(
+                        property: property,
+                        isFavorite: true,
+                        onFavoriteToggle: () => _removeFavorite(property.id),
+                      ),
+                    );
+                  },
+                )
+              : ListView.builder(
+                  padding: EdgeInsets.all(isTablet ? 24 : 16),
+                  itemCount: _favoriteProperties.length,
+                  itemBuilder: (context, index) {
+                    final property = _favoriteProperties[index];
+                    return GestureDetector(
+                      onTap: () => _navigateToPropertyDetail(property.id),
+                      child: PropertyCard(
+                        property: property,
+                        isFavorite: true,
+                        onFavoriteToggle: () => _removeFavorite(property.id),
+                      ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
         ),
       ],
     );

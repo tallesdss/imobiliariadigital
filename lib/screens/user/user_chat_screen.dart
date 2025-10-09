@@ -105,9 +105,11 @@ class _UserChatScreenState extends State<UserChatScreen> {
 
   Widget _buildConversationCard(ChatConversation conversation) {
     final lastMessage = conversation.lastMessage;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: AppSpacing.md),
+      margin: EdgeInsets.only(bottom: isTablet ? 20 : AppSpacing.md),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -120,8 +122,9 @@ class _UserChatScreenState extends State<UserChatScreen> {
         ],
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.all(AppSpacing.lg),
+        contentPadding: EdgeInsets.all(isTablet ? 24 : AppSpacing.lg),
         leading: CircleAvatar(
+          radius: isTablet ? 28 : 24,
           backgroundColor: AppColors.primary.withValues(alpha: 0.2),
           child: Text(
             conversation.realtorName.isNotEmpty
@@ -130,6 +133,7 @@ class _UserChatScreenState extends State<UserChatScreen> {
             style: AppTypography.subtitle2.copyWith(
               color: AppColors.primary,
               fontWeight: FontWeight.bold,
+              fontSize: isTablet ? 18 : 16,
             ),
           ),
         ),
@@ -140,13 +144,15 @@ class _UserChatScreenState extends State<UserChatScreen> {
               conversation.realtorName,
               style: AppTypography.subtitle1.copyWith(
                 fontWeight: FontWeight.w600,
+                fontSize: isTablet ? 18 : 16,
               ),
             ),
-            const SizedBox(height: 2),
+            SizedBox(height: isTablet ? 4 : 2),
             Text(
               conversation.propertyTitle,
               style: AppTypography.bodySmall.copyWith(
                 color: AppColors.textSecondary,
+                fontSize: isTablet ? 14 : 12,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -156,27 +162,32 @@ class _UserChatScreenState extends State<UserChatScreen> {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: AppSpacing.sm),
+            SizedBox(height: isTablet ? 12 : AppSpacing.sm),
             Text(
               lastMessage?.content ?? 'Nenhuma mensagem',
               style: AppTypography.bodyMedium.copyWith(
                 color: AppColors.textSecondary,
+                fontSize: isTablet ? 16 : 14,
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: AppSpacing.xs),
+            SizedBox(height: isTablet ? 8 : AppSpacing.xs),
             Text(
               _formatTime(conversation.lastMessageAt),
               style: AppTypography.bodySmall.copyWith(
                 color: AppColors.textHint,
+                fontSize: isTablet ? 12 : 10,
               ),
             ),
           ],
         ),
         trailing: conversation.unreadCount > 0
             ? Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: EdgeInsets.symmetric(
+                  horizontal: isTablet ? 10 : 8, 
+                  vertical: isTablet ? 6 : 4,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.primary,
                   borderRadius: BorderRadius.circular(12),
@@ -186,6 +197,7 @@ class _UserChatScreenState extends State<UserChatScreen> {
                   style: AppTypography.labelSmall.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
+                    fontSize: isTablet ? 12 : 10,
                   ),
                 ),
               )
@@ -336,8 +348,11 @@ class _ConversationScreenState extends State<ConversationScreen> {
   }
 
   Widget _buildMessageInput() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600;
+    
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: EdgeInsets.all(isTablet ? 24 : AppSpacing.lg),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -368,9 +383,9 @@ class _ConversationScreenState extends State<ConversationScreen> {
                     borderRadius: BorderRadius.circular(24),
                     borderSide: const BorderSide(color: AppColors.primary),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.lg,
-                    vertical: AppSpacing.md,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: isTablet ? 20 : AppSpacing.lg,
+                    vertical: isTablet ? 16 : AppSpacing.md,
                   ),
                   filled: true,
                   fillColor: AppColors.background,
@@ -380,7 +395,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
                 onSubmitted: (_) => _sendMessage(),
               ),
             ),
-            const SizedBox(width: AppSpacing.sm),
+            SizedBox(width: isTablet ? 16 : AppSpacing.sm),
             Container(
               decoration: const BoxDecoration(
                 color: AppColors.primary,
@@ -388,8 +403,12 @@ class _ConversationScreenState extends State<ConversationScreen> {
               ),
               child: IconButton(
                 onPressed: _sendMessage,
-                icon: const Icon(Icons.send, color: Colors.white),
-                padding: const EdgeInsets.all(12),
+                icon: Icon(
+                  Icons.send, 
+                  color: Colors.white,
+                  size: isTablet ? 24 : 20,
+                ),
+                padding: EdgeInsets.all(isTablet ? 16 : 12),
               ),
             ),
           ],

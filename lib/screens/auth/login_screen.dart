@@ -57,217 +57,240 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600;
+    final isDesktop = screenWidth > 1024;
+    
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: AppSpacing.paddingLG,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              AppSpacing.verticalXXL,
-
-              // Logo and Title
-              Column(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: isDesktop ? 500 : double.infinity,
+            ),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(
+                horizontal: isTablet ? 32 : AppSpacing.lg,
+                vertical: AppSpacing.lg,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  if (!isTablet) AppSpacing.verticalXXL,
+
+                  // Logo and Title
+                  Column(
+                    children: [
+                      Container(
+                        width: isTablet ? 100 : 120,
+                        height: isTablet ? 100 : 120,
+                        decoration: BoxDecoration(
+                          gradient: AppColors.primaryGradient,
+                          borderRadius: AppSpacing.borderRadiusXL,
+                        ),
+                        child: Icon(
+                          Icons.home_work,
+                          size: isTablet ? 50 : 60,
+                          color: AppColors.textOnPrimary,
+                        ),
+                      ),
+                      AppSpacing.verticalLG,
+                      Text(
+                        'Imobiliária Digital',
+                        style: AppTypography.h2.copyWith(
+                          color: AppColors.primary,
+                          fontSize: isTablet ? 28 : 32,
+                        ),
+                      ),
+                      AppSpacing.verticalSM,
+                      Text(
+                        'Encontre seu imóvel ideal',
+                        style: AppTypography.bodyLarge.copyWith(
+                          color: AppColors.textSecondary,
+                          fontSize: isTablet ? 16 : 18,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  AppSpacing.verticalXXL,
+
+                  // Login Form
+                  Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          'Entrar',
+                          style: AppTypography.h4.copyWith(
+                            fontSize: isTablet ? 22 : 24,
+                          ),
+                        ),
+                        AppSpacing.verticalLG,
+
+                        CustomTextField(
+                          controller: _emailController,
+                          label: 'E-mail',
+                          hintText: 'Digite seu e-mail',
+                          keyboardType: TextInputType.emailAddress,
+                          prefixIcon: Icons.email_outlined,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Por favor, digite seu e-mail';
+                            }
+                            if (!RegExp(
+                              r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                            ).hasMatch(value)) {
+                              return 'Por favor, digite um e-mail válido';
+                            }
+                            return null;
+                          },
+                        ),
+
+                        AppSpacing.verticalMD,
+
+                        CustomTextField(
+                          controller: _passwordController,
+                          label: 'Senha',
+                          hintText: 'Digite sua senha',
+                          obscureText: _obscurePassword,
+                          prefixIcon: Icons.lock_outlined,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Por favor, digite sua senha';
+                            }
+                            if (value.length < 6) {
+                              return 'A senha deve ter pelo menos 6 caracteres';
+                            }
+                            return null;
+                          },
+                        ),
+
+                        AppSpacing.verticalSM,
+
+                        // Forgot Password
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Funcionalidade será implementada em breve',
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Text(
+                              'Esqueci minha senha',
+                              style: AppTypography.labelMedium.copyWith(
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        AppSpacing.verticalLG,
+
+                        // Login Button
+                        CustomButton(
+                          text: 'Entrar',
+                          onPressed: _handleLogin,
+                          isLoading: _isLoading,
+                          size: ButtonSize.large,
+                        ),
+
+                        AppSpacing.verticalLG,
+
+                        // Divider
+                        Row(
+                          children: [
+                            const Expanded(child: Divider()),
+                            Padding(
+                              padding: AppSpacing.paddingHorizontalMD,
+                              child: Text(
+                                'ou',
+                                style: AppTypography.bodySmall.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                            const Expanded(child: Divider()),
+                          ],
+                        ),
+
+                        AppSpacing.verticalLG,
+
+                        // Register Button
+                        CustomButton(
+                          text: 'Criar conta',
+                          onPressed: _handleRegister,
+                          type: ButtonType.outlined,
+                          size: ButtonSize.large,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  AppSpacing.verticalXXL,
+
+                  // Demo Info
                   Container(
-                    width: 120,
-                    height: 120,
+                    padding: AppSpacing.paddingMD,
                     decoration: BoxDecoration(
-                      gradient: AppColors.primaryGradient,
-                      borderRadius: AppSpacing.borderRadiusXL,
+                      color: AppColors.info.withValues(alpha: 0.1 * 255),
+                      borderRadius: AppSpacing.borderRadiusSM,
+                      border: Border.all(
+                        color: AppColors.info.withValues(alpha: 0.3 * 255),
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.home_work,
-                      size: 60,
-                      color: AppColors.textOnPrimary,
-                    ),
-                  ),
-                  AppSpacing.verticalLG,
-                  Text(
-                    'Imobiliária Digital',
-                    style: AppTypography.h2.copyWith(color: AppColors.primary),
-                  ),
-                  AppSpacing.verticalSM,
-                  Text(
-                    'Encontre seu imóvel ideal',
-                    style: AppTypography.bodyLarge.copyWith(
-                      color: AppColors.textSecondary,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.info_outline,
+                              size: 20,
+                              color: AppColors.info,
+                            ),
+                            AppSpacing.horizontalSM,
+                            Text(
+                              'Demo - Apenas Frontend',
+                              style: AppTypography.labelMedium.copyWith(
+                                color: AppColors.info,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                        AppSpacing.verticalSM,
+                        Text(
+                          'Este é um projeto de demonstração. Qualquer e-mail/senha funcionará para acessar o sistema.',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.info,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
-
-              AppSpacing.verticalXXL,
-
-              // Login Form
-              Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text('Entrar', style: AppTypography.h4),
-                    AppSpacing.verticalLG,
-
-                    CustomTextField(
-                      controller: _emailController,
-                      label: 'E-mail',
-                      hintText: 'Digite seu e-mail',
-                      keyboardType: TextInputType.emailAddress,
-                      prefixIcon: Icons.email_outlined,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor, digite seu e-mail';
-                        }
-                        if (!RegExp(
-                          r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                        ).hasMatch(value)) {
-                          return 'Por favor, digite um e-mail válido';
-                        }
-                        return null;
-                      },
-                    ),
-
-                    AppSpacing.verticalMD,
-
-                    CustomTextField(
-                      controller: _passwordController,
-                      label: 'Senha',
-                      hintText: 'Digite sua senha',
-                      obscureText: _obscurePassword,
-                      prefixIcon: Icons.lock_outlined,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility
-                              : Icons.visibility_off,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor, digite sua senha';
-                        }
-                        if (value.length < 6) {
-                          return 'A senha deve ter pelo menos 6 caracteres';
-                        }
-                        return null;
-                      },
-                    ),
-
-                    AppSpacing.verticalSM,
-
-                    // Forgot Password
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Funcionalidade será implementada em breve',
-                              ),
-                            ),
-                          );
-                        },
-                        child: Text(
-                          'Esqueci minha senha',
-                          style: AppTypography.labelMedium.copyWith(
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    AppSpacing.verticalLG,
-
-                    // Login Button
-                    CustomButton(
-                      text: 'Entrar',
-                      onPressed: _handleLogin,
-                      isLoading: _isLoading,
-                      size: ButtonSize.large,
-                    ),
-
-                    AppSpacing.verticalLG,
-
-                    // Divider
-                    Row(
-                      children: [
-                        const Expanded(child: Divider()),
-                        Padding(
-                          padding: AppSpacing.paddingHorizontalMD,
-                          child: Text(
-                            'ou',
-                            style: AppTypography.bodySmall.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ),
-                        const Expanded(child: Divider()),
-                      ],
-                    ),
-
-                    AppSpacing.verticalLG,
-
-                    // Register Button
-                    CustomButton(
-                      text: 'Criar conta',
-                      onPressed: _handleRegister,
-                      type: ButtonType.outlined,
-                      size: ButtonSize.large,
-                    ),
-                  ],
-                ),
-              ),
-
-              AppSpacing.verticalXXL,
-
-              // Demo Info
-              Container(
-                padding: AppSpacing.paddingMD,
-                decoration: BoxDecoration(
-                  color: AppColors.info.withValues(alpha: 0.1 * 255),
-                  borderRadius: AppSpacing.borderRadiusSM,
-                  border: Border.all(
-                    color: AppColors.info.withValues(alpha: 0.3 * 255),
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.info_outline,
-                          size: 20,
-                          color: AppColors.info,
-                        ),
-                        AppSpacing.horizontalSM,
-                        Text(
-                          'Demo - Apenas Frontend',
-                          style: AppTypography.labelMedium.copyWith(
-                            color: AppColors.info,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                    AppSpacing.verticalSM,
-                    Text(
-                      'Este é um projeto de demonstração. Qualquer e-mail/senha funcionará para acessar o sistema.',
-                      style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.info,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

@@ -100,42 +100,53 @@ class _AlertsScreenState extends State<AlertsScreen> {
   }
 
   Widget _buildContent() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600;
+    
     if (_alerts.isEmpty) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.notifications_none,
-              size: 80,
-              color: AppColors.textHint,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Text(
-              'Nenhum alerta criado',
-              style: AppTypography.h6.copyWith(color: AppColors.textSecondary),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              'Crie alertas para ser notificado sobre\nmudanças nos imóveis de interesse',
-              style: AppTypography.bodyMedium.copyWith(
+        child: Padding(
+          padding: EdgeInsets.all(isTablet ? 32 : 24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.notifications_none,
+                size: isTablet ? 100 : 80,
                 color: AppColors.textHint,
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            CustomButton(
-              text: 'Criar Primeiro Alerta',
-              onPressed: _showCreateAlertDialog,
-              type: ButtonType.filled,
-            ),
-          ],
+              SizedBox(height: isTablet ? 32 : AppSpacing.lg),
+              Text(
+                'Nenhum alerta criado',
+                style: AppTypography.h6.copyWith(
+                  color: AppColors.textSecondary,
+                  fontSize: isTablet ? 20 : 18,
+                ),
+              ),
+              SizedBox(height: isTablet ? 16 : AppSpacing.sm),
+              Text(
+                'Crie alertas para ser notificado sobre\nmudanças nos imóveis de interesse',
+                style: AppTypography.bodyMedium.copyWith(
+                  color: AppColors.textHint,
+                  fontSize: isTablet ? 16 : 14,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: isTablet ? 40 : AppSpacing.xl),
+              CustomButton(
+                text: 'Criar Primeiro Alerta',
+                onPressed: _showCreateAlertDialog,
+                type: ButtonType.filled,
+                size: isTablet ? ButtonSize.large : ButtonSize.medium,
+              ),
+            ],
+          ),
         ),
       );
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: EdgeInsets.all(isTablet ? 24 : AppSpacing.lg),
       itemCount: _alerts.length,
       itemBuilder: (context, index) {
         final alert = _alerts[index];
@@ -145,8 +156,11 @@ class _AlertsScreenState extends State<AlertsScreen> {
   }
 
   Widget _buildAlertCard(PropertyAlert alert) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600;
+    
     return Container(
-      margin: const EdgeInsets.only(bottom: AppSpacing.md),
+      margin: EdgeInsets.only(bottom: isTablet ? 20 : AppSpacing.md),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -159,7 +173,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.lg),
+        padding: EdgeInsets.all(isTablet ? 24 : AppSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -170,55 +184,64 @@ class _AlertsScreenState extends State<AlertsScreen> {
                     alert.propertyTitle,
                     style: AppTypography.subtitle1.copyWith(
                       fontWeight: FontWeight.w600,
+                      fontSize: isTablet ? 18 : 16,
                     ),
                   ),
                 ),
                 IconButton(
                   onPressed: () => _removeAlert(alert.id),
-                  icon: const Icon(Icons.close, color: AppColors.textHint),
+                  icon: Icon(
+                    Icons.close, 
+                    color: AppColors.textHint,
+                    size: isTablet ? 24 : 20,
+                  ),
                   constraints: const BoxConstraints(),
                   padding: EdgeInsets.zero,
                 ),
               ],
             ),
-            const SizedBox(height: AppSpacing.sm),
+            SizedBox(height: isTablet ? 16 : AppSpacing.sm),
             Row(
               children: [
                 Icon(
                   _getAlertIcon(alert.type),
-                  size: 20,
+                  size: isTablet ? 24 : 20,
                   color: AppColors.primary,
                 ),
-                const SizedBox(width: AppSpacing.sm),
+                SizedBox(width: isTablet ? 12 : AppSpacing.sm),
                 Text(
                   alert.typeDisplayName,
                   style: AppTypography.bodyMedium.copyWith(
                     color: AppColors.textSecondary,
+                    fontSize: isTablet ? 16 : 14,
                   ),
                 ),
               ],
             ),
             if (alert.targetPrice != null) ...[
-              const SizedBox(height: AppSpacing.sm),
+              SizedBox(height: isTablet ? 16 : AppSpacing.sm),
               Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.monetization_on_outlined,
-                    size: 20,
+                    size: isTablet ? 24 : 20,
                     color: AppColors.accent,
                   ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Text(
-                    'Preço alvo: R\$ ${alert.targetPrice!.toStringAsFixed(2).replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}',
-                    style: AppTypography.bodyMedium.copyWith(
-                      color: AppColors.accent,
-                      fontWeight: FontWeight.w600,
+                  SizedBox(width: isTablet ? 12 : AppSpacing.sm),
+                  Expanded(
+                    child: Text(
+                      'Preço alvo: R\$ ${alert.targetPrice!.toStringAsFixed(2).replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}',
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: AppColors.accent,
+                        fontWeight: FontWeight.w600,
+                        fontSize: isTablet ? 16 : 14,
+                      ),
                     ),
                   ),
                 ],
               ),
             ],
-            const SizedBox(height: AppSpacing.md),
+            SizedBox(height: isTablet ? 20 : AppSpacing.md),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -226,6 +249,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
                   'Criado em ${_formatDate(alert.createdAt)}',
                   style: AppTypography.bodySmall.copyWith(
                     color: AppColors.textHint,
+                    fontSize: isTablet ? 14 : 12,
                   ),
                 ),
                 SimpleBadge(

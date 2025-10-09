@@ -179,11 +179,16 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   }
 
   Widget _buildCarousel(String title, List<Property> properties, VoidCallback onSeeAll) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          padding: EdgeInsets.symmetric(
+            horizontal: isTablet ? 24 : AppSpacing.lg,
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -192,6 +197,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 style: AppTypography.h6.copyWith(
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.bold,
+                  fontSize: isTablet ? 18 : 20,
                 ),
               ),
               TextButton(
@@ -209,15 +215,17 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         ),
         const SizedBox(height: AppSpacing.sm),
         SizedBox(
-          height: 320,
+          height: isTablet ? 360 : 320,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-            itemCount: properties.length > 5 ? 5 : properties.length,
+            padding: EdgeInsets.symmetric(
+              horizontal: isTablet ? 24 : AppSpacing.lg,
+            ),
+            itemCount: properties.length > (isTablet ? 6 : 5) ? (isTablet ? 6 : 5) : properties.length,
             itemBuilder: (context, index) {
               final property = properties[index];
               return Container(
-                width: 280,
+                width: isTablet ? 300 : 280,
                 margin: EdgeInsets.only(
                   right: index == properties.length - 1 ? 0 : AppSpacing.md,
                 ),
@@ -440,8 +448,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   }
 
   Widget _buildSearchAndFilters() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600;
+    
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(isTablet ? 20 : 16),
       color: Colors.white,
       child: Column(
         children: [
@@ -479,6 +490,10 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               ),
               filled: true,
               fillColor: AppColors.background,
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: isTablet ? 16 : 12,
+                vertical: isTablet ? 16 : 12,
+              ),
             ),
           ),
           const SizedBox(height: 12),
@@ -575,24 +590,36 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   }
 
   Widget _buildPropertiesGrid() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600;
+    final isDesktop = screenWidth > 1024;
+    
     if (_filteredProperties.isEmpty) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.xl),
+          padding: EdgeInsets.all(isTablet ? 32 : AppSpacing.xl),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.search_off, size: 64, color: AppColors.textHint),
-              const SizedBox(height: AppSpacing.md),
+              Icon(
+                Icons.search_off, 
+                size: isTablet ? 80 : 64, 
+                color: AppColors.textHint,
+              ),
+              SizedBox(height: isTablet ? 24 : AppSpacing.md),
               Text(
                 'Nenhum imóvel encontrado',
-                style: AppTypography.h6.copyWith(color: AppColors.textSecondary),
+                style: AppTypography.h6.copyWith(
+                  color: AppColors.textSecondary,
+                  fontSize: isTablet ? 20 : 18,
+                ),
               ),
-              const SizedBox(height: AppSpacing.sm),
+              SizedBox(height: isTablet ? 12 : AppSpacing.sm),
               Text(
                 'Tente ajustar os filtros de busca',
                 style: AppTypography.bodyMedium.copyWith(
                   color: AppColors.textHint,
+                  fontSize: isTablet ? 16 : 14,
                 ),
               ),
             ],
@@ -601,12 +628,48 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       );
     }
 
+    if (isTablet && !_showCarousels) {
+      // Layout em grade para tablets quando não há carrosséis
+      return GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        padding: EdgeInsets.symmetric(
+          horizontal: isTablet ? 24 : AppSpacing.lg,
+          vertical: AppSpacing.md,
+        ),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: isDesktop ? 3 : 2,
+          childAspectRatio: 0.8,
+          crossAxisSpacing: AppSpacing.md,
+          mainAxisSpacing: AppSpacing.md,
+        ),
+        itemCount: _filteredProperties.length,
+        itemBuilder: (context, index) {
+          final property = _filteredProperties[index];
+          return GestureDetector(
+            onTap: () => _navigateToPropertyDetail(property.id),
+            child: PropertyCard(
+              property: property,
+              isFavorite: _favoritePropertyIds.contains(property.id),
+              onFavoriteToggle: () => _toggleFavorite(property.id),
+              onCompare: () => _toggleCompare(property.id),
+            ),
+          );
+        },
+      );
+    }
+
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      padding: EdgeInsets.symmetric(
+        horizontal: isTablet ? 24 : AppSpacing.lg,
+        vertical: AppSpacing.md,
+      ),
       itemCount: _filteredProperties.length,
-      separatorBuilder: (context, index) => const SizedBox(height: AppSpacing.md),
+      separatorBuilder: (context, index) => SizedBox(
+        height: isTablet ? 20 : AppSpacing.md,
+      ),
       itemBuilder: (context, index) {
         final property = _filteredProperties[index];
         return GestureDetector(

@@ -39,6 +39,10 @@ class _ProfileSelectionScreenState extends State<ProfileSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600;
+    final isDesktop = screenWidth > 1024;
+    
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -51,94 +55,158 @@ class _ProfileSelectionScreenState extends State<ProfileSelectionScreen> {
         ),
       ),
       body: SafeArea(
-        child: Padding(
-          padding: AppSpacing.paddingLG,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              AppSpacing.verticalLG,
-
-              // Title and Subtitle
-              Text(
-                'Como você deseja usar a plataforma?',
-                style: AppTypography.h4,
-                textAlign: TextAlign.center,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: isDesktop ? 800 : double.infinity,
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: isTablet ? 32 : AppSpacing.lg,
+                vertical: AppSpacing.lg,
               ),
-              AppSpacing.verticalSM,
-              Text(
-                'Escolha o perfil que melhor descreve você',
-                style: AppTypography.bodyLarge.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-                textAlign: TextAlign.center,
-              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  AppSpacing.verticalLG,
 
-              AppSpacing.verticalXL,
-
-              // Profile Options
-              Expanded(
-                child: ListView(
-                  children: [
-                    // Buyer Option
-                    _ProfileCard(
-                      title: 'Comprador',
-                      subtitle: 'Procuro um imóvel para comprar',
-                      icon: Icons.person_outline,
-                      description:
-                          'Navegue por imóveis, favorite seus preferidos, entre em contato com corretores e receba alertas.',
-                      isSelected: _selectedUserType == UserType.buyer,
-                      onTap: () => _selectUserType(UserType.buyer),
+                  // Title and Subtitle
+                  Text(
+                    'Como você deseja usar a plataforma?',
+                    style: AppTypography.h4.copyWith(
+                      fontSize: isTablet ? 22 : 24,
                     ),
-
-                    AppSpacing.verticalLG,
-
-                    // Realtor Option
-                    _ProfileCard(
-                      title: 'Corretor',
-                      subtitle: 'Sou um corretor imobiliário',
-                      icon: Icons.business_center_outlined,
-                      description:
-                          'Cadastre e gerencie seus imóveis, converse com clientes interessados e acompanhe suas vendas.',
-                      isSelected: _selectedUserType == UserType.realtor,
-                      onTap: () => _selectUserType(UserType.realtor),
+                    textAlign: TextAlign.center,
+                  ),
+                  AppSpacing.verticalSM,
+                  Text(
+                    'Escolha o perfil que melhor descreve você',
+                    style: AppTypography.bodyLarge.copyWith(
+                      color: AppColors.textSecondary,
+                      fontSize: isTablet ? 16 : 18,
                     ),
+                    textAlign: TextAlign.center,
+                  ),
 
-                    AppSpacing.verticalLG,
+                  AppSpacing.verticalXL,
 
-                    // Admin Option
-                    _ProfileCard(
-                      title: 'Administrador',
-                      subtitle: 'Gerencio a plataforma',
-                      icon: Icons.admin_panel_settings_outlined,
-                      description:
-                          'Gerencie todos os imóveis, corretores, visualize relatórios e administre a plataforma.',
-                      isSelected: _selectedUserType == UserType.admin,
-                      onTap: () => _selectUserType(UserType.admin),
-                    ),
-                  ],
-                ),
-              ),
+                  // Profile Options
+                  Expanded(
+                    child: isTablet 
+                        ? _buildTabletLayout()
+                        : ListView(
+                            children: [
+                              // Buyer Option
+                              _ProfileCard(
+                                title: 'Comprador',
+                                subtitle: 'Procuro um imóvel para comprar',
+                                icon: Icons.person_outline,
+                                description:
+                                    'Navegue por imóveis, favorite seus preferidos, entre em contato com corretores e receba alertas.',
+                                isSelected: _selectedUserType == UserType.buyer,
+                                onTap: () => _selectUserType(UserType.buyer),
+                              ),
 
-              // Continue Button
-              Container(
-                padding: AppSpacing.paddingVerticalLG,
-                child: ElevatedButton(
-                  onPressed: _selectedUserType != null ? _continue : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: AppColors.textOnPrimary,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppSpacing.borderRadiusSM,
+                              AppSpacing.verticalLG,
+
+                              // Realtor Option
+                              _ProfileCard(
+                                title: 'Corretor',
+                                subtitle: 'Sou um corretor imobiliário',
+                                icon: Icons.business_center_outlined,
+                                description:
+                                    'Cadastre e gerencie seus imóveis, converse com clientes interessados e acompanhe suas vendas.',
+                                isSelected: _selectedUserType == UserType.realtor,
+                                onTap: () => _selectUserType(UserType.realtor),
+                              ),
+
+                              AppSpacing.verticalLG,
+
+                              // Admin Option
+                              _ProfileCard(
+                                title: 'Administrador',
+                                subtitle: 'Gerencio a plataforma',
+                                icon: Icons.admin_panel_settings_outlined,
+                                description:
+                                    'Gerencie todos os imóveis, corretores, visualize relatórios e administre a plataforma.',
+                                isSelected: _selectedUserType == UserType.admin,
+                                onTap: () => _selectUserType(UserType.admin),
+                              ),
+                            ],
+                          ),
+                  ),
+
+                  // Continue Button
+                  Container(
+                    padding: AppSpacing.paddingVerticalLG,
+                    child: ElevatedButton(
+                      onPressed: _selectedUserType != null ? _continue : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: AppColors.textOnPrimary,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: AppSpacing.borderRadiusSM,
+                        ),
+                      ),
+                      child: Text('Continuar', style: AppTypography.buttonLarge),
                     ),
                   ),
-                  child: Text('Continuar', style: AppTypography.buttonLarge),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTabletLayout() {
+    return Row(
+      children: [
+        // Buyer Option
+        Expanded(
+          child: _ProfileCard(
+            title: 'Comprador',
+            subtitle: 'Procuro um imóvel para comprar',
+            icon: Icons.person_outline,
+            description:
+                'Navegue por imóveis, favorite seus preferidos, entre em contato com corretores e receba alertas.',
+            isSelected: _selectedUserType == UserType.buyer,
+            onTap: () => _selectUserType(UserType.buyer),
+          ),
+        ),
+
+        const SizedBox(width: 16),
+
+        // Realtor Option
+        Expanded(
+          child: _ProfileCard(
+            title: 'Corretor',
+            subtitle: 'Sou um corretor imobiliário',
+            icon: Icons.business_center_outlined,
+            description:
+                'Cadastre e gerencie seus imóveis, converse com clientes interessados e acompanhe suas vendas.',
+            isSelected: _selectedUserType == UserType.realtor,
+            onTap: () => _selectUserType(UserType.realtor),
+          ),
+        ),
+
+        const SizedBox(width: 16),
+
+        // Admin Option
+        Expanded(
+          child: _ProfileCard(
+            title: 'Administrador',
+            subtitle: 'Gerencio a plataforma',
+            icon: Icons.admin_panel_settings_outlined,
+            description:
+                'Gerencie todos os imóveis, corretores, visualize relatórios e administre a plataforma.',
+            isSelected: _selectedUserType == UserType.admin,
+            onTap: () => _selectUserType(UserType.admin),
+          ),
+        ),
+      ],
     );
   }
 }

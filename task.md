@@ -198,3 +198,12 @@
 - [x] **Configurações** — Ajustes e preferências do sistema  
 - [x] **Ajuda** — Suporte administrativo e documentação  
 
+## Etapa 11 -  Responsividade.
+- [x] **Responsividade** — Telas de Comprador
+- [ ] **Responsividade** — Telas de Corretor
+- [ ] **Responsividade** — Telas de Admnistrador
+
+## Etapa 12 -  Barra lateral com filtros.
+- [ ] **Barra Lateral com filtros** — Telas de Comprador
+- [ ] **Barra Lateral com filtros** — Telas de Corretor
+- [ ] **Barra Lateral com filtros** — Telas de Admnistrador

@@ -274,8 +274,11 @@ Contato: ${_property!.realtorName} - ${_property!.realtorPhone}
   }
 
   Widget _buildSliverAppBar() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600;
+    
     return SliverAppBar(
-      expandedHeight: 300,
+      expandedHeight: isTablet ? 400 : 300,
       pinned: true,
       backgroundColor: AppColors.primary,
       foregroundColor: AppColors.textOnPrimary,
@@ -285,9 +288,16 @@ Contato: ${_property!.realtorName} - ${_property!.realtorPhone}
           icon: Icon(
             _isFavorite ? Icons.favorite : Icons.favorite_border,
             color: _isFavorite ? Colors.red : AppColors.textOnPrimary,
+            size: isTablet ? 28 : 24,
           ),
         ),
-        IconButton(onPressed: _shareProperty, icon: const Icon(Icons.share)),
+        IconButton(
+          onPressed: _shareProperty, 
+          icon: Icon(
+            Icons.share,
+            size: isTablet ? 28 : 24,
+          ),
+        ),
       ],
       flexibleSpace: FlexibleSpaceBar(
         background: MediaGallery(
@@ -299,9 +309,12 @@ Contato: ${_property!.realtorName} - ${_property!.realtorPhone}
   }
 
   Widget _buildPropertyInfo() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600;
+    
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(isTablet ? 24 : 16),
       color: Colors.white,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -312,7 +325,10 @@ Contato: ${_property!.realtorName} - ${_property!.realtorPhone}
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: EdgeInsets.symmetric(
+                  horizontal: isTablet ? 12 : 8, 
+                  vertical: isTablet ? 6 : 4,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(4),
@@ -322,30 +338,42 @@ Contato: ${_property!.realtorName} - ${_property!.realtorPhone}
                   style: AppTypography.labelSmall.copyWith(
                     color: AppColors.primary,
                     fontWeight: FontWeight.w600,
+                    fontSize: isTablet ? 14 : 12,
                   ),
                 ),
               ),
-              Text(_property!.formattedPrice, style: AppTypography.priceMain),
+              Text(
+                _property!.formattedPrice, 
+                style: AppTypography.priceMain.copyWith(
+                  fontSize: isTablet ? 24 : 20,
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: isTablet ? 20 : 16),
           // Título
-          Text(_property!.title, style: AppTypography.h4),
-          const SizedBox(height: 8),
+          Text(
+            _property!.title, 
+            style: AppTypography.h4.copyWith(
+              fontSize: isTablet ? 26 : 22,
+            ),
+          ),
+          SizedBox(height: isTablet ? 12 : 8),
           // Localização
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.location_on_outlined,
-                size: 16,
+                size: isTablet ? 20 : 16,
                 color: AppColors.textSecondary,
               ),
-              const SizedBox(width: 4),
+              SizedBox(width: isTablet ? 8 : 4),
               Expanded(
                 child: Text(
                   '${_property!.address}, ${_property!.city} - ${_property!.state}',
                   style: AppTypography.bodyMedium.copyWith(
                     color: AppColors.textSecondary,
+                    fontSize: isTablet ? 16 : 14,
                   ),
                 ),
               ),
@@ -475,43 +503,85 @@ Contato: ${_property!.realtorName} - ${_property!.realtorPhone}
   }
 
   Widget _buildActionButtons() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600;
+    
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(top: 8),
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(isTablet ? 24 : 16),
       color: Colors.white,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Ações', style: AppTypography.h6),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _createAlert,
-                  icon: const Icon(Icons.add_alert),
-                  label: const Text('Criar Alerta'),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppColors.accent),
-                    foregroundColor: AppColors.accent,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _shareProperty,
-                  icon: const Icon(Icons.share),
-                  label: const Text('Compartilhar'),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppColors.primary),
-                    foregroundColor: AppColors.primary,
-                  ),
-                ),
-              ),
-            ],
+          Text(
+            'Ações', 
+            style: AppTypography.h6.copyWith(
+              fontSize: isTablet ? 20 : 18,
+            ),
           ),
+          SizedBox(height: isTablet ? 20 : 16),
+          isTablet 
+              ? Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _createAlert,
+                        icon: const Icon(Icons.add_alert),
+                        label: const Text('Criar Alerta'),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: AppColors.accent),
+                          foregroundColor: AppColors.accent,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _shareProperty,
+                        icon: const Icon(Icons.share),
+                        label: const Text('Compartilhar'),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: AppColors.primary),
+                          foregroundColor: AppColors.primary,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              : Column(
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: _createAlert,
+                        icon: const Icon(Icons.add_alert),
+                        label: const Text('Criar Alerta'),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: AppColors.accent),
+                          foregroundColor: AppColors.accent,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: _shareProperty,
+                        icon: const Icon(Icons.share),
+                        label: const Text('Compartilhar'),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: AppColors.primary),
+                          foregroundColor: AppColors.primary,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
         ],
       ),
     );
@@ -622,8 +692,11 @@ Contato: ${_property!.realtorName} - ${_property!.realtorPhone}
   }
 
   Widget _buildBottomActions() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600;
+    
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(isTablet ? 20 : 16),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -634,46 +707,93 @@ Contato: ${_property!.realtorName} - ${_property!.realtorPhone}
           ),
         ],
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: OutlinedButton.icon(
-              onPressed: _contactRealtor,
-              icon: const Icon(Icons.phone),
-              label: const Text('Ligar'),
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: AppColors.primary),
-                foregroundColor: AppColors.primary,
-              ),
+      child: isTablet
+          ? Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 200,
+                  child: OutlinedButton.icon(
+                    onPressed: _contactRealtor,
+                    icon: const Icon(Icons.phone),
+                    label: const Text('Ligar'),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.primary),
+                      foregroundColor: AppColors.primary,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                SizedBox(
+                  width: 200,
+                  child: OutlinedButton.icon(
+                    onPressed: _openInternalChat,
+                    icon: const Icon(Icons.chat_bubble),
+                    label: const Text('Chat'),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.accent),
+                      foregroundColor: AppColors.accent,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                SizedBox(
+                  width: 200,
+                  child: ElevatedButton.icon(
+                    onPressed: _contactRealtor,
+                    icon: const Icon(Icons.message),
+                    label: const Text('WhatsApp'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: AppColors.textOnPrimary,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                  ),
+                ),
+              ],
+            )
+          : Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _contactRealtor,
+                    icon: const Icon(Icons.phone),
+                    label: const Text('Ligar'),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.primary),
+                      foregroundColor: AppColors.primary,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _openInternalChat,
+                    icon: const Icon(Icons.chat_bubble),
+                    label: const Text('Chat'),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.accent),
+                      foregroundColor: AppColors.accent,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: 2,
+                  child: ElevatedButton.icon(
+                    onPressed: _contactRealtor,
+                    icon: const Icon(Icons.message),
+                    label: const Text('WhatsApp'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: AppColors.textOnPrimary,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: OutlinedButton.icon(
-              onPressed: _openInternalChat,
-              icon: const Icon(Icons.chat_bubble),
-              label: const Text('Chat'),
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: AppColors.accent),
-                foregroundColor: AppColors.accent,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            flex: 2,
-            child: ElevatedButton.icon(
-              onPressed: _contactRealtor,
-              icon: const Icon(Icons.message),
-              label: const Text('WhatsApp'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.textOnPrimary,
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -847,3 +967,4 @@ class _CreatePropertyAlertDialogState extends State<CreatePropertyAlertDialog> {
     super.dispose();
   }
 }
+
