@@ -4,7 +4,9 @@ import '../../theme/app_typography.dart';
 import '../../theme/app_spacing.dart';
 import '../../services/mock_data_service.dart';
 import '../../models/property_model.dart';
+import '../../models/filter_model.dart';
 import '../../widgets/cards/property_card.dart';
+import '../../widgets/common/filter_sidebar.dart';
 import 'property_detail_screen.dart';
 import 'favorites_screen.dart';
 import 'property_comparison_screen.dart';
@@ -26,6 +28,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   bool _isLoading = true;
   bool _showCarousels = true;
   bool _showOnlyLaunches = false;
+  bool _showFilters = false;
+  PropertyFilters _filters = const PropertyFilters();
 
   @override
   void initState() {
@@ -66,12 +70,94 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         final matchesType = _selectedType == null || property.type == _selectedType;
         final matchesLaunch = !_showOnlyLaunches || property.isLaunch;
 
-        return matchesSearch && matchesType && matchesLaunch;
+        // Aplicar filtros da barra lateral
+        final matchesFilters = _applyAdvancedFilters(property);
+
+        return matchesSearch && matchesType && matchesLaunch && matchesFilters;
       }).toList();
 
       // Mostrar carrosséis apenas quando não há busca ou filtro ativo
-      _showCarousels = _searchQuery.isEmpty && _selectedType == null && !_showOnlyLaunches;
+      _showCarousels = _searchQuery.isEmpty && 
+          _selectedType == null && 
+          !_showOnlyLaunches && 
+          !_filters.hasActiveFilters;
     });
+  }
+
+  bool _applyAdvancedFilters(Property property) {
+    // Filtro de preço mínimo
+    if (_filters.minPrice != null && property.price < _filters.minPrice!) {
+      return false;
+    }
+
+    // Filtro de preço máximo
+    if (_filters.maxPrice != null && property.price > _filters.maxPrice!) {
+      return false;
+    }
+
+    // Filtro de faixas de preço
+    if (_filters.priceRanges.isNotEmpty) {
+      bool matchesAnyRange = false;
+      for (final rangeLabel in _filters.priceRanges) {
+        final range = PriceRange.predefinedRanges.firstWhere(
+          (r) => r.label == rangeLabel,
+          orElse: () => const PriceRange(label: ''),
+        );
+        
+        bool matchesRange = true;
+        if (range.minPrice != null && property.price < range.minPrice!) {
+          matchesRange = false;
+        }
+        if (range.maxPrice != null && property.price > range.maxPrice!) {
+          matchesRange = false;
+        }
+        
+        if (matchesRange) {
+          matchesAnyRange = true;
+          break;
+        }
+      }
+      if (!matchesAnyRange) return false;
+    }
+
+    // Filtro de condomínio (simulado através dos atributos)
+    if (_filters.maxCondominium != null) {
+      final condominium = property.attributes['condominium'] as double? ?? 0;
+      if (condominium > _filters.maxCondominium!) {
+        return false;
+      }
+    }
+
+    // Filtro de IPTU (simulado através dos atributos)
+    if (_filters.maxIptu != null) {
+      final iptu = property.attributes['iptu'] as double? ?? 0;
+      if (iptu > _filters.maxIptu!) {
+        return false;
+      }
+    }
+
+    // Filtro de imóveis com preço informado
+    if (_filters.showOnlyWithPrice && property.price <= 0) {
+      return false;
+    }
+
+    // Filtro de aceita proposta (simulado através dos atributos)
+    if (_filters.acceptProposal) {
+      final acceptsProposal = property.attributes['acceptsProposal'] as bool? ?? false;
+      if (!acceptsProposal) {
+        return false;
+      }
+    }
+
+    // Filtro de financiamento (simulado através dos atributos)
+    if (_filters.hasFinancing) {
+      final hasFinancing = property.attributes['hasFinancing'] as bool? ?? false;
+      if (!hasFinancing) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   void _toggleFavorite(String propertyId) {
@@ -363,19 +449,140 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
+  void _onFiltersChanged(PropertyFilters filters) {
+    setState(() {
+      _filters = filters;
+    });
+    _filterProperties();
+  }
+
+  void _onClearFilters() {
+    setState(() {
+      _filters = const PropertyFilters();
+    });
+    _filterProperties();
+  }
+
+  void _toggleFilters() {
+    setState(() {
+      _showFilters = !_showFilters;
+    });
+  }
+
+  void _showMobileFilters() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.9,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: Column(
+          children: [
+            // Handle
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.symmetric(vertical: 16),
+              decoration: BoxDecoration(
+                color: AppColors.textHint,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            // Header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.filter_list,
+                    color: AppColors.primary,
+                    size: 24,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Filtros',
+                      style: AppTypography.h6.copyWith(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  if (_filters.hasActiveFilters)
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _onClearFilters();
+                      },
+                      child: Text(
+                        'Limpar',
+                        style: AppTypography.labelMedium.copyWith(
+                          color: AppColors.error,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const Divider(),
+            // Filtros
+            Expanded(
+              child: FilterSidebar(
+                filters: _filters,
+                onFiltersChanged: (filters) {
+                  setState(() {
+                    _filters = filters;
+                  });
+                  _filterProperties();
+                },
+                onClearFilters: () {
+                  Navigator.pop(context);
+                  _onClearFilters();
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600;
+    
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: _buildAppBar(),
-      body: Column(
+      body: Row(
         children: [
-          _buildSearchAndFilters(),
-          _buildCompareBar(),
+          // Barra lateral de filtros
+          if (_showFilters && isTablet)
+            FilterSidebar(
+              filters: _filters,
+              onFiltersChanged: _onFiltersChanged,
+              onClearFilters: _onClearFilters,
+            ),
+          
+          // Conteúdo principal
           Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _buildMainContent(),
+            child: Column(
+              children: [
+                _buildSearchAndFilters(),
+                _buildCompareBar(),
+                Expanded(
+                  child: _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : _buildMainContent(),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -401,6 +608,33 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       foregroundColor: AppColors.textOnPrimary,
       elevation: 0,
       actions: [
+        // Botão de filtros (apenas para tablets)
+        if (MediaQuery.of(context).size.width > 600)
+          IconButton(
+            onPressed: _toggleFilters,
+            icon: Stack(
+              children: [
+                Icon(
+                  _showFilters ? Icons.filter_list_off : Icons.filter_list,
+                  color: _showFilters ? AppColors.accent : AppColors.textOnPrimary,
+                ),
+                if (_filters.hasActiveFilters)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: AppColors.accent,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            tooltip: _showFilters ? 'Ocultar filtros' : 'Mostrar filtros',
+          ),
         IconButton(
           onPressed: () {
             Navigator.push(
@@ -456,45 +690,95 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       color: Colors.white,
       child: Column(
         children: [
-          // Barra de pesquisa
-          TextField(
-            onChanged: (value) {
-              _searchQuery = value;
-              _filterProperties();
-            },
-            decoration: InputDecoration(
-              hintText: 'Buscar imóvel...',
-              prefixIcon: const Icon(Icons.search),
-              suffixIcon: _searchQuery.isNotEmpty
-                  ? IconButton(
-                      onPressed: () {
-                        setState(() {
-                          _searchQuery = '';
-                        });
-                        _filterProperties();
-                      },
-                      icon: const Icon(Icons.clear),
-                    )
-                  : null,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: AppColors.border),
+          // Barra de pesquisa com botão de filtros
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  onChanged: (value) {
+                    _searchQuery = value;
+                    _filterProperties();
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Buscar imóvel...',
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: _searchQuery.isNotEmpty
+                        ? IconButton(
+                            onPressed: () {
+                              setState(() {
+                                _searchQuery = '';
+                              });
+                              _filterProperties();
+                            },
+                            icon: const Icon(Icons.clear),
+                          )
+                        : null,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(color: AppColors.border),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(color: AppColors.border),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(color: AppColors.primary),
+                    ),
+                    filled: true,
+                    fillColor: AppColors.background,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: isTablet ? 16 : 12,
+                      vertical: isTablet ? 16 : 12,
+                    ),
+                  ),
+                ),
               ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: AppColors.border),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: AppColors.primary),
-              ),
-              filled: true,
-              fillColor: AppColors.background,
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: isTablet ? 16 : 12,
-                vertical: isTablet ? 16 : 12,
-              ),
-            ),
+              // Botão de filtros para mobile
+              if (!isTablet) ...[
+                const SizedBox(width: 12),
+                Container(
+                  decoration: BoxDecoration(
+                    color: _filters.hasActiveFilters 
+                        ? AppColors.primary.withValues(alpha: 0.1)
+                        : AppColors.background,
+                    border: Border.all(
+                      color: _filters.hasActiveFilters 
+                          ? AppColors.primary
+                          : AppColors.border,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: IconButton(
+                    onPressed: _showMobileFilters,
+                    icon: Stack(
+                      children: [
+                        Icon(
+                          Icons.filter_list,
+                          color: _filters.hasActiveFilters 
+                              ? AppColors.primary
+                              : AppColors.textSecondary,
+                        ),
+                        if (_filters.hasActiveFilters)
+                          Positioned(
+                            right: 0,
+                            top: 0,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: AppColors.accent,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    tooltip: 'Filtros',
+                  ),
+                ),
+              ],
+            ],
           ),
           const SizedBox(height: 12),
           // Filtros de tipo

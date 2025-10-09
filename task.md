@@ -205,5 +205,25 @@
 
 ## Etapa 12 -  Barra lateral com filtros.
 - [ ] **Barra Lateral com filtros** — Telas de Comprador
+## 💰 Filtros de Preço
+
+- [ ] Preço mínimo  
+- [ ] Preço máximo  
+- [ ] Tipo de negociação  
+  - [ ] Venda  
+  - [ ] Aluguel  
+  - [ ] Temporada / Diária  
+- [ ] Valor do condomínio  
+- [ ] Valor do IPTU mensal  
+- [ ] Faixas de preço sugeridas  
+  - [ ] Até R$ 100.000  
+  - [ ] R$ 100.000 – R$ 300.000  
+  - [ ] R$ 300.000 – R$ 500.000  
+  - [ ] R$ 500.000 – R$ 1.000.000  
+  - [ ] Acima de R$ 1.000.000  
+- [ ] Parcelamento / Financiamento disponível  
+- [ ] Aceita proposta / Negociável  
+- [ ] Exibir apenas imóveis com preço informado
+
 - [ ] **Barra Lateral com filtros** — Telas de Corretor
 - [ ] **Barra Lateral com filtros** — Telas de Admnistrador
