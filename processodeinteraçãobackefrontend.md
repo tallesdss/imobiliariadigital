@@ -53,19 +53,19 @@
 ---
 
 ## 💬 Etapa 4 — Chat em Tempo Real (`chat_conversations`, `chat_messages`)
-- [ ] **Listagem de Conversas**
+- [x] **Listagem de Conversas**
   - **Endpoints:** `/conversations`, `/conversations/:id`
   - **Estimado:** 3h  
-  - **Real:** ___  
-  - **Status:** ☐ Em andamento ☐ Concluído  
-  - **Observações:** ___________________________________________
+  - **Real:** 2.5h  
+  - **Status:** ☐ Em andamento ☑ Concluído  
+  - **Observações:** Criado ChatService com integração completa à API, listagem de conversas para todos os perfis (usuário, corretor, admin)
 
-- [ ] **Envio e Recebimento de Mensagens**
+- [x] **Envio e Recebimento de Mensagens**
   - **Endpoints:** `/messages`, WebSocket / Realtime Supabase
   - **Estimado:** 5h  
-  - **Real:** ___  
-  - **Status:** ☐ Em andamento ☐ Concluído  
-  - **Observações:** ___________________________________________
+  - **Real:** 4h  
+  - **Status:** ☐ Em andamento ☑ Concluído  
+  - **Observações:** Implementado WebSocket para mensagens em tempo real, telas de conversa para usuário e corretor, envio de mensagens com feedback visual
 
 ---
 
@@ -154,7 +154,7 @@
 | Autenticação & Usuários | 3h | 2.5h | ☑ |
 | Lista de Imóveis | 7h | 5.5h | ☑ |
 | Detalhe do Imóvel | 6h | 5h | ☑ |
-| Chat | 8h | ___ | ☐ |
+| Chat | 8h | 6.5h | ☑ |
 | Favoritos | 3h | ___ | ☐ |
 | Notificações | 4h | ___ | ☐ |
 | Área Corretor/Admin | 10h | ___ | ☐ |

@@ -1,10 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_spacing.dart';
-import '../../services/mock_data_service.dart';
+import '../../services/chat_service.dart';
 import '../../models/chat_model.dart';
-import '../../models/user_model.dart';
 import '../../widgets/common/chat_bubble.dart';
 
 class UserChatScreen extends StatefulWidget {
@@ -24,20 +24,30 @@ class _UserChatScreenState extends State<UserChatScreen> {
     _loadConversations();
   }
 
-  void _loadConversations() {
+  void _loadConversations() async {
     setState(() {
       _isLoading = true;
     });
 
-    Future.delayed(const Duration(milliseconds: 500), () {
+    try {
+      final conversations = await ChatService.getConversations();
       setState(() {
-        _conversations = MockDataService.getUserConversations(
-          'user1',
-          UserType.buyer,
-        );
+        _conversations = conversations;
         _isLoading = false;
       });
-    });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao carregar conversas: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
   }
 
   void _navigateToConversation(ChatConversation conversation) {
@@ -236,12 +246,36 @@ class _ConversationScreenState extends State<ConversationScreen> {
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
   late List<ChatMessage> _messages;
+  bool _isLoading = false;
+  StreamSubscription<ChatMessage>? _messageSubscription;
 
   @override
   void initState() {
     super.initState();
     _messages = List.from(widget.conversation.messages);
     _scrollToBottom();
+    
+    // Entrar na conversa para receber mensagens em tempo real
+    ChatService.joinConversation(widget.conversation.id);
+    
+    // Escutar novas mensagens
+    _messageSubscription = ChatService.messageStream.listen((message) {
+      if (message.senderId != ChatService.currentUserId) {
+        setState(() {
+          _messages.add(message);
+        });
+        _scrollToBottom();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _messageSubscription?.cancel();
+    ChatService.leaveConversation();
+    _messageController.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
 
   void _scrollToBottom() {
@@ -256,42 +290,42 @@ class _ConversationScreenState extends State<ConversationScreen> {
     });
   }
 
-  void _sendMessage() {
-    if (_messageController.text.trim().isEmpty) return;
+  void _sendMessage() async {
+    if (_messageController.text.trim().isEmpty || _isLoading) return;
 
-    final message = ChatMessage(
-      id: '',
-      senderId: 'user1',
-      senderName: 'João Silva',
-      content: _messageController.text.trim(),
-      type: MessageType.text,
-      timestamp: DateTime.now(),
-    );
+    final content = _messageController.text.trim();
+    _messageController.clear();
 
     setState(() {
-      _messages.add(message);
+      _isLoading = true;
     });
 
-    _messageController.clear();
-    _scrollToBottom();
-
-    // Simular resposta do corretor após 2 segundos
-    Future.delayed(const Duration(seconds: 2), () {
-      final response = ChatMessage(
-        id: '',
-        senderId: widget.conversation.realtorId,
-        senderName: widget.conversation.realtorName,
-        content:
-            'Obrigado pela mensagem! Vou verificar e te respondo em breve.',
-        type: MessageType.text,
-        timestamp: DateTime.now(),
+    try {
+      final message = await ChatService.sendMessage(
+        conversationId: widget.conversation.id,
+        content: content,
       );
 
       setState(() {
-        _messages.add(response);
+        _messages.add(message);
+        _isLoading = false;
       });
+
       _scrollToBottom();
-    });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao enviar mensagem: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -397,17 +431,26 @@ class _ConversationScreenState extends State<ConversationScreen> {
             ),
             SizedBox(width: isTablet ? 16 : AppSpacing.sm),
             Container(
-              decoration: const BoxDecoration(
-                color: AppColors.primary,
+              decoration: BoxDecoration(
+                color: _isLoading ? AppColors.primary.withValues(alpha: 0.5) : AppColors.primary,
                 shape: BoxShape.circle,
               ),
               child: IconButton(
-                onPressed: _sendMessage,
-                icon: Icon(
-                  Icons.send, 
-                  color: Colors.white,
-                  size: isTablet ? 24 : 20,
-                ),
+                onPressed: _isLoading ? null : _sendMessage,
+                icon: _isLoading 
+                    ? SizedBox(
+                        width: isTablet ? 24 : 20,
+                        height: isTablet ? 24 : 20,
+                        child: const CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : Icon(
+                        Icons.send, 
+                        color: Colors.white,
+                        size: isTablet ? 24 : 20,
+                      ),
                 padding: EdgeInsets.all(isTablet ? 16 : 12),
               ),
             ),
@@ -417,10 +460,4 @@ class _ConversationScreenState extends State<ConversationScreen> {
     );
   }
 
-  @override
-  void dispose() {
-    _messageController.dispose();
-    _scrollController.dispose();
-    super.dispose();
-  }
 }

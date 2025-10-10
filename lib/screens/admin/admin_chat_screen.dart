@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/chat_model.dart';
-import '../../services/mock_data_service.dart';
+import '../../services/chat_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../widgets/common/fixed_sidebar.dart';
@@ -19,11 +19,13 @@ class _AdminChatScreenState extends State<AdminChatScreen> with TickerProviderSt
   String _selectedFilter = 'todos'; // 'todos', 'corretores', 'usuarios'
   late TabController _tabController;
   bool _sidebarVisible = true;
+  List<ChatConversation> _conversations = [];
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _loadConversations();
   }
 
   @override
@@ -33,8 +35,26 @@ class _AdminChatScreenState extends State<AdminChatScreen> with TickerProviderSt
     super.dispose();
   }
 
+  void _loadConversations() async {
+    try {
+      final conversations = await ChatService.getConversations();
+      setState(() {
+        _conversations = conversations;
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao carregar conversas: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
   List<ChatConversation> get _filteredConversations {
-    var conversations = MockDataService.conversations;
+    var conversations = _conversations;
     
     // Filtrar por tipo de conversa
     if (_selectedFilter == 'corretores') {
@@ -657,59 +677,84 @@ class _AdminChatScreenState extends State<AdminChatScreen> with TickerProviderSt
       context: context,
       builder: (context) {
         final messageController = TextEditingController();
+        bool isLoading = false;
         
-        return AlertDialog(
-          title: const Text('Enviar Mensagem'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Para: ${conversation.buyerName}'),
-              const SizedBox(height: 16),
-              TextField(
-                controller: messageController,
-                decoration: const InputDecoration(
-                  hintText: 'Digite sua mensagem...',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 3,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (messageController.text.trim().isNotEmpty) {
-                  // Simular envio de mensagem
-                  final newMessage = ChatMessage(
-                    id: 'msg_${DateTime.now().millisecondsSinceEpoch}',
-                    senderId: 'admin',
-                    senderName: 'Administrador',
-                    content: messageController.text.trim(),
-                    type: MessageType.text,
-                    timestamp: DateTime.now(),
-                    isRead: false,
-                  );
-                  
-                  MockDataService.addChatMessage(conversation.id, newMessage);
-                  
-                  Navigator.of(context).pop();
-                  setState(() {});
-                  
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Mensagem enviada com sucesso!'),
-                      backgroundColor: AppColors.success,
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Enviar Mensagem'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Para: ${conversation.buyerName}'),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: messageController,
+                    decoration: const InputDecoration(
+                      hintText: 'Digite sua mensagem...',
+                      border: OutlineInputBorder(),
                     ),
-                  );
-                }
-              },
-              child: const Text('Enviar'),
-            ),
-          ],
+                    maxLines: 3,
+                    enabled: !isLoading,
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isLoading ? null : () => Navigator.of(context).pop(),
+                  child: const Text('Cancelar'),
+                ),
+                ElevatedButton(
+                  onPressed: isLoading ? null : () async {
+                    if (messageController.text.trim().isNotEmpty) {
+                      setDialogState(() {
+                        isLoading = true;
+                      });
+                      
+                      try {
+                        await ChatService.sendMessage(
+                          conversationId: conversation.id,
+                          content: messageController.text.trim(),
+                        );
+                        
+                        if (context.mounted) {
+                          Navigator.of(context).pop();
+                          _loadConversations(); // Recarregar conversas
+                          
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Mensagem enviada com sucesso!'),
+                              backgroundColor: AppColors.success,
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        setDialogState(() {
+                          isLoading = false;
+                        });
+                        
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Erro ao enviar mensagem: $e'),
+                              backgroundColor: AppColors.error,
+                            ),
+                          );
+                        }
+                      }
+                    }
+                  },
+                  child: isLoading 
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Enviar'),
+                ),
+              ],
+            );
+          },
         );
       },
     );

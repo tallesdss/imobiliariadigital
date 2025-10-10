@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_spacing.dart';
+import '../../services/chat_service.dart';
+import '../../models/chat_model.dart';
 import '../../widgets/common/fixed_sidebar.dart';
 import '../../widgets/common/custom_drawer.dart';
+import 'realtor_conversation_screen.dart';
 
 class RealtorChatScreen extends StatefulWidget {
   const RealtorChatScreen({super.key});
@@ -23,78 +26,40 @@ class _RealtorChatScreenState extends State<RealtorChatScreen> {
     _loadConversations();
   }
 
-  void _loadConversations() {
+  void _loadConversations() async {
     setState(() {
       _isLoading = true;
     });
 
-    Future.delayed(const Duration(milliseconds: 500), () {
+    try {
+      final conversations = await ChatService.getConversations();
       setState(() {
-        // Mock: Conversas de usuários interessados nos imóveis do corretor
-        _conversations = [
-          ChatConversation(
-            id: 'conv1',
-            propertyId: 'prop1',
-            propertyTitle: 'Casa de Praia em Guarujá',
-            otherUserId: 'user1',
-            otherUserName: 'João Silva',
-            otherUserPhoto:
-                'https://ui-avatars.com/api/?name=Joao+Silva&size=200',
-            lastMessage: 'Olá, gostaria de agendar uma visita!',
-            lastMessageTime: DateTime.now().subtract(const Duration(hours: 2)),
-            unreadCount: 3,
-          ),
-          ChatConversation(
-            id: 'conv2',
-            propertyId: 'prop2',
-            propertyTitle: 'Apartamento Moderno Centro',
-            otherUserId: 'user2',
-            otherUserName: 'Maria Santos',
-            otherUserPhoto:
-                'https://ui-avatars.com/api/?name=Maria+Santos&size=200',
-            lastMessage: 'Obrigada pelas informações!',
-            lastMessageTime: DateTime.now().subtract(const Duration(days: 1)),
-            unreadCount: 0,
-          ),
-          ChatConversation(
-            id: 'conv3',
-            propertyId: 'prop1',
-            propertyTitle: 'Casa de Praia em Guarujá',
-            otherUserId: 'user3',
-            otherUserName: 'Pedro Alves',
-            otherUserPhoto:
-                'https://ui-avatars.com/api/?name=Pedro+Alves&size=200',
-            lastMessage: 'Qual o valor do condomínio?',
-            lastMessageTime: DateTime.now().subtract(const Duration(days: 2)),
-            unreadCount: 1,
-          ),
-          ChatConversation(
-            id: 'conv4',
-            propertyId: 'prop3',
-            propertyTitle: 'Sala Comercial Av. Paulista',
-            otherUserId: 'user4',
-            otherUserName: 'Ana Costa',
-            otherUserPhoto:
-                'https://ui-avatars.com/api/?name=Ana+Costa&size=200',
-            lastMessage: 'O imóvel ainda está disponível?',
-            lastMessageTime: DateTime.now().subtract(const Duration(days: 3)),
-            unreadCount: 0,
-          ),
-        ];
+        _conversations = conversations;
         _isLoading = false;
       });
-    });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao carregar conversas: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
   }
 
   void _openConversation(ChatConversation conversation) {
-    Navigator.pushNamed(
+    Navigator.push(
       context,
-      '/chat-detail',
-      arguments: {
-        'conversationId': conversation.id,
-        'propertyTitle': conversation.propertyTitle,
-        'otherUserName': conversation.otherUserName,
-      },
+      MaterialPageRoute(
+        builder: (context) => RealtorConversationScreen(
+          conversation: conversation,
+        ),
+      ),
     );
   }
 
@@ -227,7 +192,7 @@ class _RealtorChatScreenState extends State<RealtorChatScreen> {
 
   Widget _buildConversationItem(ChatConversation conversation) {
     final isUnread = conversation.unreadCount > 0;
-    final timeAgo = _formatTimeAgo(conversation.lastMessageTime);
+    final timeAgo = _formatTimeAgo(conversation.lastMessageAt);
 
     return InkWell(
       onTap: () => _openConversation(conversation),
@@ -249,18 +214,15 @@ class _RealtorChatScreenState extends State<RealtorChatScreen> {
               children: [
                 CircleAvatar(
                   radius: 28,
-                  backgroundImage: conversation.otherUserPhoto != null
-                      ? NetworkImage(conversation.otherUserPhoto!)
-                      : null,
                   backgroundColor: AppColors.primary,
-                  child: conversation.otherUserPhoto == null
-                      ? Text(
-                          conversation.otherUserName[0].toUpperCase(),
-                          style: AppTypography.h6.copyWith(
-                            color: Colors.white,
-                          ),
-                        )
-                      : null,
+                  child: Text(
+                    conversation.buyerName.isNotEmpty
+                        ? conversation.buyerName[0].toUpperCase()
+                        : '?',
+                    style: AppTypography.h6.copyWith(
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
                 if (isUnread)
                   Positioned(
@@ -293,7 +255,7 @@ class _RealtorChatScreenState extends State<RealtorChatScreen> {
                     children: [
                       Expanded(
                         child: Text(
-                          conversation.otherUserName,
+                          conversation.buyerName,
                           style: AppTypography.subtitle1.copyWith(
                             fontWeight: isUnread
                                 ? FontWeight.bold
@@ -341,7 +303,7 @@ class _RealtorChatScreenState extends State<RealtorChatScreen> {
                     children: [
                       Expanded(
                         child: Text(
-                          conversation.lastMessage,
+                          conversation.lastMessage?.content ?? 'Nenhuma mensagem',
                           style: AppTypography.bodyMedium.copyWith(
                             color: isUnread
                                 ? AppColors.textPrimary
@@ -401,26 +363,3 @@ class _RealtorChatScreenState extends State<RealtorChatScreen> {
   }
 }
 
-class ChatConversation {
-  final String id;
-  final String propertyId;
-  final String propertyTitle;
-  final String otherUserId;
-  final String otherUserName;
-  final String? otherUserPhoto;
-  final String lastMessage;
-  final DateTime lastMessageTime;
-  final int unreadCount;
-
-  ChatConversation({
-    required this.id,
-    required this.propertyId,
-    required this.propertyTitle,
-    required this.otherUserId,
-    required this.otherUserName,
-    this.otherUserPhoto,
-    required this.lastMessage,
-    required this.lastMessageTime,
-    this.unreadCount = 0,
-  });
-}
