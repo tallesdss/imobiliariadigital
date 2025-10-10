@@ -5,11 +5,13 @@ import 'services/navigation_service.dart';
 import 'services/api_service.dart';
 import 'services/auth_service.dart';
 import 'services/property_state_service.dart';
+import 'services/supabase_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Inicializar serviços
+  await SupabaseService.initialize();
   await ApiService.initialize();
   
   runApp(const ImobiliariaDigitalApp());
