@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'mock_data_service.dart';
 import '../screens/auth/login_screen.dart';
+import '../screens/auth/register_screen.dart';
 import '../screens/auth/profile_selection_screen.dart';
 import '../screens/user/user_home_screen.dart';
 import '../screens/user/property_detail_screen.dart';
 import '../screens/user/favorites_screen.dart';
 import '../screens/user/alerts_screen.dart';
 import '../screens/user/user_chat_screen.dart';
+import '../screens/user/user_profile_screen.dart';
 import '../screens/realtor/realtor_home_screen.dart';
 import '../screens/realtor/property_form_screen.dart';
 import '../screens/realtor/realtor_profile_screen.dart';
@@ -36,6 +38,11 @@ class NavigationService {
         path: '/login',
         name: 'login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/register',
+        name: 'register',
+        builder: (context, state) => const RegisterScreen(),
       ),
       GoRoute(
         path: '/profile-selection',
@@ -70,6 +77,11 @@ class NavigationService {
             path: '/chat',
             name: 'user-chat',
             builder: (context, state) => const UserChatScreen(),
+          ),
+          GoRoute(
+            path: '/profile',
+            name: 'user-profile',
+            builder: (context, state) => const UserProfileScreen(),
           ),
         ],
       ),

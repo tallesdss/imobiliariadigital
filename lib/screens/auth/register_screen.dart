@@ -9,34 +9,43 @@ import '../../widgets/common/custom_text_field.dart';
 import '../../services/auth_service.dart';
 import '../../models/user_model.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  Future<void> _handleLogin() async {
+  Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
 
     final authService = Provider.of<AuthService>(context, listen: false);
     
-    final success = await authService.login(
+    final success = await authService.register(
+      name: _nameController.text.trim(),
       email: _emailController.text.trim(),
       password: _passwordController.text,
+      phone: _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
     );
 
     if (mounted) {
@@ -60,16 +69,12 @@ class _LoginScreenState extends State<LoginScreen> {
         // Mostrar erro
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(authService.error ?? 'Erro no login'),
+            content: Text(authService.error ?? 'Erro no registro'),
             backgroundColor: AppColors.error,
           ),
         );
       }
     }
-  }
-
-  void _handleRegister() {
-    context.push('/register');
   }
 
   @override
@@ -80,6 +85,14 @@ class _LoginScreenState extends State<LoginScreen> {
     
     return Scaffold(
       backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          onPressed: () => context.pop(),
+        ),
+      ),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -94,27 +107,25 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  if (!isTablet) AppSpacing.verticalXXL,
-
                   // Logo and Title
                   Column(
                     children: [
                       Container(
-                        width: isTablet ? 100 : 120,
-                        height: isTablet ? 100 : 120,
+                        width: isTablet ? 80 : 100,
+                        height: isTablet ? 80 : 100,
                         decoration: BoxDecoration(
                           gradient: AppColors.primaryGradient,
                           borderRadius: AppSpacing.borderRadiusXL,
                         ),
                         child: Icon(
                           Icons.home_work,
-                          size: isTablet ? 50 : 60,
+                          size: isTablet ? 40 : 50,
                           color: AppColors.textOnPrimary,
                         ),
                       ),
                       AppSpacing.verticalLG,
                       Text(
-                        'Imobiliária Digital',
+                        'Criar Conta',
                         style: AppTypography.h2.copyWith(
                           color: AppColors.primary,
                           fontSize: isTablet ? 28 : 32,
@@ -122,7 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       AppSpacing.verticalSM,
                       Text(
-                        'Encontre seu imóvel ideal',
+                        'Preencha os dados para criar sua conta',
                         style: AppTypography.bodyLarge.copyWith(
                           color: AppColors.textSecondary,
                           fontSize: isTablet ? 16 : 18,
@@ -133,19 +144,29 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   AppSpacing.verticalXXL,
 
-                  // Login Form
+                  // Register Form
                   Form(
                     key: _formKey,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Text(
-                          'Entrar',
-                          style: AppTypography.h4.copyWith(
-                            fontSize: isTablet ? 22 : 24,
-                          ),
+                        CustomTextField(
+                          controller: _nameController,
+                          label: 'Nome completo',
+                          hintText: 'Digite seu nome completo',
+                          prefixIcon: Icons.person_outlined,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Por favor, digite seu nome';
+                            }
+                            if (value.length < 2) {
+                              return 'Nome deve ter pelo menos 2 caracteres';
+                            }
+                            return null;
+                          },
                         ),
-                        AppSpacing.verticalLG,
+
+                        AppSpacing.verticalMD,
 
                         CustomTextField(
                           controller: _emailController,
@@ -164,6 +185,16 @@ class _LoginScreenState extends State<LoginScreen> {
                             }
                             return null;
                           },
+                        ),
+
+                        AppSpacing.verticalMD,
+
+                        CustomTextField(
+                          controller: _phoneController,
+                          label: 'Telefone (opcional)',
+                          hintText: '(11) 99999-9999',
+                          keyboardType: TextInputType.phone,
+                          prefixIcon: Icons.phone_outlined,
                         ),
 
                         AppSpacing.verticalMD,
@@ -197,38 +228,45 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                         ),
 
-                        AppSpacing.verticalSM,
+                        AppSpacing.verticalMD,
 
-                        // Forgot Password
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Funcionalidade será implementada em breve',
-                                  ),
-                                ),
-                              );
-                            },
-                            child: Text(
-                              'Esqueci minha senha',
-                              style: AppTypography.labelMedium.copyWith(
-                                color: AppColors.primary,
-                              ),
+                        CustomTextField(
+                          controller: _confirmPasswordController,
+                          label: 'Confirmar senha',
+                          hintText: 'Digite sua senha novamente',
+                          obscureText: _obscureConfirmPassword,
+                          prefixIcon: Icons.lock_outlined,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscureConfirmPassword
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
                             ),
+                            onPressed: () {
+                              setState(() {
+                                _obscureConfirmPassword = !_obscureConfirmPassword;
+                              });
+                            },
                           ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Por favor, confirme sua senha';
+                            }
+                            if (value != _passwordController.text) {
+                              return 'As senhas não coincidem';
+                            }
+                            return null;
+                          },
                         ),
 
                         AppSpacing.verticalLG,
 
-                        // Login Button
+                        // Register Button
                         Consumer<AuthService>(
                           builder: (context, authService, child) {
                             return CustomButton(
-                              text: 'Entrar',
-                              onPressed: authService.isLoading ? null : _handleLogin,
+                              text: 'Criar conta',
+                              onPressed: authService.isLoading ? null : _handleRegister,
                               isLoading: authService.isLoading,
                               size: ButtonSize.large,
                             );
@@ -256,10 +294,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
                         AppSpacing.verticalLG,
 
-                        // Register Button
+                        // Login Button
                         CustomButton(
-                          text: 'Criar conta',
-                          onPressed: _handleRegister,
+                          text: 'Já tenho uma conta',
+                          onPressed: () => context.pop(),
                           type: ButtonType.outlined,
                           size: ButtonSize.large,
                         ),
@@ -268,47 +306,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
 
                   AppSpacing.verticalXXL,
-
-                  // Demo Info
-                  Container(
-                    padding: AppSpacing.paddingMD,
-                    decoration: BoxDecoration(
-                      color: AppColors.info.withValues(alpha: 0.1 * 255),
-                      borderRadius: AppSpacing.borderRadiusSM,
-                      border: Border.all(
-                        color: AppColors.info.withValues(alpha: 0.3 * 255),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.info_outline,
-                              size: 20,
-                              color: AppColors.info,
-                            ),
-                            AppSpacing.horizontalSM,
-                            Text(
-                              'Demo - Apenas Frontend',
-                              style: AppTypography.labelMedium.copyWith(
-                                color: AppColors.info,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                        AppSpacing.verticalSM,
-                        Text(
-                          'Este é um projeto de demonstração. Qualquer e-mail/senha funcionará para acessar o sistema.',
-                          style: AppTypography.bodySmall.copyWith(
-                            color: AppColors.info,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                 ],
               ),
             ),
