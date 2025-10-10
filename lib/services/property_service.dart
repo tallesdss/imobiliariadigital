@@ -1,6 +1,6 @@
-import 'package:dio/dio.dart';
 import '../models/property_model.dart';
-import 'api_service.dart';
+import 'supabase_service.dart';
+import '../config/supabase_config.dart';
 
 class PropertyService {
   static Future<List<Property>> getProperties({
@@ -13,159 +13,122 @@ class PropertyService {
     int limit = 20,
   }) async {
     try {
-      final queryParams = <String, dynamic>{
-        'page': page,
-        'limit': limit,
-      };
-
-      if (search != null && search.isNotEmpty) {
-        queryParams['search'] = search;
-      }
-      if (type != null) {
-        queryParams['type'] = type.name;
-      }
-      if (city != null && city.isNotEmpty) {
-        queryParams['city'] = city;
-      }
-      if (minPrice != null) {
-        queryParams['min_price'] = minPrice;
-      }
-      if (maxPrice != null) {
-        queryParams['max_price'] = maxPrice;
-      }
-
-      final response = await ApiService.dio.get('/properties', queryParameters: queryParams);
+      final response = await SupabaseService.client
+          .from(SupabaseConfig.propertiesTable)
+          .select('*')
+          .eq('status', 'ativo')
+          .order('data_criacao', ascending: false)
+          .range((page - 1) * limit, page * limit - 1);
       
-      if (response.statusCode == 200) {
-        final List<dynamic> data = response.data['properties'] ?? response.data;
-        return data.map((json) => Property.fromJson(json)).toList();
-      }
-      throw Exception('Erro ao carregar imóveis');
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 404) {
-        return []; // Retorna lista vazia se não encontrar imóveis
-      } else {
-        throw Exception('Erro de conexão. Tente novamente.');
-      }
+      return response.map((json) => Property.fromJson(json)).toList();
     } catch (e) {
-      throw Exception('Erro inesperado: $e');
+      throw Exception('Erro ao carregar imóveis: $e');
     }
   }
 
   static Future<Property> getPropertyById(String id) async {
     try {
-      final response = await ApiService.dio.get('/properties/$id');
+      final response = await SupabaseService.client
+          .from(SupabaseConfig.propertiesTable)
+          .select('*')
+          .eq('id', id)
+          .single();
       
-      if (response.statusCode == 200) {
-        return Property.fromJson(response.data);
-      }
-      throw Exception('Erro ao carregar imóvel');
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 404) {
-        throw Exception('Imóvel não encontrado');
-      } else {
-        throw Exception('Erro de conexão. Tente novamente.');
-      }
+      return Property.fromJson(response);
     } catch (e) {
-      throw Exception('Erro inesperado: $e');
+      throw Exception('Imóvel não encontrado: $e');
     }
   }
 
   static Future<List<Property>> getFeaturedProperties() async {
     try {
-      final response = await ApiService.dio.get('/properties/featured');
+      final response = await SupabaseService.client
+          .from(SupabaseConfig.propertiesTable)
+          .select('*')
+          .eq('status', 'ativo')
+          .eq('destaque', true)
+          .order('data_criacao', ascending: false);
       
-      if (response.statusCode == 200) {
-        final List<dynamic> data = response.data['properties'] ?? response.data;
-        return data.map((json) => Property.fromJson(json)).toList();
-      }
-      throw Exception('Erro ao carregar imóveis em destaque');
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 404) {
-        return []; // Retorna lista vazia se não encontrar imóveis
-      } else {
-        throw Exception('Erro de conexão. Tente novamente.');
-      }
+      return response.map((json) => Property.fromJson(json)).toList();
     } catch (e) {
-      throw Exception('Erro inesperado: $e');
+      throw Exception('Erro ao carregar imóveis em destaque: $e');
     }
   }
 
   static Future<List<Property>> getLaunchProperties() async {
     try {
-      final response = await ApiService.dio.get('/properties/launches');
+      final response = await SupabaseService.client
+          .from(SupabaseConfig.propertiesTable)
+          .select('*')
+          .eq('status', 'ativo')
+          .eq('lancamento', true)
+          .order('data_criacao', ascending: false);
       
-      if (response.statusCode == 200) {
-        final List<dynamic> data = response.data['properties'] ?? response.data;
-        return data.map((json) => Property.fromJson(json)).toList();
-      }
-      throw Exception('Erro ao carregar lançamentos');
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 404) {
-        return []; // Retorna lista vazia se não encontrar imóveis
-      } else {
-        throw Exception('Erro de conexão. Tente novamente.');
-      }
+      return response.map((json) => Property.fromJson(json)).toList();
     } catch (e) {
-      throw Exception('Erro inesperado: $e');
+      throw Exception('Erro ao carregar lançamentos: $e');
     }
   }
 
   static Future<List<Property>> getPropertiesByType(PropertyType type) async {
     try {
-      final response = await ApiService.dio.get('/properties', queryParameters: {
-        'type': type.name,
-        'limit': 10,
-      });
+      final response = await SupabaseService.client
+          .from(SupabaseConfig.propertiesTable)
+          .select('*')
+          .eq('status', 'ativo')
+          .eq('tipo_imovel', type.name)
+          .order('data_criacao', ascending: false)
+          .limit(10);
       
-      if (response.statusCode == 200) {
-        final List<dynamic> data = response.data['properties'] ?? response.data;
-        return data.map((json) => Property.fromJson(json)).toList();
-      }
-      throw Exception('Erro ao carregar imóveis por tipo');
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 404) {
-        return []; // Retorna lista vazia se não encontrar imóveis
-      } else {
-        throw Exception('Erro de conexão. Tente novamente.');
-      }
+      return response.map((json) => Property.fromJson(json)).toList();
     } catch (e) {
-      throw Exception('Erro inesperado: $e');
+      throw Exception('Erro ao carregar imóveis por tipo: $e');
     }
   }
 
   static Future<List<String>> getCities() async {
     try {
-      final response = await ApiService.dio.get('/properties/cities');
+      final response = await SupabaseService.client
+          .from(SupabaseConfig.propertiesTable)
+          .select('cidade')
+          .eq('status', 'ativo');
       
-      if (response.statusCode == 200) {
-        final List<dynamic> data = response.data['cities'] ?? response.data;
-        return data.cast<String>();
-      }
-      throw Exception('Erro ao carregar cidades');
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 404) {
-        return []; // Retorna lista vazia se não encontrar cidades
-      } else {
-        throw Exception('Erro de conexão. Tente novamente.');
-      }
+      final cities = response
+          .map((row) => row['cidade'] as String)
+          .toSet()
+          .toList()
+        ..sort();
+      
+      return cities;
     } catch (e) {
-      throw Exception('Erro inesperado: $e');
+      throw Exception('Erro ao carregar cidades: $e');
     }
   }
 
   static Future<Map<String, int>> getPropertyStats() async {
     try {
-      final response = await ApiService.dio.get('/properties/stats');
+      final response = await SupabaseService.client
+          .from(SupabaseConfig.propertiesTable)
+          .select('tipo_imovel, destaque, lancamento')
+          .eq('status', 'ativo');
       
-      if (response.statusCode == 200) {
-        return Map<String, int>.from(response.data);
-      }
-      throw Exception('Erro ao carregar estatísticas');
-    } on DioException {
-      throw Exception('Erro de conexão. Tente novamente.');
+      final properties = response.map((row) => {
+        'type': row['tipo_imovel'] as String,
+        'is_featured': row['destaque'] as bool? ?? false,
+        'is_launch': row['lancamento'] as bool? ?? false,
+      }).toList();
+      
+      return {
+        'total': properties.length,
+        'apartments': properties.where((p) => p['type'] == 'apartamento').length,
+        'houses': properties.where((p) => p['type'] == 'casa').length,
+        'commercial': properties.where((p) => p['type'] == 'comercial').length,
+        'land': properties.where((p) => p['type'] == 'terreno').length,
+        'featured': properties.where((p) => p['is_featured'] == true).length,
+        'launches': properties.where((p) => p['is_launch'] == true).length,
+      };
     } catch (e) {
-      throw Exception('Erro inesperado: $e');
+      throw Exception('Erro ao carregar estatísticas: $e');
     }
   }
 }
