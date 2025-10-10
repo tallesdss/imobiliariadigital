@@ -4,7 +4,9 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
-import '../../services/mock_data_service.dart';
+import '../../services/property_service.dart';
+import '../../services/favorite_service.dart';
+import '../../services/alert_service.dart';
 import '../../models/property_model.dart';
 import '../../models/favorite_model.dart';
 import '../../widgets/common/media_gallery.dart';
@@ -30,49 +32,76 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
     _loadPropertyDetails();
   }
 
-  void _loadPropertyDetails() {
+  Future<void> _loadPropertyDetails() async {
     setState(() {
       _isLoading = true;
     });
 
-    // Simular carregamento
-    Future.delayed(const Duration(milliseconds: 500), () {
-      final property = MockDataService.getPropertyById(widget.propertyId);
-      final isFavorite = MockDataService.isPropertyFavorited(
-        'user1',
-        widget.propertyId,
-      );
+    try {
+      // Carregar detalhes do imóvel e status de favorito em paralelo
+      final results = await Future.wait([
+        PropertyService.getPropertyById(widget.propertyId),
+        FavoriteService.isPropertyFavorited(widget.propertyId),
+      ]);
 
-      setState(() {
-        _property = property;
-        _isFavorite = isFavorite;
-        _isLoading = false;
-      });
-    });
+      final property = results[0] as Property;
+      final isFavorite = results[1] as bool;
+
+      if (mounted) {
+        setState(() {
+          _property = property;
+          _isFavorite = isFavorite;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao carregar imóvel: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
-  void _toggleFavorite() {
+  Future<void> _toggleFavorite() async {
     if (_property == null) return;
 
-    setState(() {
-      if (_isFavorite) {
-        MockDataService.removeFavorite('user1', _property!.id);
-        _isFavorite = false;
-      } else {
-        MockDataService.addFavorite('user1', _property!.id);
-        _isFavorite = true;
-      }
-    });
+    try {
+      await FavoriteService.toggleFavorite(_property!.id);
+      
+      if (mounted) {
+        setState(() {
+          _isFavorite = !_isFavorite;
+        });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          _isFavorite
-              ? 'Imóvel adicionado aos favoritos'
-              : 'Imóvel removido dos favoritos',
-        ),
-      ),
-    );
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              _isFavorite
+                  ? 'Imóvel adicionado aos favoritos'
+                  : 'Imóvel removido dos favoritos',
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao alterar favorito: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _shareProperty() async {
@@ -941,23 +970,32 @@ class _CreatePropertyAlertDialogState extends State<CreatePropertyAlertDialog> {
     }
   }
 
-  void _createAlert() {
+  Future<void> _createAlert() async {
     if (_formKey.currentState!.validate()) {
-      final alert = PropertyAlert(
-        id: '',
-        userId: 'user1',
-        propertyId: widget.property.id,
-        propertyTitle: widget.property.title,
-        type: _selectedType,
-        targetPrice: _selectedType == AlertType.priceReduction
-            ? double.tryParse(_targetPriceController.text)
-            : null,
-        createdAt: DateTime.now(),
-      );
-
-      MockDataService.addAlert(alert);
-      widget.onAlertCreated();
-      Navigator.pop(context);
+      try {
+        await AlertService.createAlert(
+          propertyId: widget.property.id,
+          propertyTitle: widget.property.title,
+          type: _selectedType,
+          targetPrice: _selectedType == AlertType.priceReduction
+              ? double.tryParse(_targetPriceController.text)
+              : null,
+        );
+        
+        if (mounted) {
+          widget.onAlertCreated();
+          Navigator.pop(context);
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Erro ao criar alerta: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 

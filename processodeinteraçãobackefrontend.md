@@ -36,19 +36,19 @@
 ---
 
 ## 🏡 Etapa 3 — Detalhe do Imóvel (`properties/:id`)
-- [ ] **Tela de Detalhes**
+- [x] **Tela de Detalhes**
   - **Endpoints:** `/properties/:id`
   - **Estimado:** 4h  
-  - **Real:** ___  
-  - **Status:** ☐ Em andamento ☐ Concluído  
-  - **Observações:** ___________________________________________
+  - **Real:** 3h  
+  - **Status:** ☐ Em andamento ☑ Concluído  
+  - **Observações:** Implementado PropertyService.getPropertyById, integração real com API, tratamento de erros, carregamento assíncrono
 
-- [ ] **Favoritar / Desfavoritar**
+- [x] **Favoritar / Desfavoritar**
   - **Endpoints:** `/favorites`, `/favorites/:id`
   - **Estimado:** 2h  
-  - **Real:** ___  
-  - **Status:** ☐ Em andamento ☐ Concluído  
-  - **Observações:** ___________________________________________
+  - **Real:** 2h  
+  - **Status:** ☐ Em andamento ☑ Concluído  
+  - **Observações:** Criado FavoriteService, integração completa com API, atualização de FavoritesScreen e PropertyDetailScreen
 
 ---
 
@@ -153,7 +153,7 @@
 |---|---:|---:|:---|
 | Autenticação & Usuários | 3h | 2.5h | ☑ |
 | Lista de Imóveis | 7h | 5.5h | ☑ |
-| Detalhe do Imóvel | 6h | ___ | ☐ |
+| Detalhe do Imóvel | 6h | 5h | ☑ |
 | Chat | 8h | ___ | ☐ |
 | Favoritos | 3h | ___ | ☐ |
 | Notificações | 4h | ___ | ☐ |

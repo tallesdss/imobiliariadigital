@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
-import '../../services/mock_data_service.dart';
+import '../../services/favorite_service.dart';
 import '../../models/property_model.dart';
 import '../../widgets/cards/property_card.dart';
 import 'property_detail_screen.dart';
@@ -23,30 +23,61 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     _loadFavorites();
   }
 
-  void _loadFavorites() {
+  Future<void> _loadFavorites() async {
     setState(() {
       _isLoading = true;
     });
 
-    // Simular carregamento
-    Future.delayed(const Duration(milliseconds: 500), () {
-      final favorites = MockDataService.getFavoriteProperties('user1');
-      setState(() {
-        _favoriteProperties = favorites;
-        _isLoading = false;
-      });
-    });
+    try {
+      final favorites = await FavoriteService.getUserFavorites();
+      if (mounted) {
+        setState(() {
+          _favoriteProperties = favorites;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao carregar favoritos: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
-  void _removeFavorite(String propertyId) {
-    MockDataService.removeFavorite('user1', propertyId);
-    setState(() {
-      _favoriteProperties.removeWhere((property) => property.id == propertyId);
-    });
+  Future<void> _removeFavorite(String propertyId) async {
+    try {
+      await FavoriteService.removeFavorite(propertyId);
+      
+      if (mounted) {
+        setState(() {
+          _favoriteProperties.removeWhere((property) => property.id == propertyId);
+        });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Imóvel removido dos favoritos')),
-    );
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Imóvel removido dos favoritos'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao remover favorito: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _navigateToPropertyDetail(String propertyId) {
@@ -235,17 +266,36 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     );
   }
 
-  void _clearAllFavorites() {
-    for (final property in _favoriteProperties) {
-      MockDataService.removeFavorite('user1', property.id);
+  Future<void> _clearAllFavorites() async {
+    try {
+      // Remover todos os favoritos em paralelo
+      await Future.wait(
+        _favoriteProperties.map((property) => 
+          FavoriteService.removeFavorite(property.id)
+        ),
+      );
+
+      if (mounted) {
+        setState(() {
+          _favoriteProperties.clear();
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Todos os favoritos foram removidos'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao limpar favoritos: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
-
-    setState(() {
-      _favoriteProperties.clear();
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Todos os favoritos foram removidos')),
-    );
   }
 }
