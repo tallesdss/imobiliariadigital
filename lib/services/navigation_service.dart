@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'mock_data_service.dart';
+import 'supabase_service.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
 import '../screens/auth/profile_selection_screen.dart';
@@ -32,6 +33,27 @@ class NavigationService {
   static final GoRouter router = GoRouter(
     navigatorKey: navigatorKey,
     initialLocation: '/login',
+    redirect: (context, state) {
+      // Verificar se o usuário está autenticado
+      final isAuthenticated = SupabaseService.isAuthenticated;
+      final isAuthRoute = state.uri.path == '/login' || 
+                         state.uri.path == '/register' || 
+                         state.uri.path == '/profile-selection';
+      
+      // Se não está autenticado e não está em rota de auth, redirecionar para login
+      if (!isAuthenticated && !isAuthRoute) {
+        return '/login';
+      }
+      
+      // Se está autenticado e está em rota de auth, redirecionar para home apropriado
+      if (isAuthenticated && isAuthRoute) {
+        // Aqui você pode implementar lógica para determinar o tipo de usuário
+        // Por enquanto, redireciona para /user como padrão
+        return '/user';
+      }
+      
+      return null; // Não redirecionar
+    },
     routes: [
       // Auth Routes
       GoRoute(
