@@ -281,7 +281,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         ),
         const SizedBox(height: AppSpacing.sm),
         SizedBox(
-          height: isTablet ? 360 : 320,
+          height: isTablet ? 380 : 340,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: EdgeInsets.symmetric(

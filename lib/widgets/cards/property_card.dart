@@ -134,13 +134,14 @@ class PropertyCard extends StatelessWidget {
 
   Widget _buildContentSection() {
     return Padding(
-      padding: EdgeInsets.all(isCompact ? 12 : 16),
+      padding: EdgeInsets.all(isCompact ? 10 : 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Tipo do imóvel
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
             decoration: BoxDecoration(
               color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(4),
@@ -150,14 +151,15 @@ class PropertyCard extends StatelessWidget {
               style: AppTypography.labelSmall.copyWith(
                 color: AppColors.primary,
                 fontWeight: FontWeight.w600,
+                fontSize: isCompact ? 10 : 11,
               ),
             ),
           ),
-          SizedBox(height: isCompact ? 6 : 8),
+          SizedBox(height: isCompact ? 4 : 8),
           // Título
           Text(
             property.title,
-            style: isCompact ? AppTypography.bodyLarge : AppTypography.h6,
+            style: isCompact ? AppTypography.bodyMedium : AppTypography.h6,
             maxLines: isCompact ? 1 : 2,
             overflow: TextOverflow.ellipsis,
           ),
@@ -165,29 +167,32 @@ class PropertyCard extends StatelessWidget {
           // Localização
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.location_on_outlined,
-                size: 16,
+                size: isCompact ? 14 : 16,
                 color: AppColors.textSecondary,
               ),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
                   '${property.city}, ${property.state}',
-                  style: AppTypography.bodySmall,
+                  style: AppTypography.bodySmall.copyWith(
+                    fontSize: isCompact ? 11 : 12,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
           ),
-          SizedBox(height: isCompact ? 8 : 12),
+          SizedBox(height: isCompact ? 6 : 12),
           // Preço
           Text(
             property.formattedPrice, 
-            style: isCompact ? AppTypography.bodyLarge.copyWith(
+            style: isCompact ? AppTypography.bodyMedium.copyWith(
               color: AppColors.primary,
               fontWeight: FontWeight.bold,
+              fontSize: 14,
             ) : AppTypography.priceSecondary,
           ),
           // Descrição resumida (apenas para cards não compactos)
@@ -251,7 +256,10 @@ class PropertyCard extends StatelessWidget {
     if (attributes.isEmpty) return const SizedBox.shrink();
 
     return Container(
-      padding: EdgeInsets.all(isCompact ? 12 : 16),
+      padding: EdgeInsets.symmetric(
+        horizontal: isCompact ? 10 : 16,
+        vertical: isCompact ? 8 : 12,
+      ),
       decoration: const BoxDecoration(
         border: Border(top: BorderSide(color: AppColors.border, width: 1)),
       ),
@@ -264,17 +272,18 @@ class PropertyCard extends StatelessWidget {
 
   Widget _buildAttributeItem(IconData icon, String value, String label) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: isCompact ? 18 : 20, color: AppColors.textSecondary),
-        SizedBox(height: isCompact ? 2 : 4),
+        Icon(icon, size: isCompact ? 16 : 20, color: AppColors.textSecondary),
+        SizedBox(height: isCompact ? 1 : 4),
         Text(
           value, 
-          style: isCompact ? AppTypography.labelSmall : AppTypography.labelMedium,
+          style: isCompact ? AppTypography.labelSmall.copyWith(fontSize: 10) : AppTypography.labelMedium,
         ),
         if (label.isNotEmpty) 
           Text(
             label, 
-            style: isCompact ? AppTypography.caption : AppTypography.overline,
+            style: isCompact ? AppTypography.caption.copyWith(fontSize: 9) : AppTypography.overline,
           ),
       ],
     );
