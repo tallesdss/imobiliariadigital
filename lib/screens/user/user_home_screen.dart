@@ -6,7 +6,7 @@ import '../../services/mock_data_service.dart';
 import '../../models/property_model.dart';
 import '../../models/filter_model.dart';
 import '../../widgets/cards/property_card.dart';
-import '../../widgets/common/filter_sidebar.dart';
+import '../../widgets/common/fixed_sidebar.dart';
 import 'property_detail_screen.dart';
 import 'favorites_screen.dart';
 import 'property_comparison_screen.dart';
@@ -28,8 +28,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   bool _isLoading = true;
   bool _showCarousels = true;
   bool _showOnlyLaunches = false;
-  bool _showFilters = false;
   PropertyFilters _filters = const PropertyFilters();
+  bool _sidebarVisible = true;
 
   @override
   void initState() {
@@ -463,112 +463,30 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     _filterProperties();
   }
 
-  void _toggleFilters() {
-    setState(() {
-      _showFilters = !_showFilters;
-    });
-  }
 
-  void _showMobileFilters() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.9,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-        ),
-        child: Column(
-          children: [
-            // Handle
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.symmetric(vertical: 16),
-              decoration: BoxDecoration(
-                color: AppColors.textHint,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            // Header
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.filter_list,
-                    color: AppColors.primary,
-                    size: 24,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'Filtros',
-                      style: AppTypography.h6.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  if (_filters.hasActiveFilters)
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        _onClearFilters();
-                      },
-                      child: Text(
-                        'Limpar',
-                        style: AppTypography.labelMedium.copyWith(
-                          color: AppColors.error,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            const Divider(),
-            // Filtros
-            Expanded(
-              child: FilterSidebar(
-                filters: _filters,
-                onFiltersChanged: (filters) {
-                  setState(() {
-                    _filters = filters;
-                  });
-                  _filterProperties();
-                },
-                onClearFilters: () {
-                  Navigator.pop(context);
-                  _onClearFilters();
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isTablet = screenWidth > 600;
     
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: _buildAppBar(),
       body: Row(
         children: [
-          // Barra lateral de filtros
-          if (_showFilters && isTablet)
-            FilterSidebar(
-              filters: _filters,
-              onFiltersChanged: _onFiltersChanged,
-              onClearFilters: _onClearFilters,
-            ),
+          // Sidebar fixa de filtros
+          FixedSidebar(
+            type: SidebarType.filters,
+            currentRoute: '/user',
+            filters: _filters,
+            onFiltersChanged: _onFiltersChanged,
+            onClearFilters: _onClearFilters,
+            isVisible: _sidebarVisible,
+            onToggleVisibility: () {
+              setState(() {
+                _sidebarVisible = !_sidebarVisible;
+              });
+            },
+          ),
           
           // Conteúdo principal
           Expanded(
@@ -608,32 +526,43 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       foregroundColor: AppColors.textOnPrimary,
       elevation: 0,
       actions: [
-        // Botão de filtros (apenas para tablets)
-        if (MediaQuery.of(context).size.width > 600)
-          IconButton(
-            onPressed: _toggleFilters,
-            icon: Stack(
+        // Botão para alternar sidebar
+        IconButton(
+          onPressed: () {
+            setState(() {
+              _sidebarVisible = !_sidebarVisible;
+            });
+          },
+          icon: Icon(_sidebarVisible ? Icons.menu_open : Icons.menu),
+          tooltip: _sidebarVisible ? 'Ocultar filtros' : 'Mostrar filtros',
+        ),
+        // Indicador de filtros ativos
+        if (_filters.hasActiveFilters)
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: AppColors.accent,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  _showFilters ? Icons.filter_list_off : Icons.filter_list,
-                  color: _showFilters ? AppColors.accent : AppColors.textOnPrimary,
+                const Icon(
+                  Icons.filter_list,
+                  color: AppColors.textOnPrimary,
+                  size: 16,
                 ),
-                if (_filters.hasActiveFilters)
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: AppColors.accent,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
+                const SizedBox(width: 4),
+                Text(
+                  'Filtros Ativos',
+                  style: AppTypography.labelSmall.copyWith(
+                    color: AppColors.textOnPrimary,
+                    fontWeight: FontWeight.w600,
                   ),
+                ),
               ],
             ),
-            tooltip: _showFilters ? 'Ocultar filtros' : 'Mostrar filtros',
           ),
         IconButton(
           onPressed: () {
@@ -734,50 +663,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   ),
                 ),
               ),
-              // Botão de filtros para mobile
-              if (!isTablet) ...[
-                const SizedBox(width: 12),
-                Container(
-                  decoration: BoxDecoration(
-                    color: _filters.hasActiveFilters 
-                        ? AppColors.primary.withValues(alpha: 0.1)
-                        : AppColors.background,
-                    border: Border.all(
-                      color: _filters.hasActiveFilters 
-                          ? AppColors.primary
-                          : AppColors.border,
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: IconButton(
-                    onPressed: _showMobileFilters,
-                    icon: Stack(
-                      children: [
-                        Icon(
-                          Icons.filter_list,
-                          color: _filters.hasActiveFilters 
-                              ? AppColors.primary
-                              : AppColors.textSecondary,
-                        ),
-                        if (_filters.hasActiveFilters)
-                          Positioned(
-                            right: 0,
-                            top: 0,
-                            child: Container(
-                              width: 8,
-                              height: 8,
-                              decoration: const BoxDecoration(
-                                color: AppColors.accent,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                    tooltip: 'Filtros',
-                  ),
-                ),
-              ],
             ],
           ),
           const SizedBox(height: 12),

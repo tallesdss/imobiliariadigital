@@ -4,6 +4,7 @@ import '../../models/property_model.dart';
 import '../../services/mock_data_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
+import '../../widgets/common/fixed_sidebar.dart';
 import '../../widgets/common/custom_drawer.dart';
 
 class AdminRealtorsScreen extends StatefulWidget {
@@ -16,6 +17,7 @@ class AdminRealtorsScreen extends StatefulWidget {
 class _AdminRealtorsScreenState extends State<AdminRealtorsScreen> {
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+  bool _sidebarVisible = true;
 
   @override
   void dispose() {
@@ -44,6 +46,16 @@ class _AdminRealtorsScreenState extends State<AdminRealtorsScreen> {
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.textOnPrimary,
         actions: [
+          // Botão para alternar sidebar
+          IconButton(
+            onPressed: () {
+              setState(() {
+                _sidebarVisible = !_sidebarVisible;
+              });
+            },
+            icon: Icon(_sidebarVisible ? Icons.menu_open : Icons.menu),
+            tooltip: _sidebarVisible ? 'Ocultar menu' : 'Mostrar menu',
+          ),
           IconButton(
             onPressed: () => _showAddRealtorDialog(context),
             icon: const Icon(Icons.person_add),
@@ -51,17 +63,33 @@ class _AdminRealtorsScreenState extends State<AdminRealtorsScreen> {
           ),
         ],
       ),
-      drawer: const CustomDrawer(
-        userType: DrawerUserType.admin,
-        userName: 'Administrador',
-        userEmail: 'admin@imobiliaria.com',
-        currentRoute: '/admin/realtors',
-      ),
-      body: Column(
+      body: Row(
         children: [
-          _buildSearchSection(),
+          // Sidebar fixa de navegação
+          FixedSidebar(
+            type: SidebarType.navigation,
+            userType: DrawerUserType.admin,
+            userName: 'Administrador',
+            userEmail: 'admin@imobiliaria.com',
+            currentRoute: '/admin/realtors',
+            isVisible: _sidebarVisible,
+            onToggleVisibility: () {
+              setState(() {
+                _sidebarVisible = !_sidebarVisible;
+              });
+            },
+          ),
+          
+          // Conteúdo principal
           Expanded(
-            child: _buildRealtorsList(),
+            child: Column(
+              children: [
+                _buildSearchSection(),
+                Expanded(
+                  child: _buildRealtorsList(),
+                ),
+              ],
+            ),
           ),
         ],
       ),

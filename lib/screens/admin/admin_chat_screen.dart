@@ -3,6 +3,7 @@ import '../../models/chat_model.dart';
 import '../../services/mock_data_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
+import '../../widgets/common/fixed_sidebar.dart';
 import '../../widgets/common/custom_drawer.dart';
 
 class AdminChatScreen extends StatefulWidget {
@@ -17,6 +18,7 @@ class _AdminChatScreenState extends State<AdminChatScreen> with TickerProviderSt
   final TextEditingController _searchController = TextEditingController();
   String _selectedFilter = 'todos'; // 'todos', 'corretores', 'usuarios'
   late TabController _tabController;
+  bool _sidebarVisible = true;
 
   @override
   void initState() {
@@ -66,6 +68,18 @@ class _AdminChatScreenState extends State<AdminChatScreen> with TickerProviderSt
         title: const Text('Mensagens'),
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.textOnPrimary,
+        actions: [
+          // Botão para alternar sidebar
+          IconButton(
+            onPressed: () {
+              setState(() {
+                _sidebarVisible = !_sidebarVisible;
+              });
+            },
+            icon: Icon(_sidebarVisible ? Icons.menu_open : Icons.menu),
+            tooltip: _sidebarVisible ? 'Ocultar menu' : 'Mostrar menu',
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: AppColors.textOnPrimary,
@@ -93,18 +107,34 @@ class _AdminChatScreenState extends State<AdminChatScreen> with TickerProviderSt
           ],
         ),
       ),
-      drawer: const CustomDrawer(
-        userType: DrawerUserType.admin,
-        userName: 'Administrador',
-        userEmail: 'admin@imobiliaria.com',
-        currentRoute: '/admin/chat',
-      ),
-      body: Column(
+      body: Row(
         children: [
-          _buildSearchSection(),
-          _buildFilterChips(),
+          // Sidebar fixa de navegação
+          FixedSidebar(
+            type: SidebarType.navigation,
+            userType: DrawerUserType.admin,
+            userName: 'Administrador',
+            userEmail: 'admin@imobiliaria.com',
+            currentRoute: '/admin/chat',
+            isVisible: _sidebarVisible,
+            onToggleVisibility: () {
+              setState(() {
+                _sidebarVisible = !_sidebarVisible;
+              });
+            },
+          ),
+          
+          // Conteúdo principal
           Expanded(
-            child: _buildConversationsList(),
+            child: Column(
+              children: [
+                _buildSearchSection(),
+                _buildFilterChips(),
+                Expanded(
+                  child: _buildConversationsList(),
+                ),
+              ],
+            ),
           ),
         ],
       ),

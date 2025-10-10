@@ -5,6 +5,7 @@ import '../../theme/app_spacing.dart';
 import '../../services/mock_data_service.dart';
 import '../../models/property_model.dart';
 import '../../widgets/cards/property_card.dart';
+import '../../widgets/common/fixed_sidebar.dart';
 import '../../widgets/common/custom_drawer.dart';
 import 'realtor_profile_edit_screen.dart';
 
@@ -19,6 +20,7 @@ class _RealtorProfileScreenState extends State<RealtorProfileScreen> {
   final String _realtorId = 'realtor1'; // Mock - usuário logado
   List<Property> _properties = [];
   bool _isLoading = true;
+  bool _sidebarVisible = true;
 
   // Mock data do corretor
   final Map<String, dynamic> _realtorData = {
@@ -69,30 +71,56 @@ class _RealtorProfileScreenState extends State<RealtorProfileScreen> {
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.textOnPrimary,
         actions: [
+          // Botão para alternar sidebar
+          IconButton(
+            onPressed: () {
+              setState(() {
+                _sidebarVisible = !_sidebarVisible;
+              });
+            },
+            icon: Icon(_sidebarVisible ? Icons.menu_open : Icons.menu),
+            tooltip: _sidebarVisible ? 'Ocultar menu' : 'Mostrar menu',
+          ),
           IconButton(
             onPressed: _navigateToEditProfile,
             icon: const Icon(Icons.edit),
           ),
         ],
       ),
-      drawer: CustomDrawer(
-        userType: DrawerUserType.realtor,
-        userName: _realtorData['name'],
-        userEmail: _realtorData['email'],
-        userCreci: _realtorData['creci'],
-        currentRoute: '/realtor/profile',
+      body: Row(
+        children: [
+          // Sidebar fixa de navegação
+          FixedSidebar(
+            type: SidebarType.navigation,
+            userType: DrawerUserType.realtor,
+            userName: _realtorData['name'],
+            userEmail: _realtorData['email'],
+            userCreci: _realtorData['creci'],
+            currentRoute: '/realtor/profile',
+            isVisible: _sidebarVisible,
+            onToggleVisibility: () {
+              setState(() {
+                _sidebarVisible = !_sidebarVisible;
+              });
+            },
+          ),
+          
+          // Conteúdo principal
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        _buildProfileHeader(),
+                        _buildStatsSection(),
+                        _buildPropertiesSection(),
+                      ],
+                    ),
+                  ),
+          ),
+        ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              child: Column(
-                children: [
-                  _buildProfileHeader(),
-                  _buildStatsSection(),
-                  _buildPropertiesSection(),
-                ],
-              ),
-            ),
     );
   }
 

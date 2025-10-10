@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_spacing.dart';
+import '../../widgets/common/fixed_sidebar.dart';
 import '../../widgets/common/custom_drawer.dart';
 
 class RealtorChatScreen extends StatefulWidget {
@@ -14,6 +15,7 @@ class RealtorChatScreen extends StatefulWidget {
 class _RealtorChatScreenState extends State<RealtorChatScreen> {
   List<ChatConversation> _conversations = [];
   bool _isLoading = true;
+  bool _sidebarVisible = true;
 
   @override
   void initState() {
@@ -104,17 +106,45 @@ class _RealtorChatScreenState extends State<RealtorChatScreen> {
         title: const Text('Conversas'),
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.textOnPrimary,
+        actions: [
+          // Botão para alternar sidebar
+          IconButton(
+            onPressed: () {
+              setState(() {
+                _sidebarVisible = !_sidebarVisible;
+              });
+            },
+            icon: Icon(_sidebarVisible ? Icons.menu_open : Icons.menu),
+            tooltip: _sidebarVisible ? 'Ocultar menu' : 'Mostrar menu',
+          ),
+        ],
       ),
-      drawer: const CustomDrawer(
-        userType: DrawerUserType.realtor,
-        userName: 'Carlos Oliveira',
-        userEmail: 'carlos@imobiliaria.com',
-        userCreci: 'CRECI-SP 12345',
-        currentRoute: '/realtor/chat',
+      body: Row(
+        children: [
+          // Sidebar fixa de navegação
+          FixedSidebar(
+            type: SidebarType.navigation,
+            userType: DrawerUserType.realtor,
+            userName: 'Carlos Oliveira',
+            userEmail: 'carlos@imobiliaria.com',
+            userCreci: 'CRECI-SP 12345',
+            currentRoute: '/realtor/chat',
+            isVisible: _sidebarVisible,
+            onToggleVisibility: () {
+              setState(() {
+                _sidebarVisible = !_sidebarVisible;
+              });
+            },
+          ),
+          
+          // Conteúdo principal
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _buildContent(),
+          ),
+        ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _buildContent(),
     );
   }
 

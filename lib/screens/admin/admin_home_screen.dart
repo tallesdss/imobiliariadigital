@@ -3,6 +3,7 @@ import '../../models/property_model.dart';
 import '../../services/mock_data_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
+import '../../widgets/common/fixed_sidebar.dart';
 import '../../widgets/common/custom_drawer.dart';
 
 class AdminHomeScreen extends StatefulWidget {
@@ -16,6 +17,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   PropertyStatus? _selectedStatus;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+  bool _sidebarVisible = true;
 
   @override
   void dispose() {
@@ -50,6 +52,16 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.textOnPrimary,
         actions: [
+          // Botão para alternar sidebar
+          IconButton(
+            onPressed: () {
+              setState(() {
+                _sidebarVisible = !_sidebarVisible;
+              });
+            },
+            icon: Icon(_sidebarVisible ? Icons.menu_open : Icons.menu),
+            tooltip: _sidebarVisible ? 'Ocultar menu' : 'Mostrar menu',
+          ),
           IconButton(
             onPressed: () => _showAddPropertyDialog(context),
             icon: const Icon(Icons.add),
@@ -57,17 +69,33 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           ),
         ],
       ),
-      drawer: const CustomDrawer(
-        userType: DrawerUserType.admin,
-        userName: 'Administrador',
-        userEmail: 'admin@imobiliaria.com',
-        currentRoute: '/admin',
-      ),
-      body: Column(
+      body: Row(
         children: [
-          _buildFiltersSection(),
+          // Sidebar fixa de navegação
+          FixedSidebar(
+            type: SidebarType.navigation,
+            userType: DrawerUserType.admin,
+            userName: 'Administrador',
+            userEmail: 'admin@imobiliaria.com',
+            currentRoute: '/admin',
+            isVisible: _sidebarVisible,
+            onToggleVisibility: () {
+              setState(() {
+                _sidebarVisible = !_sidebarVisible;
+              });
+            },
+          ),
+          
+          // Conteúdo principal
           Expanded(
-            child: _buildPropertiesList(),
+            child: Column(
+              children: [
+                _buildFiltersSection(),
+                Expanded(
+                  child: _buildPropertiesList(),
+                ),
+              ],
+            ),
           ),
         ],
       ),

@@ -4,10 +4,18 @@ import '../../models/realtor_model.dart';
 import '../../services/mock_data_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
+import '../../widgets/common/fixed_sidebar.dart';
 import '../../widgets/common/custom_drawer.dart';
 
-class AdminDashboardScreen extends StatelessWidget {
+class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
+
+  @override
+  State<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
+}
+
+class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
+  bool _sidebarVisible = true;
 
   @override
   Widget build(BuildContext context) {
@@ -28,25 +36,53 @@ class AdminDashboardScreen extends StatelessWidget {
         title: const Text('Dashboard Administrativo'),
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.textOnPrimary,
+        actions: [
+          // Botão para alternar sidebar
+          IconButton(
+            onPressed: () {
+              setState(() {
+                _sidebarVisible = !_sidebarVisible;
+              });
+            },
+            icon: Icon(_sidebarVisible ? Icons.menu_open : Icons.menu),
+            tooltip: _sidebarVisible ? 'Ocultar menu' : 'Mostrar menu',
+          ),
+        ],
       ),
-      drawer: const CustomDrawer(
-        userType: DrawerUserType.admin,
-        userName: 'Administrador',
-        userEmail: 'admin@imobiliaria.com',
-        currentRoute: '/admin/dashboard',
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildOverviewSection(activeProperties, soldProperties, archivedProperties, activeRealtors),
-            const SizedBox(height: 24),
-            _buildRealtorRankingSection(realtorRanking),
-            const SizedBox(height: 24),
-            _buildPerformanceChartSection(),
-          ],
-        ),
+      body: Row(
+        children: [
+          // Sidebar fixa de navegação
+          FixedSidebar(
+            type: SidebarType.navigation,
+            userType: DrawerUserType.admin,
+            userName: 'Administrador',
+            userEmail: 'admin@imobiliaria.com',
+            currentRoute: '/admin/dashboard',
+            isVisible: _sidebarVisible,
+            onToggleVisibility: () {
+              setState(() {
+                _sidebarVisible = !_sidebarVisible;
+              });
+            },
+          ),
+          
+          // Conteúdo principal
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildOverviewSection(activeProperties, soldProperties, archivedProperties, activeRealtors),
+                  const SizedBox(height: 24),
+                  _buildRealtorRankingSection(realtorRanking),
+                  const SizedBox(height: 24),
+                  _buildPerformanceChartSection(),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
