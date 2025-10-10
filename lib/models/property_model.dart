@@ -156,26 +156,106 @@ class Property {
   factory Property.fromJson(Map<String, dynamic> json) {
     return Property(
       id: json['id'],
-      title: json['title'],
-      description: json['description'],
-      price: json['price'].toDouble(),
-      type: PropertyType.values.firstWhere((e) => e.name == json['type']),
-      status: PropertyStatus.values.firstWhere((e) => e.name == json['status']),
-      address: json['address'],
-      city: json['city'],
-      state: json['state'],
-      zipCode: json['zipCode'],
-      photos: List<String>.from(json['photos']),
-      videos: List<String>.from(json['videos']),
-      attributes: Map<String, dynamic>.from(json['attributes']),
-      realtorId: json['realtorId'],
-      realtorName: json['realtorName'],
-      realtorPhone: json['realtorPhone'],
-      adminContact: json['adminContact'],
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
-      isFeatured: json['isFeatured'] ?? false,
-      isLaunch: json['isLaunch'] ?? false,
+      title: json['titulo'] ?? json['title'] ?? '',
+      description: json['descricao'] ?? json['description'] ?? '',
+      price: _parsePrice(json['preco'] ?? json['price']),
+      type: _parsePropertyType(json['tipo_imovel'] ?? json['type']),
+      status: _parsePropertyStatus(json['status']),
+      address: json['endereco'] ?? json['address'] ?? '',
+      city: json['cidade'] ?? json['city'] ?? '',
+      state: json['estado'] ?? json['state'] ?? '',
+      zipCode: json['cep'] ?? json['zipCode'] ?? '',
+      photos: List<String>.from(json['fotos'] ?? json['photos'] ?? []),
+      videos: List<String>.from(json['videos'] ?? []),
+      attributes: Map<String, dynamic>.from(json['atributos'] ?? json['attributes'] ?? {}),
+      realtorId: json['corretor_id'] ?? json['realtorId'] ?? '',
+      realtorName: json['nome_corretor'] ?? json['realtorName'] ?? '',
+      realtorPhone: json['telefone_corretor'] ?? json['realtorPhone'] ?? '',
+      adminContact: json['contato_admin'] ?? json['adminContact'] ?? '',
+      createdAt: _parseDateTime(json['data_criacao'] ?? json['createdAt'] ?? json['created_at']),
+      updatedAt: _parseDateTime(json['data_atualizacao'] ?? json['updatedAt'] ?? json['updated_at']),
+      isFeatured: json['destaque'] ?? json['isFeatured'] ?? false,
+      isLaunch: json['lancamento'] ?? json['isLaunch'] ?? false,
     );
+  }
+
+  static PropertyType _parsePropertyType(dynamic typeValue) {
+    if (typeValue == null) return PropertyType.house;
+    
+    String typeStr = typeValue.toString().toLowerCase();
+    switch (typeStr) {
+      case 'casa':
+      case 'house':
+        return PropertyType.house;
+      case 'apartamento':
+      case 'apartment':
+        return PropertyType.apartment;
+      case 'comercial':
+      case 'commercial':
+        return PropertyType.commercial;
+      case 'terreno':
+      case 'land':
+        return PropertyType.land;
+      default:
+        return PropertyType.house;
+    }
+  }
+
+  static PropertyStatus _parsePropertyStatus(dynamic statusValue) {
+    if (statusValue == null) return PropertyStatus.active;
+    
+    String statusStr = statusValue.toString().toLowerCase();
+    switch (statusStr) {
+      case 'ativo':
+      case 'active':
+        return PropertyStatus.active;
+      case 'vendido':
+      case 'sold':
+        return PropertyStatus.sold;
+      case 'arquivado':
+      case 'archived':
+        return PropertyStatus.archived;
+      case 'suspenso':
+      case 'suspended':
+        return PropertyStatus.suspended;
+      default:
+        return PropertyStatus.active;
+    }
+  }
+
+  static double _parsePrice(dynamic priceValue) {
+    if (priceValue == null) return 0.0;
+    
+    if (priceValue is num) {
+      return priceValue.toDouble();
+    }
+    
+    if (priceValue is String) {
+      try {
+        return double.parse(priceValue);
+      } catch (e) {
+        return 0.0;
+      }
+    }
+    
+    return 0.0;
+  }
+
+  static DateTime _parseDateTime(dynamic dateValue) {
+    if (dateValue == null) return DateTime.now();
+    
+    if (dateValue is String) {
+      try {
+        return DateTime.parse(dateValue);
+      } catch (e) {
+        return DateTime.now();
+      }
+    }
+    
+    if (dateValue is DateTime) {
+      return dateValue;
+    }
+    
+    return DateTime.now();
   }
 }

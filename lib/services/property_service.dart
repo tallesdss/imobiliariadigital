@@ -99,7 +99,7 @@ class PropertyService {
           .from(SupabaseConfig.propertiesTable)
           .select('*')
           .eq('status', 'ativo')
-          .eq('tipo_imovel', type.name)
+          .eq('tipo_imovel', _getTypeString(type))
           .order('data_criacao', ascending: false)
           .limit(10);
       
@@ -152,6 +152,19 @@ class PropertyService {
       };
     } catch (e) {
       throw Exception('Erro ao carregar estatísticas: $e');
+    }
+  }
+
+  static String _getTypeString(PropertyType type) {
+    switch (type) {
+      case PropertyType.house:
+        return 'casa';
+      case PropertyType.apartment:
+        return 'apartamento';
+      case PropertyType.commercial:
+        return 'comercial';
+      case PropertyType.land:
+        return 'terreno';
     }
   }
 }

@@ -43,10 +43,18 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     await propertyService.loadProperties(refresh: true);
     
     // Carregar favoritos do usuário
-    await _loadUserFavorites();
+    try {
+      await _loadUserFavorites();
+    } catch (e) {
+      // Ignora erro de favoritos
+    }
     
     // Carregar notificações
-    await _loadNotifications();
+    try {
+      await _loadNotifications();
+    } catch (e) {
+      // Ignora erro de notificações
+    }
   }
 
   Future<void> _loadUserFavorites() async {
