@@ -16,4 +16,15 @@ class SupabaseConfig {
   static const String systemSettingsTable = 'system_settings';
   static const String activityLogsTable = 'activity_logs';
   static const String notificationsTable = 'notifications';
+  
+  // Credenciais para testes (APENAS DESENVOLVIMENTO)
+  // ⚠️ NÃO USAR EM PRODUÇÃO ⚠️
+  static const Map<String, String> testCredentials = {
+    'buyer': 'test.buyer@imobiliariadigital.com',
+    'realtor': 'test.realtor@imobiliariadigital.com', 
+    'admin': 'test.admin@imobiliariadigital.com',
+    'generic': 'usuario.teste@imobiliariadigital.com',
+  };
+  
+  static const String testPassword = 'Teste123456';
 }

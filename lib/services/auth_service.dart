@@ -50,8 +50,20 @@ class AuthService extends ChangeNotifier {
         return true;
       }
       return false;
+    } on AuthException catch (e) {
+      // Tratamento específico para erros de autenticação do Supabase
+      if (e.message.contains('Invalid login credentials')) {
+        _setError('E-mail ou senha incorretos.');
+      } else if (e.message.contains('Email not confirmed')) {
+        _setError('E-mail não confirmado. Verifique sua caixa de entrada.');
+      } else if (e.message.contains('over_email_send_rate_limit')) {
+        _setError('Muitas tentativas de login. Aguarde alguns minutos.');
+      } else {
+        _setError('Erro no login: ${e.message}');
+      }
+      return false;
     } catch (e) {
-      _setError(e.toString());
+      _setError('Erro inesperado: $e');
       return false;
     } finally {
       _setLoading(false);
@@ -85,8 +97,22 @@ class AuthService extends ChangeNotifier {
         return true;
       }
       return false;
+    } on AuthException catch (e) {
+      // Tratamento específico para erros de autenticação do Supabase
+      if (e.message.contains('over_email_send_rate_limit')) {
+        _setError('Muitas tentativas de cadastro. Aguarde alguns minutos antes de tentar novamente.');
+      } else if (e.message.contains('User already registered')) {
+        _setError('Este e-mail já está cadastrado. Tente fazer login.');
+      } else if (e.message.contains('Invalid email')) {
+        _setError('E-mail inválido. Verifique o formato.');
+      } else if (e.message.contains('Password should be at least')) {
+        _setError('A senha deve ter pelo menos 6 caracteres.');
+      } else {
+        _setError('Erro no cadastro: ${e.message}');
+      }
+      return false;
     } catch (e) {
-      _setError(e.toString());
+      _setError('Erro inesperado: $e');
       return false;
     } finally {
       _setLoading(false);
