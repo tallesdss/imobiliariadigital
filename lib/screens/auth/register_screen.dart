@@ -7,7 +7,6 @@ import '../../theme/app_spacing.dart';
 import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/custom_text_field.dart';
 import '../../services/auth_service.dart';
-import '../../models/user_model.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -50,21 +49,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (mounted) {
       if (success) {
-        // Navegar baseado no tipo de usuário
-        final user = authService.currentUser;
-        if (user != null) {
-          switch (user.type) {
-            case UserType.buyer:
-              context.go('/user');
-              break;
-            case UserType.realtor:
-              context.go('/realtor');
-              break;
-            case UserType.admin:
-              context.go('/admin');
-              break;
-          }
-        }
+        // Navegar para seleção de perfil
+        context.go('/profile-selection');
       } else {
         // Mostrar erro
         ScaffoldMessenger.of(context).showSnackBar(
@@ -84,21 +70,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (mounted) {
       if (success) {
-        // Navegar baseado no tipo de usuário
-        final user = authService.currentUser;
-        if (user != null) {
-          switch (user.type) {
-            case UserType.buyer:
-              context.go('/user');
-              break;
-            case UserType.realtor:
-              context.go('/realtor');
-              break;
-            case UserType.admin:
-              context.go('/admin');
-              break;
-          }
-        }
+        // Navegar para seleção de perfil
+        context.go('/profile-selection');
       } else {
         // Mostrar erro apenas se não foi cancelado pelo usuário
         if (authService.error != null && !authService.error!.contains('cancelado')) {

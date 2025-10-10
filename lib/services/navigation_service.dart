@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import 'mock_data_service.dart';
 import 'supabase_service.dart';
-import 'auth_service.dart';
-import '../models/user_model.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
 import '../screens/auth/profile_selection_screen.dart';
@@ -48,27 +45,9 @@ class NavigationService {
         return '/login';
       }
       
-      // Se está autenticado e está em rota de auth, redirecionar para home apropriado
+      // Se está autenticado e está em rota de auth, redirecionar para seleção de perfil
       if (isAuthenticated && isAuthRoute) {
-        // Tentar obter o tipo de usuário do AuthService
-        try {
-          final authService = context.read<AuthService>();
-          final user = authService.currentUser;
-          if (user != null) {
-            switch (user.type) {
-              case UserType.buyer:
-                return '/user';
-              case UserType.realtor:
-                return '/realtor';
-              case UserType.admin:
-                return '/admin';
-            }
-          }
-        } catch (e) {
-          // Se não conseguir obter o tipo de usuário, usar padrão
-          return '/user';
-        }
-        return '/user';
+        return '/profile-selection';
       }
       
       return null; // Não redirecionar

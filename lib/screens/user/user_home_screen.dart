@@ -14,6 +14,7 @@ import 'property_detail_screen.dart';
 import 'favorites_screen.dart';
 import 'property_comparison_screen.dart';
 import 'notifications_screen.dart';
+import 'user_profile_screen.dart';
 
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});
@@ -323,10 +324,10 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               title: const Text('Meu Perfil'),
               onTap: () {
                 Navigator.pop(context);
-                // Navegar para tela de perfil
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Tela de perfil em desenvolvimento'),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const UserProfileScreen(),
                   ),
                 );
               },
