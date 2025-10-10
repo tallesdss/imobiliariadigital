@@ -2,6 +2,8 @@ enum PropertyType { house, apartment, commercial, land }
 
 enum PropertyStatus { active, sold, archived, suspended }
 
+enum PropertyTransactionType { sale, rent, daily }
+
 class Property {
   final String id;
   final String title;
@@ -9,6 +11,7 @@ class Property {
   final double price;
   final PropertyType type;
   final PropertyStatus status;
+  final PropertyTransactionType? transactionType;
   final String address;
   final String city;
   final String state;
@@ -32,6 +35,7 @@ class Property {
     required this.price,
     required this.type,
     required this.status,
+    this.transactionType,
     required this.address,
     required this.city,
     required this.state,
@@ -56,6 +60,7 @@ class Property {
     double? price,
     PropertyType? type,
     PropertyStatus? status,
+    PropertyTransactionType? transactionType,
     String? address,
     String? city,
     String? state,
@@ -79,6 +84,7 @@ class Property {
       price: price ?? this.price,
       type: type ?? this.type,
       status: status ?? this.status,
+      transactionType: transactionType ?? this.transactionType,
       address: address ?? this.address,
       city: city ?? this.city,
       state: state ?? this.state,
@@ -135,6 +141,7 @@ class Property {
       'price': price,
       'type': type.name,
       'status': status.name,
+      'transactionType': transactionType?.name,
       'address': address,
       'city': city,
       'state': state,
@@ -161,6 +168,7 @@ class Property {
       price: _parsePrice(json['preco'] ?? json['price']),
       type: _parsePropertyType(json['tipo_imovel'] ?? json['type']),
       status: _parsePropertyStatus(json['status']),
+      transactionType: _parseTransactionType(json['tipo_transacao'] ?? json['transactionType']),
       address: json['endereco'] ?? json['address'] ?? '',
       city: json['cidade'] ?? json['city'] ?? '',
       state: json['estado'] ?? json['state'] ?? '',
@@ -220,6 +228,26 @@ class Property {
         return PropertyStatus.suspended;
       default:
         return PropertyStatus.active;
+    }
+  }
+
+  static PropertyTransactionType? _parseTransactionType(dynamic transactionValue) {
+    if (transactionValue == null) return null;
+    
+    String transactionStr = transactionValue.toString().toLowerCase();
+    switch (transactionStr) {
+      case 'venda':
+      case 'sale':
+        return PropertyTransactionType.sale;
+      case 'aluguel':
+      case 'rent':
+        return PropertyTransactionType.rent;
+      case 'temporada':
+      case 'diaria':
+      case 'daily':
+        return PropertyTransactionType.daily;
+      default:
+        return null;
     }
   }
 

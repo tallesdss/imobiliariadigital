@@ -689,6 +689,13 @@ class _FilterSidebarContentState extends State<FilterSidebarContent> {
     widget.onFiltersChanged(_currentFilters);
   }
 
+  void _clearFilters() {
+    setState(() {
+      _currentFilters = const PropertyFilters();
+      _updateControllers();
+    });
+    widget.onClearFilters();
+  }
 
   @override
   void dispose() {
@@ -724,7 +731,7 @@ class _FilterSidebarContentState extends State<FilterSidebarContent> {
           ),
         ),
         
-        // Botão aplicar
+        // Botões aplicar e limpar
         Container(
           padding: EdgeInsets.all(widget.isTablet ? 20 : 16),
           decoration: const BoxDecoration(
@@ -733,28 +740,61 @@ class _FilterSidebarContentState extends State<FilterSidebarContent> {
               top: BorderSide(color: AppColors.border, width: 1),
             ),
           ),
-          child: SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _updateFilters,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.textOnPrimary,
-                padding: EdgeInsets.symmetric(
-                  vertical: widget.isTablet ? 16 : 12,
+          child: Column(
+            children: [
+              // Botão limpar filtros
+              if (_currentFilters.hasActiveFilters)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: _clearFilters,
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.error,
+                        side: const BorderSide(color: AppColors.error),
+                        padding: EdgeInsets.symmetric(
+                          vertical: widget.isTablet ? 16 : 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text(
+                        'Limpar Filtros',
+                        style: AppTypography.labelLarge.copyWith(
+                          color: AppColors.error,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+              // Botão aplicar
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _updateFilters,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.textOnPrimary,
+                    padding: EdgeInsets.symmetric(
+                      vertical: widget.isTablet ? 16 : 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    'Aplicar Filtros',
+                    style: AppTypography.labelLarge.copyWith(
+                      color: AppColors.textOnPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
-              child: Text(
-                'Aplicar Filtros',
-                style: AppTypography.labelLarge.copyWith(
-                  color: AppColors.textOnPrimary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
+            ],
           ),
         ),
       ],

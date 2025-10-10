@@ -157,6 +157,29 @@ class PropertyStateService extends ChangeNotifier {
   }
 
   bool _matchesAdvancedFilters(Property property) {
+    // Filtro de tipo de transação
+    if (_filters.transactionType != null) {
+      if (property.transactionType == null) return false;
+      
+      // Converter TransactionType para PropertyTransactionType
+      PropertyTransactionType? propertyTransactionType;
+      switch (_filters.transactionType!) {
+        case TransactionType.sale:
+          propertyTransactionType = PropertyTransactionType.sale;
+          break;
+        case TransactionType.rent:
+          propertyTransactionType = PropertyTransactionType.rent;
+          break;
+        case TransactionType.daily:
+          propertyTransactionType = PropertyTransactionType.daily;
+          break;
+      }
+      
+      if (property.transactionType != propertyTransactionType) {
+        return false;
+      }
+    }
+
     // Filtro de faixas de preço
     if (_filters.priceRanges.isNotEmpty) {
       bool matchesAnyRange = false;
