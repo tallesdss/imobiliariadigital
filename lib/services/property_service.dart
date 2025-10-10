@@ -26,6 +26,29 @@ class PropertyService {
     }
   }
 
+  static Future<List<Property>> getAllProperties({
+    String? search,
+    PropertyType? type,
+    String? city,
+    double? minPrice,
+    double? maxPrice,
+  }) async {
+    try {
+      // Usar o método getProperties com limite muito alto para obter todos os imóveis
+      return await getProperties(
+        search: search,
+        type: type,
+        city: city,
+        minPrice: minPrice,
+        maxPrice: maxPrice,
+        page: 1,
+        limit: 1000, // Limite alto para obter todos os imóveis
+      );
+    } catch (e) {
+      throw Exception('Erro ao carregar todos os imóveis: $e');
+    }
+  }
+
   static Future<Property> getPropertyById(String id) async {
     try {
       final response = await SupabaseService.client

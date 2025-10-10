@@ -154,12 +154,27 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Todos os Imóveis',
-                    style: AppTypography.h6.copyWith(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Todos os Imóveis',
+                        style: AppTypography.h6.copyWith(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Consumer<PropertyStateService>(
+                        builder: (context, propertyService, child) {
+                          return Text(
+                            '${propertyService.allProperties.length} imóveis encontrados',
+                            style: AppTypography.bodySmall.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                   const SizedBox(height: AppSpacing.md),
                 ],
@@ -792,39 +807,46 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         final isTablet = screenWidth > 600;
         final isDesktop = screenWidth > 1024;
         
-        if (propertyService.filteredProperties.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: EdgeInsets.all(isTablet ? 32 : AppSpacing.xl),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.search_off, 
-                size: isTablet ? 80 : 64, 
-                color: AppColors.textHint,
+        // Usar allProperties quando não há filtros ativos para mostrar todos os imóveis
+        final propertiesToShow = (propertyService.searchQuery.isEmpty && 
+                                propertyService.selectedType == null && 
+                                !propertyService.filters.hasActiveFilters) 
+                                ? propertyService.allProperties 
+                                : propertyService.filteredProperties;
+        
+        if (propertiesToShow.isEmpty) {
+          return Center(
+            child: Padding(
+              padding: EdgeInsets.all(isTablet ? 32 : AppSpacing.xl),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.search_off, 
+                    size: isTablet ? 80 : 64, 
+                    color: AppColors.textHint,
+                  ),
+                  SizedBox(height: isTablet ? 24 : AppSpacing.md),
+                  Text(
+                    'Nenhum imóvel encontrado',
+                    style: AppTypography.h6.copyWith(
+                      color: AppColors.textSecondary,
+                      fontSize: isTablet ? 20 : 18,
+                    ),
+                  ),
+                  SizedBox(height: isTablet ? 12 : AppSpacing.sm),
+                  Text(
+                    'Tente ajustar os filtros de busca',
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.textHint,
+                      fontSize: isTablet ? 16 : 14,
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(height: isTablet ? 24 : AppSpacing.md),
-              Text(
-                'Nenhum imóvel encontrado',
-                style: AppTypography.h6.copyWith(
-                  color: AppColors.textSecondary,
-                  fontSize: isTablet ? 20 : 18,
-                ),
-              ),
-              SizedBox(height: isTablet ? 12 : AppSpacing.sm),
-              Text(
-                'Tente ajustar os filtros de busca',
-                style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.textHint,
-                  fontSize: isTablet ? 16 : 14,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
+            ),
+          );
+        }
 
     if (isTablet && !_showCarousels) {
       // Layout em grade para tablets quando não há carrosséis
@@ -841,9 +863,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           crossAxisSpacing: AppSpacing.md,
           mainAxisSpacing: AppSpacing.md,
         ),
-        itemCount: propertyService.filteredProperties.length,
+        itemCount: propertiesToShow.length,
         itemBuilder: (context, index) {
-          final property = propertyService.filteredProperties[index];
+          final property = propertiesToShow[index];
           return GestureDetector(
             onTap: () => _navigateToPropertyDetail(property.id),
             child: PropertyCard(
@@ -864,12 +886,12 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         horizontal: isTablet ? 24 : AppSpacing.lg,
         vertical: AppSpacing.md,
       ),
-      itemCount: propertyService.filteredProperties.length,
+      itemCount: propertiesToShow.length,
       separatorBuilder: (context, index) => SizedBox(
         height: isTablet ? 20 : AppSpacing.md,
       ),
       itemBuilder: (context, index) {
-        final property = propertyService.filteredProperties[index];
+        final property = propertiesToShow[index];
         return GestureDetector(
           onTap: () => _navigateToPropertyDetail(property.id),
           child: PropertyCard(

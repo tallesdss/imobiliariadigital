@@ -17,7 +17,6 @@ class PropertyStateService extends ChangeNotifier {
   String _searchQuery = '';
   PropertyType? _selectedType;
   PropertyFilters _filters = const PropertyFilters();
-  int _currentPage = 1;
   bool _hasMoreData = true;
 
   // Getters
@@ -53,7 +52,6 @@ class PropertyStateService extends ChangeNotifier {
 
   Future<void> loadProperties({bool refresh = false}) async {
     if (refresh) {
-      _currentPage = 1;
       _hasMoreData = true;
       _allProperties.clear();
     }
@@ -64,13 +62,12 @@ class PropertyStateService extends ChangeNotifier {
     _clearError();
     
     try {
-      final newProperties = await PropertyService.getProperties(
+      // Carregar todos os imóveis disponíveis (sem limite de página)
+      final newProperties = await PropertyService.getAllProperties(
         search: _searchQuery.isEmpty ? null : _searchQuery,
         type: _selectedType,
         minPrice: _filters.minPrice,
         maxPrice: _filters.maxPrice,
-        page: _currentPage,
-        limit: 20,
       );
 
       if (refresh) {
@@ -79,8 +76,7 @@ class PropertyStateService extends ChangeNotifier {
         _allProperties.addAll(newProperties);
       }
 
-      _hasMoreData = newProperties.length == 20;
-      _currentPage++;
+      _hasMoreData = false; // Todos os imóveis foram carregados
 
       _applyFilters();
     } catch (e) {
@@ -124,7 +120,6 @@ class PropertyStateService extends ChangeNotifier {
 
   void setSearchQuery(String query) {
     _searchQuery = query;
-    _currentPage = 1;
     _hasMoreData = true;
     _allProperties.clear();
     loadProperties(refresh: true);
@@ -132,7 +127,6 @@ class PropertyStateService extends ChangeNotifier {
 
   void setSelectedType(PropertyType? type) {
     _selectedType = type;
-    _currentPage = 1;
     _hasMoreData = true;
     _allProperties.clear();
     loadProperties(refresh: true);
@@ -140,7 +134,6 @@ class PropertyStateService extends ChangeNotifier {
 
   void setFilters(PropertyFilters filters) {
     _filters = filters;
-    _currentPage = 1;
     _hasMoreData = true;
     _allProperties.clear();
     loadProperties(refresh: true);
@@ -150,7 +143,6 @@ class PropertyStateService extends ChangeNotifier {
     _filters = const PropertyFilters();
     _selectedType = null;
     _searchQuery = '';
-    _currentPage = 1;
     _hasMoreData = true;
     _allProperties.clear();
     loadProperties(refresh: true);
