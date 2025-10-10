@@ -1,23 +1,28 @@
 import 'package:flutter/foundation.dart';
-import 'api_service.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'favorite_service.dart';
-import '../models/user_model.dart';
+import 'supabase_service.dart';
+import '../models/user_model.dart' as app_user;
 
 class AuthService extends ChangeNotifier {
-  User? _currentUser;
+  app_user.User? _currentUser;
   bool _isLoading = false;
   String? _error;
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: ['email', 'profile'],
+  );
 
-  User? get currentUser => _currentUser;
+  app_user.User? get currentUser => _currentUser;
   bool get isLoading => _isLoading;
   String? get error => _error;
-  bool get isAuthenticated => _currentUser != null && ApiService.isAuthenticated;
+  bool get isAuthenticated => _currentUser != null && SupabaseService.isAuthenticated;
 
   Future<void> initialize() async {
     _setLoading(true);
     try {
-      if (ApiService.isAuthenticated) {
-        _currentUser = await ApiService.getCurrentUser();
+      if (SupabaseService.isAuthenticated) {
+        _currentUser = await _getUserFromSupabase();
       }
     } catch (e) {
       _setError('Erro ao carregar dados do usuário: $e');
@@ -34,13 +39,13 @@ class AuthService extends ChangeNotifier {
     _clearError();
     
     try {
-      final response = await ApiService.login(
+      final response = await SupabaseService.signInWithPassword(
         email: email,
         password: password,
       );
       
-      if (response['user'] != null) {
-        _currentUser = User.fromJson(response['user']);
+      if (response.user != null) {
+        _currentUser = await _getUserFromSupabase();
         notifyListeners();
         return true;
       }
@@ -63,21 +68,76 @@ class AuthService extends ChangeNotifier {
     _clearError();
     
     try {
-      final response = await ApiService.register(
-        name: name,
+      final response = await SupabaseService.signUp(
         email: email,
         password: password,
-        phone: phone,
+        data: {
+          'name': name,
+          'phone': phone,
+        },
       );
       
-      if (response['user'] != null) {
-        _currentUser = User.fromJson(response['user']);
+      if (response.user != null) {
+        // Criar perfil do usuário na tabela users
+        await _createUserProfile(response.user!, name, phone);
+        _currentUser = await _getUserFromSupabase();
         notifyListeners();
         return true;
       }
       return false;
     } catch (e) {
       _setError(e.toString());
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Login com Google
+  Future<bool> signInWithGoogle() async {
+    _setLoading(true);
+    _clearError();
+    
+    try {
+      // Iniciar o processo de login com Google
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      
+      if (googleUser == null) {
+        // Usuário cancelou o login
+        return false;
+      }
+
+      // Obter os detalhes de autenticação
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      // Fazer login no Supabase com o token do Google
+      final AuthResponse response = await SupabaseService.client.auth.signInWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: googleAuth.idToken!,
+        accessToken: googleAuth.accessToken,
+      );
+
+      if (response.user != null) {
+        // Verificar se o usuário já existe na tabela users
+        final existingUser = await _getUserFromSupabase();
+        
+        if (existingUser == null) {
+          // Criar perfil do usuário se não existir
+          await _createUserProfile(
+            response.user!,
+            googleUser.displayName ?? 'Usuário',
+            null,
+            photoUrl: googleUser.photoUrl,
+          );
+        }
+        
+        _currentUser = await _getUserFromSupabase();
+        notifyListeners();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      _setError('Erro no login com Google: $e');
       return false;
     } finally {
       _setLoading(false);
@@ -93,13 +153,16 @@ class AuthService extends ChangeNotifier {
     _clearError();
     
     try {
-      final updatedUser = await ApiService.updateUser(
-        name: name,
-        phone: phone,
-        photo: photo,
-      );
-      
-      _currentUser = updatedUser;
+      final userId = SupabaseService.currentUserId;
+      if (userId == null) return false;
+
+      final updateData = <String, dynamic>{};
+      if (name != null) updateData['name'] = name;
+      if (phone != null) updateData['phone'] = phone;
+      if (photo != null) updateData['photo'] = photo;
+
+      await SupabaseService.updateData('users', userId, updateData);
+      _currentUser = await _getUserFromSupabase();
       notifyListeners();
       return true;
     } catch (e) {
@@ -114,7 +177,8 @@ class AuthService extends ChangeNotifier {
     _setLoading(true);
     
     try {
-      await ApiService.logout();
+      await SupabaseService.signOut();
+      await _googleSignIn.signOut();
     } catch (e) {
       // Ignora erros no logout
     } finally {
@@ -139,5 +203,49 @@ class AuthService extends ChangeNotifier {
   void _clearError() {
     _error = null;
     notifyListeners();
+  }
+
+  /// Obtém dados do usuário da tabela users do Supabase
+  Future<app_user.User?> _getUserFromSupabase() async {
+    try {
+      final userId = SupabaseService.currentUserId;
+      if (userId == null) return null;
+
+      final userData = await SupabaseService.getDataById('users', userId);
+      if (userData != null) {
+        return app_user.User.fromJson(userData);
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Cria perfil do usuário na tabela users
+  Future<void> _createUserProfile(
+    User supabaseUser,
+    String name,
+    String? phone, {
+    String? photoUrl,
+  }) async {
+    try {
+      final userData = {
+        'id': supabaseUser.id,
+        'email': supabaseUser.email,
+        'name': name,
+        'phone': phone,
+        'photo': photoUrl,
+        'type': 'buyer', // Tipo padrão
+        'created_at': DateTime.now().toIso8601String(),
+        'updated_at': DateTime.now().toIso8601String(),
+      };
+
+      await SupabaseService.insertData('users', userData);
+    } catch (e) {
+      // Log do erro mas não falha o processo
+      if (kDebugMode) {
+        print('Erro ao criar perfil do usuário: $e');
+      }
+    }
   }
 }

@@ -68,6 +68,42 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _handleGoogleSignIn() async {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    
+    final success = await authService.signInWithGoogle();
+
+    if (mounted) {
+      if (success) {
+        // Navegar baseado no tipo de usuário
+        final user = authService.currentUser;
+        if (user != null) {
+          switch (user.type) {
+            case UserType.buyer:
+              context.go('/user');
+              break;
+            case UserType.realtor:
+              context.go('/realtor');
+              break;
+            case UserType.admin:
+              context.go('/admin');
+              break;
+          }
+        }
+      } else {
+        // Mostrar erro apenas se não foi cancelado pelo usuário
+        if (authService.error != null && !authService.error!.contains('cancelado')) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(authService.error ?? 'Erro no login com Google'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+      }
+    }
+  }
+
   void _handleRegister() {
     context.push('/register');
   }
@@ -252,6 +288,21 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             const Expanded(child: Divider()),
                           ],
+                        ),
+
+                        AppSpacing.verticalLG,
+
+                        // Google Sign-In Button
+                        Consumer<AuthService>(
+                          builder: (context, authService, child) {
+                            return CustomButton(
+                              text: 'Continuar com Google',
+                              onPressed: authService.isLoading ? null : _handleGoogleSignIn,
+                              type: ButtonType.outlined,
+                              size: ButtonSize.large,
+                              icon: Icons.login,
+                            );
+                          },
                         ),
 
                         AppSpacing.verticalLG,
