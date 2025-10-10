@@ -5,6 +5,7 @@ import '../../theme/app_typography.dart';
 import '../../theme/app_spacing.dart';
 import '../../services/property_state_service.dart';
 import '../../services/favorite_service.dart';
+import '../../services/notification_service.dart';
 import '../../models/property_model.dart';
 import '../../models/filter_model.dart';
 import '../../widgets/cards/property_card.dart';
@@ -12,6 +13,7 @@ import '../../widgets/common/fixed_sidebar.dart';
 import 'property_detail_screen.dart';
 import 'favorites_screen.dart';
 import 'property_comparison_screen.dart';
+import 'notifications_screen.dart';
 
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});
@@ -26,6 +28,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   bool _showCarousels = true;
   bool _showOnlyLaunches = false;
   bool _sidebarVisible = true;
+  int _unreadNotificationsCount = 0;
 
   @override
   void initState() {
@@ -40,6 +43,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     
     // Carregar favoritos do usuário
     await _loadUserFavorites();
+    
+    // Carregar notificações
+    await _loadNotifications();
   }
 
   Future<void> _loadUserFavorites() async {
@@ -53,6 +59,20 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     } catch (e) {
       // Ignorar erros de favoritos na inicialização
       // O usuário pode não ter favoritos ainda
+    }
+  }
+
+  Future<void> _loadNotifications() async {
+    try {
+      await NotificationService.initialize();
+      final unreadCount = await NotificationService.getUnreadCount();
+      if (mounted) {
+        setState(() {
+          _unreadNotificationsCount = unreadCount;
+        });
+      }
+    } catch (e) {
+      // Ignorar erros de notificações na inicialização
     }
   }
 
@@ -326,6 +346,20 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.notifications, color: AppColors.accent),
+              title: const Text('Notificações'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+                ).then((_) {
+                  // Recarregar contador de notificações quando voltar
+                  _loadNotifications();
+                });
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.alarm, color: AppColors.accent),
               title: const Text('Alertas'),
               onTap: () {
                 Navigator.pop(context);
@@ -510,6 +544,47 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   return const SizedBox.shrink();
                 }
               },
+            ),
+            IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+                ).then((_) {
+                  // Recarregar contador de notificações quando voltar
+                  _loadNotifications();
+                });
+              },
+              icon: Stack(
+                children: [
+                  const Icon(Icons.notifications_outlined),
+                  if (_unreadNotificationsCount > 0)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Text(
+                          '$_unreadNotificationsCount',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
             IconButton(
               onPressed: () {

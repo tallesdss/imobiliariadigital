@@ -3,11 +3,13 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_spacing.dart';
 import '../../services/mock_data_service.dart';
+import '../../services/notification_service.dart';
 import '../../models/property_model.dart';
 import '../../widgets/common/fixed_sidebar.dart';
 import '../../widgets/common/custom_drawer.dart';
 import '../../widgets/common/status_badge.dart';
 import 'property_form_screen.dart';
+import '../user/notifications_screen.dart';
 
 class RealtorHomeScreen extends StatefulWidget {
   const RealtorHomeScreen({super.key});
@@ -21,11 +23,13 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
   bool _isLoading = true;
   bool _sidebarVisible = true;
   final String _realtorId = 'realtor1'; // Mock - usuário logado
+  int _unreadNotificationsCount = 0;
 
   @override
   void initState() {
     super.initState();
     _loadProperties();
+    _loadNotifications();
   }
 
   void _loadProperties() {
@@ -39,6 +43,20 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
         _isLoading = false;
       });
     });
+  }
+
+  Future<void> _loadNotifications() async {
+    try {
+      await NotificationService.initialize();
+      final unreadCount = await NotificationService.getUnreadCount();
+      if (mounted) {
+        setState(() {
+          _unreadNotificationsCount = unreadCount;
+        });
+      }
+    } catch (e) {
+      // Ignorar erros de notificações na inicialização
+    }
   }
 
   void _navigateToPropertyForm({Property? property}) {
@@ -173,6 +191,48 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.textOnPrimary,
         actions: [
+          // Botão de notificações
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+              ).then((_) {
+                // Recarregar contador de notificações quando voltar
+                _loadNotifications();
+              });
+            },
+            icon: Stack(
+              children: [
+                const Icon(Icons.notifications_outlined),
+                if (_unreadNotificationsCount > 0)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 16,
+                        minHeight: 16,
+                      ),
+                      child: Text(
+                        '$_unreadNotificationsCount',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
           // Botão para alternar sidebar
           IconButton(
             onPressed: () {

@@ -80,12 +80,12 @@
 ---
 
 ## 🔔 Etapa 6 — Notificações (`notifications`)
-- [ ] **Listagem e Marcar como Lida**
+- [x] **Listagem e Marcar como Lida**
   - **Endpoints:** `/notifications`, `/notifications/:id/read`
   - **Estimado:** 4h  
-  - **Real:** ___  
-  - **Status:** ☐ Em andamento ☐ Concluído  
-  - **Observações:** ___________________________________________
+  - **Real:** 3.5h  
+  - **Status:** ☐ Em andamento ☑ Concluído  
+  - **Observações:** Implementado NotificationModel, NotificationService com cache local, NotificationsScreen com filtros e ações, integração completa nas telas de usuário, corretor e admin com contadores de notificações não lidas
 
 ---
 
@@ -156,7 +156,7 @@
 | Detalhe do Imóvel | 6h | 5h | ☑ |
 | Chat | 8h | 6.5h | ☑ |
 | Favoritos | 3h | 2.5h | ☑ |
-| Notificações | 4h | ___ | ☐ |
+| Notificações | 4h | 3.5h | ☑ |
 | Área Corretor/Admin | 10h | ___ | ☐ |
 | Filtros & Alertas | 7h | ___ | ☐ |
 | Relatórios & Logs | 4h | ___ | ☐ |
