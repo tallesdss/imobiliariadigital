@@ -7,6 +7,9 @@ class ApiService {
   static late Dio _dio;
   static String? _authToken;
 
+  // Getter para expor o Dio para outros serviços
+  static Dio get dio => _dio;
+
   static Future<void> initialize() async {
     _dio = Dio(BaseOptions(
       baseUrl: baseUrl,

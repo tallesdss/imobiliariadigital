@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_spacing.dart';
-import '../../services/mock_data_service.dart';
+import '../../services/property_state_service.dart';
 import '../../models/property_model.dart';
 import '../../models/filter_model.dart';
 import '../../widgets/cards/property_card.dart';
@@ -19,155 +20,43 @@ class UserHomeScreen extends StatefulWidget {
 }
 
 class _UserHomeScreenState extends State<UserHomeScreen> {
-  List<Property> _allProperties = [];
-  List<Property> _filteredProperties = [];
   final Set<String> _favoritePropertyIds = {};
   final Set<String> _comparePropertyIds = {};
-  String _searchQuery = '';
-  PropertyType? _selectedType;
-  bool _isLoading = true;
   bool _showCarousels = true;
   bool _showOnlyLaunches = false;
-  PropertyFilters _filters = const PropertyFilters();
   bool _sidebarVisible = true;
 
   @override
   void initState() {
     super.initState();
-    _loadData();
+    _initializeData();
   }
 
-  void _loadData() {
-    setState(() {
-      _isLoading = true;
-    });
-
-    // Carregar dados
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (mounted) {
-        final activeProps = MockDataService.activeProperties;
-        final favorites = MockDataService.getFavoriteProperties('user1');
-        
-        setState(() {
-          _allProperties = activeProps;
-          _filteredProperties = activeProps;
-          _favoritePropertyIds.clear();
-          _favoritePropertyIds.addAll(favorites.map((p) => p.id));
-          _isLoading = false;
-        });
-      }
-    });
+  Future<void> _initializeData() async {
+    final propertyService = Provider.of<PropertyStateService>(context, listen: false);
+    await propertyService.initialize();
+    await propertyService.loadProperties(refresh: true);
   }
 
-  void _filterProperties() {
+  void _updateCarouselVisibility() {
+    final propertyService = Provider.of<PropertyStateService>(context, listen: false);
     setState(() {
-      _filteredProperties = _allProperties.where((property) {
-        final matchesSearch = _searchQuery.isEmpty ||
-            property.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-            property.city.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-            property.address.toLowerCase().contains(_searchQuery.toLowerCase());
-
-        final matchesType = _selectedType == null || property.type == _selectedType;
-        final matchesLaunch = !_showOnlyLaunches || property.isLaunch;
-
-        // Aplicar filtros da barra lateral
-        final matchesFilters = _applyAdvancedFilters(property);
-
-        return matchesSearch && matchesType && matchesLaunch && matchesFilters;
-      }).toList();
-
-      // Mostrar carrosséis apenas quando não há busca ou filtro ativo
-      _showCarousels = _searchQuery.isEmpty && 
-          _selectedType == null && 
+      _showCarousels = propertyService.searchQuery.isEmpty && 
+          propertyService.selectedType == null && 
           !_showOnlyLaunches && 
-          !_filters.hasActiveFilters;
+          !propertyService.filters.hasActiveFilters;
     });
   }
 
-  bool _applyAdvancedFilters(Property property) {
-    // Filtro de preço mínimo
-    if (_filters.minPrice != null && property.price < _filters.minPrice!) {
-      return false;
-    }
-
-    // Filtro de preço máximo
-    if (_filters.maxPrice != null && property.price > _filters.maxPrice!) {
-      return false;
-    }
-
-    // Filtro de faixas de preço
-    if (_filters.priceRanges.isNotEmpty) {
-      bool matchesAnyRange = false;
-      for (final rangeLabel in _filters.priceRanges) {
-        final range = PriceRange.predefinedRanges.firstWhere(
-          (r) => r.label == rangeLabel,
-          orElse: () => const PriceRange(label: ''),
-        );
-        
-        bool matchesRange = true;
-        if (range.minPrice != null && property.price < range.minPrice!) {
-          matchesRange = false;
-        }
-        if (range.maxPrice != null && property.price > range.maxPrice!) {
-          matchesRange = false;
-        }
-        
-        if (matchesRange) {
-          matchesAnyRange = true;
-          break;
-        }
-      }
-      if (!matchesAnyRange) return false;
-    }
-
-    // Filtro de condomínio (simulado através dos atributos)
-    if (_filters.maxCondominium != null) {
-      final condominium = property.attributes['condominium'] as double? ?? 0;
-      if (condominium > _filters.maxCondominium!) {
-        return false;
-      }
-    }
-
-    // Filtro de IPTU (simulado através dos atributos)
-    if (_filters.maxIptu != null) {
-      final iptu = property.attributes['iptu'] as double? ?? 0;
-      if (iptu > _filters.maxIptu!) {
-        return false;
-      }
-    }
-
-    // Filtro de imóveis com preço informado
-    if (_filters.showOnlyWithPrice && property.price <= 0) {
-      return false;
-    }
-
-    // Filtro de aceita proposta (simulado através dos atributos)
-    if (_filters.acceptProposal) {
-      final acceptsProposal = property.attributes['acceptsProposal'] as bool? ?? false;
-      if (!acceptsProposal) {
-        return false;
-      }
-    }
-
-    // Filtro de financiamento (simulado através dos atributos)
-    if (_filters.hasFinancing) {
-      final hasFinancing = property.attributes['hasFinancing'] as bool? ?? false;
-      if (!hasFinancing) {
-        return false;
-      }
-    }
-
-    return true;
-  }
 
   void _toggleFavorite(String propertyId) {
     setState(() {
       if (_favoritePropertyIds.contains(propertyId)) {
         _favoritePropertyIds.remove(propertyId);
-        MockDataService.removeFavorite('user1', propertyId);
+        // TODO: Implementar remoção de favorito via API
       } else {
         _favoritePropertyIds.add(propertyId);
-        MockDataService.addFavorite('user1', propertyId);
+        // TODO: Implementar adição de favorito via API
       }
     });
   }
@@ -223,10 +112,12 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   }
 
   Widget _buildCarousels() {
-    // Separar propriedades por categoria
-    final launches = _allProperties.where((p) => p.isLaunch).toList();
-    final houses = _allProperties.where((p) => p.type == PropertyType.house).toList();
-    final apartments = _allProperties.where((p) => p.type == PropertyType.apartment).toList();
+    return Consumer<PropertyStateService>(
+      builder: (context, propertyService, child) {
+        // Separar propriedades por categoria
+        final launches = propertyService.launchProperties;
+        final houses = propertyService.allProperties.where((p) => p.type == PropertyType.house).toList();
+        final apartments = propertyService.allProperties.where((p) => p.type == PropertyType.apartment).toList();
 
     return Column(
       children: [
@@ -234,33 +125,35 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           _buildCarousel('🚀 Lançamentos', launches, () {
             setState(() {
               _showOnlyLaunches = true;
-              _selectedType = null;
-              _filterProperties();
             });
+            propertyService.setSelectedType(null);
+            _updateCarouselVisibility();
           }),
           const SizedBox(height: AppSpacing.xl),
         ],
         if (houses.isNotEmpty) ...[
           _buildCarousel('🏠 Casas', houses, () {
             setState(() {
-              _selectedType = PropertyType.house;
               _showOnlyLaunches = false;
-              _filterProperties();
             });
+            propertyService.setSelectedType(PropertyType.house);
+            _updateCarouselVisibility();
           }),
           const SizedBox(height: AppSpacing.xl),
         ],
         if (apartments.isNotEmpty) ...[
           _buildCarousel('🏢 Apartamentos', apartments, () {
             setState(() {
-              _selectedType = PropertyType.apartment;
               _showOnlyLaunches = false;
-              _filterProperties();
             });
+            propertyService.setSelectedType(PropertyType.apartment);
+            _updateCarouselVisibility();
           }),
           const SizedBox(height: AppSpacing.xl),
         ],
       ],
+    );
+      },
     );
   }
 
@@ -450,194 +343,205 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   }
 
   void _onFiltersChanged(PropertyFilters filters) {
-    setState(() {
-      _filters = filters;
-    });
-    _filterProperties();
+    final propertyService = Provider.of<PropertyStateService>(context, listen: false);
+    propertyService.setFilters(filters);
+    _updateCarouselVisibility();
   }
 
   void _onClearFilters() {
+    final propertyService = Provider.of<PropertyStateService>(context, listen: false);
+    propertyService.clearFilters();
     setState(() {
-      _filters = const PropertyFilters();
+      _showOnlyLaunches = false;
     });
-    _filterProperties();
+    _updateCarouselVisibility();
   }
 
 
 
   @override
   Widget build(BuildContext context) {
-    
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: _buildAppBar(),
-      body: Row(
-        children: [
-          // Sidebar fixa de filtros
-          FixedSidebar(
-            type: SidebarType.filters,
-            currentRoute: '/user',
-            filters: _filters,
-            onFiltersChanged: _onFiltersChanged,
-            onClearFilters: _onClearFilters,
-            isVisible: _sidebarVisible,
-            onToggleVisibility: () {
-              setState(() {
-                _sidebarVisible = !_sidebarVisible;
-              });
-            },
-          ),
-          
-          // Conteúdo principal
-          Expanded(
-            child: Column(
-              children: [
-                _buildSearchAndFilters(),
-                _buildCompareBar(),
-                Expanded(
-                  child: _isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : _buildMainContent(),
+    return Consumer<PropertyStateService>(
+      builder: (context, propertyService, child) {
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: _buildAppBar(),
+          body: Row(
+            children: [
+              // Sidebar fixa de filtros
+              FixedSidebar(
+                type: SidebarType.filters,
+                currentRoute: '/user',
+                filters: propertyService.filters,
+                onFiltersChanged: _onFiltersChanged,
+                onClearFilters: _onClearFilters,
+                isVisible: _sidebarVisible,
+                onToggleVisibility: () {
+                  setState(() {
+                    _sidebarVisible = !_sidebarVisible;
+                  });
+                },
+              ),
+              
+              // Conteúdo principal
+              Expanded(
+                child: Column(
+                  children: [
+                    _buildSearchAndFilters(),
+                    _buildCompareBar(),
+                    Expanded(
+                      child: propertyService.isLoading
+                          ? const Center(child: CircularProgressIndicator())
+                          : _buildMainContent(),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      title: Row(
-        children: [
-          const Icon(Icons.home_work, color: AppColors.accent),
-          const SizedBox(width: 8),
-          Text(
-            'SC IMÓVEIS',
-            style: AppTypography.h6.copyWith(
-              color: AppColors.textOnPrimary,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-      backgroundColor: AppColors.primary,
-      foregroundColor: AppColors.textOnPrimary,
-      elevation: 0,
-      actions: [
-        // Botão para alternar sidebar
-        IconButton(
-          onPressed: () {
-            setState(() {
-              _sidebarVisible = !_sidebarVisible;
-            });
-          },
-          icon: Icon(_sidebarVisible ? Icons.menu_open : Icons.menu),
-          tooltip: _sidebarVisible ? 'Ocultar filtros' : 'Mostrar filtros',
-        ),
-        // Indicador de filtros ativos
-        if (_filters.hasActiveFilters)
-          Container(
-            margin: const EdgeInsets.only(right: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.accent,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.filter_list,
-                  color: AppColors.textOnPrimary,
-                  size: 16,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  'Filtros Ativos',
-                  style: AppTypography.labelSmall.copyWith(
-                    color: AppColors.textOnPrimary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        IconButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const FavoritesScreen()),
-            );
-          },
-          icon: Stack(
+          title: Row(
             children: [
-              const Icon(Icons.favorite_outline),
-              if (_favoritePropertyIds.isNotEmpty)
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                    constraints: const BoxConstraints(
-                      minWidth: 16,
-                      minHeight: 16,
-                    ),
-                    child: Text(
-                      '${_favoritePropertyIds.length}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
+              const Icon(Icons.home_work, color: AppColors.accent),
+              const SizedBox(width: 8),
+              Text(
+                'SC IMÓVEIS',
+                style: AppTypography.h6.copyWith(
+                  color: AppColors.textOnPrimary,
+                  fontWeight: FontWeight.bold,
                 ),
+              ),
             ],
           ),
-        ),
-        IconButton(
-          onPressed: _showUserMenu,
-          icon: const Icon(Icons.account_circle),
-        ),
+          backgroundColor: AppColors.primary,
+          foregroundColor: AppColors.textOnPrimary,
+          elevation: 0,
+          actions: [
+            // Botão para alternar sidebar
+            IconButton(
+              onPressed: () {
+                setState(() {
+                  _sidebarVisible = !_sidebarVisible;
+                });
+              },
+              icon: Icon(_sidebarVisible ? Icons.menu_open : Icons.menu),
+              tooltip: _sidebarVisible ? 'Ocultar filtros' : 'Mostrar filtros',
+            ),
+            // Indicador de filtros ativos
+            Consumer<PropertyStateService>(
+              builder: (context, propertyService, child) {
+                if (propertyService.filters.hasActiveFilters) {
+                  return Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.accent,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.filter_list,
+                          color: AppColors.textOnPrimary,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Filtros Ativos',
+                          style: AppTypography.labelSmall.copyWith(
+                            color: AppColors.textOnPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                } else {
+                  return const SizedBox.shrink();
+                }
+              },
+            ),
+            IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const FavoritesScreen()),
+                );
+              },
+              icon: Stack(
+                children: [
+                  const Icon(Icons.favorite_outline),
+                  if (_favoritePropertyIds.isNotEmpty)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Text(
+                          '${_favoritePropertyIds.length}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            IconButton(
+              onPressed: _showUserMenu,
+              icon: const Icon(Icons.account_circle),
+            ),
       ],
     );
   }
 
   Widget _buildSearchAndFilters() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isTablet = screenWidth > 600;
-    
-    return Container(
-      padding: EdgeInsets.all(isTablet ? 20 : 16),
-      color: Colors.white,
-      child: Column(
-        children: [
-          // Barra de pesquisa com botão de filtros
-          Row(
+    return Consumer<PropertyStateService>(
+      builder: (context, propertyService, child) {
+        final screenWidth = MediaQuery.of(context).size.width;
+        final isTablet = screenWidth > 600;
+        
+        return Container(
+          padding: EdgeInsets.all(isTablet ? 20 : 16),
+          color: Colors.white,
+          child: Column(
             children: [
-              Expanded(
-                child: TextField(
-                  onChanged: (value) {
-                    _searchQuery = value;
-                    _filterProperties();
-                  },
+              // Barra de pesquisa com botão de filtros
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      onChanged: (value) {
+                        propertyService.setSearchQuery(value);
+                        _updateCarouselVisibility();
+                      },
                   decoration: InputDecoration(
                     hintText: 'Buscar imóvel...',
                     prefixIcon: const Icon(Icons.search),
-                    suffixIcon: _searchQuery.isNotEmpty
+                    suffixIcon: propertyService.searchQuery.isNotEmpty
                         ? IconButton(
                             onPressed: () {
-                              setState(() {
-                                _searchQuery = '';
-                              });
-                              _filterProperties();
+                              propertyService.setSearchQuery('');
+                              _updateCarouselVisibility();
                             },
                             icon: const Icon(Icons.clear),
                           )
@@ -686,19 +590,21 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         ],
       ),
     );
+      },
+    );
   }
 
   Widget _buildFilterChip(String label, PropertyType? type) {
-    final isSelected = _selectedType == type;
-    return FilterChip(
-      label: Text(label),
-      selected: isSelected,
-      onSelected: (selected) {
-        setState(() {
-          _selectedType = selected ? type : null;
-        });
-        _filterProperties();
-      },
+    return Consumer<PropertyStateService>(
+      builder: (context, propertyService, child) {
+        final isSelected = propertyService.selectedType == type;
+        return FilterChip(
+          label: Text(label),
+          selected: isSelected,
+          onSelected: (selected) {
+            propertyService.setSelectedType(selected ? type : null);
+            _updateCarouselVisibility();
+          },
       backgroundColor: Colors.white,
       selectedColor: AppColors.primary.withValues(alpha: 0.2),
       checkmarkColor: AppColors.primary,
@@ -708,6 +614,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       side: BorderSide(
         color: isSelected ? AppColors.primary : AppColors.border,
       ),
+    );
+      },
     );
   }
 
@@ -759,11 +667,13 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   }
 
   Widget _buildPropertiesGrid() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isTablet = screenWidth > 600;
-    final isDesktop = screenWidth > 1024;
-    
-    if (_filteredProperties.isEmpty) {
+    return Consumer<PropertyStateService>(
+      builder: (context, propertyService, child) {
+        final screenWidth = MediaQuery.of(context).size.width;
+        final isTablet = screenWidth > 600;
+        final isDesktop = screenWidth > 1024;
+        
+        if (propertyService.filteredProperties.isEmpty) {
       return Center(
         child: Padding(
           padding: EdgeInsets.all(isTablet ? 32 : AppSpacing.xl),
@@ -812,9 +722,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           crossAxisSpacing: AppSpacing.md,
           mainAxisSpacing: AppSpacing.md,
         ),
-        itemCount: _filteredProperties.length,
+        itemCount: propertyService.filteredProperties.length,
         itemBuilder: (context, index) {
-          final property = _filteredProperties[index];
+          final property = propertyService.filteredProperties[index];
           return GestureDetector(
             onTap: () => _navigateToPropertyDetail(property.id),
             child: PropertyCard(
@@ -835,12 +745,12 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         horizontal: isTablet ? 24 : AppSpacing.lg,
         vertical: AppSpacing.md,
       ),
-      itemCount: _filteredProperties.length,
+      itemCount: propertyService.filteredProperties.length,
       separatorBuilder: (context, index) => SizedBox(
         height: isTablet ? 20 : AppSpacing.md,
       ),
       itemBuilder: (context, index) {
-        final property = _filteredProperties[index];
+        final property = propertyService.filteredProperties[index];
         return GestureDetector(
           onTap: () => _navigateToPropertyDetail(property.id),
           child: PropertyCard(
@@ -850,6 +760,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             onCompare: () => _toggleCompare(property.id),
           ),
         );
+      },
+    );
       },
     );
   }

@@ -19,19 +19,19 @@
 ---
 
 ## 🏠 Etapa 2 — Lista de Imóveis (`properties`)
-- [ ] **Listagem e Filtros**
+- [x] **Listagem e Filtros**
   - **Endpoints:** `/properties`, parâmetros `cidade`, `tipo`, `preco_min`, `preco_max`
   - **Estimado:** 5h  
-  - **Real:** ___  
-  - **Status:** ☐ Em andamento ☐ Concluído  
-  - **Observações:** ___________________________________________
+  - **Real:** 4h  
+  - **Status:** ☐ Em andamento ☑ Concluído  
+  - **Observações:** Implementado PropertyService, PropertyStateService, filtros avançados, busca por texto, carrosséis por categoria
 
-- [ ] **Cards de Imóvel**
+- [x] **Cards de Imóvel**
   - **Endpoints:** `/properties` (modo resumido)
   - **Estimado:** 2h  
-  - **Real:** ___  
-  - **Status:** ☐ Em andamento ☐ Concluído  
-  - **Observações:** ___________________________________________
+  - **Real:** 1.5h  
+  - **Status:** ☐ Em andamento ☑ Concluído  
+  - **Observações:** PropertyCard implementado com modo compacto, favoritos, comparação, responsivo
 
 ---
 
@@ -152,7 +152,7 @@
 | Módulo | Estimado | Real | Status |
 |---|---:|---:|:---|
 | Autenticação & Usuários | 3h | 2.5h | ☑ |
-| Lista de Imóveis | 7h | ___ | ☐ |
+| Lista de Imóveis | 7h | 5.5h | ☑ |
 | Detalhe do Imóvel | 6h | ___ | ☐ |
 | Chat | 8h | ___ | ☐ |
 | Favoritos | 3h | ___ | ☐ |

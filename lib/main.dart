@@ -4,6 +4,7 @@ import 'theme/app_theme.dart';
 import 'services/navigation_service.dart';
 import 'services/api_service.dart';
 import 'services/auth_service.dart';
+import 'services/property_state_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +23,7 @@ class ImobiliariaDigitalApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthService()),
+        ChangeNotifierProvider(create: (_) => PropertyStateService()),
       ],
       child: MaterialApp.router(
         title: 'Imobiliária Digital',
