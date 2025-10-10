@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -33,6 +34,10 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
   }
 
   Future<void> _loadPropertyDetails() async {
+    if (kDebugMode) {
+      debugPrint('Iniciando carregamento do imóvel: ${widget.propertyId}');
+    }
+    
     setState(() {
       _isLoading = true;
     });
@@ -46,6 +51,10 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
         });
       }
 
+      if (kDebugMode) {
+        debugPrint('Carregando dados do imóvel e favorito em paralelo...');
+      }
+
       // Carregar detalhes do imóvel e status de favorito em paralelo
       final results = await Future.wait([
         PropertyService.getPropertyById(widget.propertyId),
@@ -55,6 +64,10 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
       final property = results[0] as Property;
       final isFavorite = results[1] as bool;
 
+      if (kDebugMode) {
+        debugPrint('Dados carregados com sucesso: ${property.title}');
+      }
+
       if (mounted) {
         setState(() {
           _property = property;
@@ -63,6 +76,10 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
         });
       }
     } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Erro ao carregar detalhes do imóvel: $e');
+      }
+      
       if (mounted) {
         setState(() {
           _isLoading = false;

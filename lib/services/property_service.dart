@@ -55,16 +55,31 @@ class PropertyService {
 
   static Future<Property> getPropertyById(String id) async {
     try {
+      if (kDebugMode) {
+        debugPrint('Buscando imóvel com ID: $id');
+      }
+      
       final response = await SupabaseService.client
           .from(SupabaseConfig.propertiesTable)
           .select('*')
           .eq('id', id)
           .single();
       
-      return Property.fromJson(response);
+      if (kDebugMode) {
+        debugPrint('Dados recebidos do Supabase: $response');
+      }
+      
+      final property = Property.fromJson(response);
+      
+      if (kDebugMode) {
+        debugPrint('Property criado: ${property.title}');
+      }
+      
+      return property;
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Erro ao buscar imóvel por ID: $e');
+        debugPrint('Tipo do erro: ${e.runtimeType}');
       }
       throw Exception('Erro de conexão. Tente novamente.');
     }
