@@ -12,9 +12,9 @@
 - [x] **Login / Registro / Perfil**
   - **Endpoints:** `/auth`, `/users/me`, `/users/update`
   - **Estimado:** 3h  
-  - **Real:** ___  
-  - **Status:** ☐ Em andamento ☐ Concluído  
-  - **Observações:** ___________________________________________
+  - **Real:** 2.5h  
+  - **Status:** ☐ Em andamento ☑ Concluído  
+  - **Observações:** Implementado ApiService, AuthService, telas de login/registro/perfil com integração real ao backend
 
 ---
 
@@ -23,14 +23,14 @@
   - **Endpoints:** `/properties`, parâmetros `cidade`, `tipo`, `preco_min`, `preco_max`
   - **Estimado:** 5h  
   - **Real:** ___  
-  - **Status:** ☐ Em andamento ☐ Concluído  
+  - **Status:** ☐ Em andamento ☐ Concluído  
   - **Observações:** ___________________________________________
 
 - [ ] **Cards de Imóvel**
   - **Endpoints:** `/properties` (modo resumido)
   - **Estimado:** 2h  
   - **Real:** ___  
-  - **Status:** ☐ Em andamento ☐ Concluído  
+  - **Status:** ☐ Em andamento ☐ Concluído  
   - **Observações:** ___________________________________________
 
 ---
@@ -40,14 +40,14 @@
   - **Endpoints:** `/properties/:id`
   - **Estimado:** 4h  
   - **Real:** ___  
-  - **Status:** ☐ Em andamento ☐ Concluído  
+  - **Status:** ☐ Em andamento ☐ Concluído  
   - **Observações:** ___________________________________________
 
 - [ ] **Favoritar / Desfavoritar**
   - **Endpoints:** `/favorites`, `/favorites/:id`
   - **Estimado:** 2h  
   - **Real:** ___  
-  - **Status:** ☐ Em andamento ☐ Concluído  
+  - **Status:** ☐ Em andamento ☐ Concluído  
   - **Observações:** ___________________________________________
 
 ---
@@ -57,14 +57,14 @@
   - **Endpoints:** `/conversations`, `/conversations/:id`
   - **Estimado:** 3h  
   - **Real:** ___  
-  - **Status:** ☐ Em andamento ☐ Concluído  
+  - **Status:** ☐ Em andamento ☐ Concluído  
   - **Observações:** ___________________________________________
 
 - [ ] **Envio e Recebimento de Mensagens**
   - **Endpoints:** `/messages`, WebSocket / Realtime Supabase
   - **Estimado:** 5h  
   - **Real:** ___  
-  - **Status:** ☐ Em andamento ☐ Concluído  
+  - **Status:** ☐ Em andamento ☐ Concluído  
   - **Observações:** ___________________________________________
 
 ---
@@ -74,7 +74,7 @@
   - **Endpoints:** `/favorites`, `/favorites/:id`
   - **Estimado:** 3h  
   - **Real:** ___  
-  - **Status:** ☐ Em andamento ☐ Concluído  
+  - **Status:** ☐ Em andamento ☐ Concluído  
   - **Observações:** ___________________________________________
 
 ---
@@ -84,7 +84,7 @@
   - **Endpoints:** `/notifications`, `/notifications/:id/read`
   - **Estimado:** 4h  
   - **Real:** ___  
-  - **Status:** ☐ Em andamento ☐ Concluído  
+  - **Status:** ☐ Em andamento ☐ Concluído  
   - **Observações:** ___________________________________________
 
 ---
@@ -94,14 +94,14 @@
   - **Endpoints:** `/realtors`, `/properties?corretor_id=`
   - **Estimado:** 4h  
   - **Real:** ___  
-  - **Status:** ☐ Em andamento ☐ Concluído  
+  - **Status:** ☐ Em andamento ☐ Concluído  
   - **Observações:** ___________________________________________
 
 - [ ] **Painel do Administrador**
   - **Endpoints:** `/reports`, `/system_settings`, `/activity_logs`
   - **Estimado:** 6h  
   - **Real:** ___  
-  - **Status:** ☐ Em andamento ☐ Concluído  
+  - **Status:** ☐ Em andamento ☐ Concluído  
   - **Observações:** ___________________________________________
 
 ---
@@ -111,14 +111,14 @@
   - **Endpoints:** `/filters`, `/filters/:id`
   - **Estimado:** 3h  
   - **Real:** ___  
-  - **Status:** ☐ Em andamento ☐ Concluído  
+  - **Status:** ☐ Em andamento ☐ Concluído  
   - **Observações:** ___________________________________________
 
 - [ ] **Alertas de Imóveis**
   - **Endpoints:** `/alerts`, `/alerts/:id`
   - **Estimado:** 4h  
   - **Real:** ___  
-  - **Status:** ☐ Em andamento ☐ Concluído  
+  - **Status:** ☐ Em andamento ☐ Concluído  
   - **Observações:** ___________________________________________
 
 ---
@@ -128,7 +128,7 @@
   - **Endpoints:** `/reports`, `/activity_logs`
   - **Estimado:** 4h  
   - **Real:** ___  
-  - **Status:** ☐ Em andamento ☐ Concluído  
+  - **Status:** ☐ Em andamento ☐ Concluído  
   - **Observações:** ___________________________________________
 
 ---
@@ -137,13 +137,13 @@
 - [ ] **Testes de Integração**
   - **Estimado:** 3h  
   - **Real:** ___  
-  - **Status:** ☐ Em andamento ☐ Concluído  
+  - **Status:** ☐ Em andamento ☐ Concluído  
   - **Observações:** ___________________________________________
 
 - [ ] **Documentar Endpoints e Fluxos**
   - **Estimado:** 2h  
   - **Real:** ___  
-  - **Status:** ☐ Em andamento ☐ Concluído  
+  - **Status:** ☐ Em andamento ☐ Concluído  
   - **Observações:** ___________________________________________
 
 ---
@@ -151,7 +151,7 @@
 ## ✅ Resumo Final
 | Módulo | Estimado | Real | Status |
 |---|---:|---:|:---|
-| Autenticação & Usuários | 3h | ___ | ☐ |
+| Autenticação & Usuários | 3h | 2.5h | ☑ |
 | Lista de Imóveis | 7h | ___ | ☐ |
 | Detalhe do Imóvel | 6h | ___ | ☐ |
 | Chat | 8h | ___ | ☐ |
