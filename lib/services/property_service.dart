@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import '../models/property_model.dart';
 import 'supabase_service.dart';
 import '../config/supabase_config.dart';
@@ -22,7 +23,9 @@ class PropertyService {
       
       return response.map((json) => Property.fromJson(json)).toList();
     } catch (e) {
-      print('Erro ao carregar imóveis: $e');
+      if (kDebugMode) {
+        debugPrint('Erro ao carregar imóveis: $e');
+      }
       throw Exception('Erro de conexão. Tente novamente.');
     }
   }
@@ -60,7 +63,9 @@ class PropertyService {
       
       return Property.fromJson(response);
     } catch (e) {
-      print('Erro ao buscar imóvel por ID: $e');
+      if (kDebugMode) {
+        debugPrint('Erro ao buscar imóvel por ID: $e');
+      }
       throw Exception('Erro de conexão. Tente novamente.');
     }
   }
