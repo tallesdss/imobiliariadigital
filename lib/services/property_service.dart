@@ -22,7 +22,8 @@ class PropertyService {
       
       return response.map((json) => Property.fromJson(json)).toList();
     } catch (e) {
-      throw Exception('Erro ao carregar imóveis: $e');
+      print('Erro ao carregar imóveis: $e');
+      throw Exception('Erro de conexão. Tente novamente.');
     }
   }
 
@@ -59,7 +60,8 @@ class PropertyService {
       
       return Property.fromJson(response);
     } catch (e) {
-      throw Exception('Imóvel não encontrado: $e');
+      print('Erro ao buscar imóvel por ID: $e');
+      throw Exception('Erro de conexão. Tente novamente.');
     }
   }
 
