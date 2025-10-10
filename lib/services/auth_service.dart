@@ -46,7 +46,8 @@ class AuthService extends ChangeNotifier {
       
       if (response.user != null) {
         _currentUser = await _getUserFromSupabase();
-        notifyListeners();
+        _clearError(); // Limpar qualquer erro anterior
+        notifyListeners(); // Notificar todos os listeners sobre a mudança
         return true;
       }
       return false;
@@ -158,7 +159,8 @@ class AuthService extends ChangeNotifier {
         }
         
         _currentUser = await _getUserFromSupabase();
-        notifyListeners();
+        _clearError(); // Limpar qualquer erro anterior
+        notifyListeners(); // Notificar todos os listeners sobre a mudança
         return true;
       }
       return false;

@@ -39,32 +39,50 @@ class _LoginScreenState extends State<LoginScreen> {
       password: _passwordController.text,
     );
 
-    if (mounted) {
-      if (success) {
-        // Navegar baseado no tipo de usuário
-        final user = authService.currentUser;
-        if (user != null) {
-          switch (user.type) {
-            case UserType.buyer:
-              context.go('/user');
-              break;
-            case UserType.realtor:
-              context.go('/realtor');
-              break;
-            case UserType.admin:
-              context.go('/admin');
-              break;
-          }
+    if (!mounted) return;
+
+    if (success) {
+      // Limpar os campos do formulário
+      _emailController.clear();
+      _passwordController.clear();
+      
+      // Mostrar mensagem de sucesso
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Login realizado com sucesso!'),
+          backgroundColor: AppColors.success,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      
+      // Aguardar um momento para mostrar a mensagem
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      if (!mounted) return;
+      
+      // Navegar baseado no tipo de usuário
+      final user = authService.currentUser;
+      if (user != null) {
+        switch (user.type) {
+          case UserType.buyer:
+            context.go('/user');
+            break;
+          case UserType.realtor:
+            context.go('/realtor');
+            break;
+          case UserType.admin:
+            context.go('/admin');
+            break;
         }
-      } else {
-        // Mostrar erro
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(authService.error ?? 'Erro no login'),
-            backgroundColor: AppColors.error,
-          ),
-        );
       }
+    } else {
+      // Mostrar erro
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authService.error ?? 'Erro no login'),
+          backgroundColor: AppColors.error,
+        ),
+      );
     }
   }
 
@@ -73,33 +91,51 @@ class _LoginScreenState extends State<LoginScreen> {
     
     final success = await authService.signInWithGoogle();
 
-    if (mounted) {
-      if (success) {
-        // Navegar baseado no tipo de usuário
-        final user = authService.currentUser;
-        if (user != null) {
-          switch (user.type) {
-            case UserType.buyer:
-              context.go('/user');
-              break;
-            case UserType.realtor:
-              context.go('/realtor');
-              break;
-            case UserType.admin:
-              context.go('/admin');
-              break;
-          }
+    if (!mounted) return;
+
+    if (success) {
+      // Limpar os campos do formulário
+      _emailController.clear();
+      _passwordController.clear();
+      
+      // Mostrar mensagem de sucesso
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Login com Google realizado com sucesso!'),
+          backgroundColor: AppColors.success,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      
+      // Aguardar um momento para mostrar a mensagem
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      if (!mounted) return;
+      
+      // Navegar baseado no tipo de usuário
+      final user = authService.currentUser;
+      if (user != null) {
+        switch (user.type) {
+          case UserType.buyer:
+            context.go('/user');
+            break;
+          case UserType.realtor:
+            context.go('/realtor');
+            break;
+          case UserType.admin:
+            context.go('/admin');
+            break;
         }
-      } else {
-        // Mostrar erro apenas se não foi cancelado pelo usuário
-        if (authService.error != null && !authService.error!.contains('cancelado')) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(authService.error ?? 'Erro no login com Google'),
-              backgroundColor: AppColors.error,
-            ),
-          );
-        }
+      }
+    } else {
+      // Mostrar erro apenas se não foi cancelado pelo usuário
+      if (authService.error != null && !authService.error!.contains('cancelado')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(authService.error ?? 'Erro no login com Google'),
+            backgroundColor: AppColors.error,
+          ),
+        );
       }
     }
   }

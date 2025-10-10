@@ -37,6 +37,8 @@ class CustomDrawer extends StatelessWidget {
               children: [
                 ..._buildMenuItems(context),
                 const Divider(),
+                _buildDevelopmentSection(context),
+                const Divider(),
                 _buildLogoutItem(context),
               ],
             ),
@@ -292,6 +294,129 @@ class CustomDrawer extends StatelessWidget {
     );
   }
 
+  Widget _buildDevelopmentSection(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.warning.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: AppColors.warning.withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.developer_mode,
+                color: AppColors.warning,
+                size: 16,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Desenvolvimento',
+                style: AppTypography.labelMedium.copyWith(
+                  color: AppColors.warning,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Navegação rápida entre tipos de usuário:',
+            style: AppTypography.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _buildDevButton(
+                  context,
+                  'Comprador',
+                  '/user',
+                  Icons.person_outline,
+                  AppColors.primary,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildDevButton(
+                  context,
+                  'Corretor',
+                  '/realtor',
+                  Icons.business_outlined,
+                  AppColors.secondary,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildDevButton(
+                  context,
+                  'Admin',
+                  '/admin',
+                  Icons.admin_panel_settings_outlined,
+                  AppColors.accent,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDevButton(
+    BuildContext context,
+    String label,
+    String route,
+    IconData icon,
+    Color color,
+  ) {
+    return InkWell(
+      onTap: () {
+        Navigator.pop(context);
+        GoRouter.of(context).go(route);
+      },
+      borderRadius: BorderRadius.circular(6),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(
+            color: color.withValues(alpha: 0.3),
+            width: 1,
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: color,
+              size: 20,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: AppTypography.labelSmall.copyWith(
+                color: color,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   void _showLogoutDialog(BuildContext context) {
     showDialog(
