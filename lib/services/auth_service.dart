@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'api_service.dart';
+import 'favorite_service.dart';
 import '../models/user_model.dart';
 
 class AuthService extends ChangeNotifier {
@@ -118,6 +119,8 @@ class AuthService extends ChangeNotifier {
       // Ignora erros no logout
     } finally {
       _currentUser = null;
+      // Limpar cache de favoritos
+      await FavoriteService.clearAllCache();
       _setLoading(false);
       notifyListeners();
     }

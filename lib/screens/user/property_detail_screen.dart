@@ -38,6 +38,14 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
     });
 
     try {
+      // Verificar cache de favorito primeiro para melhor UX
+      final cachedFavoriteStatus = FavoriteService.isPropertyFavoritedFromCache(widget.propertyId);
+      if (cachedFavoriteStatus != null) {
+        setState(() {
+          _isFavorite = cachedFavoriteStatus;
+        });
+      }
+
       // Carregar detalhes do imóvel e status de favorito em paralelo
       final results = await Future.wait([
         PropertyService.getPropertyById(widget.propertyId),

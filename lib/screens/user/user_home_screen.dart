@@ -4,6 +4,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_spacing.dart';
 import '../../services/property_state_service.dart';
+import '../../services/favorite_service.dart';
 import '../../models/property_model.dart';
 import '../../models/filter_model.dart';
 import '../../widgets/cards/property_card.dart';
@@ -20,7 +21,7 @@ class UserHomeScreen extends StatefulWidget {
 }
 
 class _UserHomeScreenState extends State<UserHomeScreen> {
-  final Set<String> _favoritePropertyIds = {};
+  Set<String> _favoritePropertyIds = {};
   final Set<String> _comparePropertyIds = {};
   bool _showCarousels = true;
   bool _showOnlyLaunches = false;
@@ -36,6 +37,23 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     final propertyService = Provider.of<PropertyStateService>(context, listen: false);
     await propertyService.initialize();
     await propertyService.loadProperties(refresh: true);
+    
+    // Carregar favoritos do usuário
+    await _loadUserFavorites();
+  }
+
+  Future<void> _loadUserFavorites() async {
+    try {
+      final favorites = await FavoriteService.getUserFavorites();
+      if (mounted) {
+        setState(() {
+          _favoritePropertyIds = favorites.map((p) => p.id).toSet();
+        });
+      }
+    } catch (e) {
+      // Ignorar erros de favoritos na inicialização
+      // O usuário pode não ter favoritos ainda
+    }
   }
 
   void _updateCarouselVisibility() {
@@ -49,16 +67,41 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   }
 
 
-  void _toggleFavorite(String propertyId) {
-    setState(() {
-      if (_favoritePropertyIds.contains(propertyId)) {
-        _favoritePropertyIds.remove(propertyId);
-        // TODO: Implementar remoção de favorito via API
-      } else {
-        _favoritePropertyIds.add(propertyId);
-        // TODO: Implementar adição de favorito via API
+  Future<void> _toggleFavorite(String propertyId) async {
+    try {
+      await FavoriteService.toggleFavorite(propertyId);
+      
+      setState(() {
+        if (_favoritePropertyIds.contains(propertyId)) {
+          _favoritePropertyIds.remove(propertyId);
+        } else {
+          _favoritePropertyIds.add(propertyId);
+        }
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              _favoritePropertyIds.contains(propertyId)
+                  ? 'Imóvel adicionado aos favoritos'
+                  : 'Imóvel removido dos favoritos',
+            ),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
       }
-    });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao alterar favorito: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _toggleCompare(String propertyId) {

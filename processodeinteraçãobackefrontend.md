@@ -70,12 +70,12 @@
 ---
 
 ## ⭐ Etapa 5 — Favoritos (`favorites`)
-- [ ] **Integração completa**
+- [x] **Integração completa**
   - **Endpoints:** `/favorites`, `/favorites/:id`
   - **Estimado:** 3h  
-  - **Real:** ___  
-  - **Status:** ☐ Em andamento ☐ Concluído  
-  - **Observações:** ___________________________________________
+  - **Real:** 2.5h  
+  - **Status:** ☐ Em andamento ☑ Concluído  
+  - **Observações:** Implementado FavoriteService com cache local, integração completa com API, melhorias na UX com carregamento otimizado, limpeza de cache no logout
 
 ---
 
@@ -155,7 +155,7 @@
 | Lista de Imóveis | 7h | 5.5h | ☑ |
 | Detalhe do Imóvel | 6h | 5h | ☑ |
 | Chat | 8h | 6.5h | ☑ |
-| Favoritos | 3h | ___ | ☐ |
+| Favoritos | 3h | 2.5h | ☑ |
 | Notificações | 4h | ___ | ☐ |
 | Área Corretor/Admin | 10h | ___ | ☐ |
 | Filtros & Alertas | 7h | ___ | ☐ |

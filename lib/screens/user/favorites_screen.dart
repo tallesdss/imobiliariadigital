@@ -29,6 +29,16 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     });
 
     try {
+      // Tentar carregar do cache primeiro para melhor UX
+      final cachedFavorites = FavoriteService.getCachedFavorites();
+      if (cachedFavorites != null && cachedFavorites.isNotEmpty) {
+        setState(() {
+          _favoriteProperties = cachedFavorites;
+          _isLoading = false;
+        });
+      }
+
+      // Carregar dados atualizados da API
       final favorites = await FavoriteService.getUserFavorites();
       if (mounted) {
         setState(() {
