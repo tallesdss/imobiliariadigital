@@ -5,6 +5,7 @@ import '../../theme/app_typography.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_breakpoints.dart';
 import '../../models/filter_model.dart';
+import '../../models/property_model.dart';
 import 'custom_drawer.dart';
 
 enum SidebarType { navigation, filters, combined }
@@ -199,6 +200,7 @@ class FixedSidebar extends StatelessWidget {
       filters: filters!,
       onFiltersChanged: onFiltersChanged!,
       onClearFilters: onClearFilters ?? () {},
+      userType: userType,
     );
   }
 
@@ -222,6 +224,7 @@ class FixedSidebar extends StatelessWidget {
               filters: filters!,
               onFiltersChanged: onFiltersChanged!,
               onClearFilters: onClearFilters ?? () {},
+              userType: userType,
             ),
           
           const Divider(),
@@ -642,12 +645,14 @@ class FilterSidebarContent extends StatefulWidget {
   final PropertyFilters filters;
   final Function(PropertyFilters) onFiltersChanged;
   final VoidCallback onClearFilters;
+  final DrawerUserType? userType;
 
   const FilterSidebarContent({
     super.key,
     required this.filters,
     required this.onFiltersChanged,
     required this.onClearFilters,
+    this.userType,
   });
 
   @override
@@ -688,6 +693,7 @@ class _FilterSidebarContentState extends State<FilterSidebarContent> {
     widget.onFiltersChanged(_currentFilters);
   }
 
+
   void _clearFilters() {
     setState(() {
       _currentFilters = const PropertyFilters();
@@ -716,7 +722,15 @@ class _FilterSidebarContentState extends State<FilterSidebarContent> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                _buildQuickFilters(),
+                const SizedBox(height: AppSpacing.xl),
                 _buildPriceFilters(),
+                const SizedBox(height: AppSpacing.xl),
+                _buildLocationFilters(),
+                const SizedBox(height: AppSpacing.xl),
+                _buildPropertyTypeFilters(),
+                const SizedBox(height: AppSpacing.xl),
+                _buildCharacteristicsFilters(),
                 const SizedBox(height: AppSpacing.xl),
                 _buildTransactionTypeFilters(),
                 const SizedBox(height: AppSpacing.xl),
@@ -725,6 +739,14 @@ class _FilterSidebarContentState extends State<FilterSidebarContent> {
                 _buildAdditionalFilters(),
                 const SizedBox(height: AppSpacing.xl),
                 _buildCondominiumAndIptuFilters(),
+                if (widget.userType == DrawerUserType.realtor) ...[
+                  const SizedBox(height: AppSpacing.xl),
+                  _buildRealtorSpecificFilters(),
+                ],
+                if (widget.userType == DrawerUserType.admin) ...[
+                  const SizedBox(height: AppSpacing.xl),
+                  _buildAdminSpecificFilters(),
+                ],
               ],
             ),
           ),
@@ -847,9 +869,7 @@ class _FilterSidebarContentState extends State<FilterSidebarContent> {
           ),
           onChanged: (value) {
             final price = double.tryParse(value);
-            _currentFilters = _currentFilters.copyWith(
-              minPrice: price,
-            );
+            _currentFilters = _currentFilters.copyWith(minPrice: price);
           },
         ),
         
@@ -1176,6 +1196,574 @@ class _FilterSidebarContentState extends State<FilterSidebarContent> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildQuickFilters() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '⚡ Filtros Rápidos',
+          style: AppTypography.h6.copyWith(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            _buildQuickFilterChip('Até R\$ 200k', () {
+              _currentFilters = _currentFilters.copyWith(maxPrice: 200000);
+            }),
+            _buildQuickFilterChip('Apartamentos', () {
+              _currentFilters = _currentFilters.copyWith(
+                propertyTypes: [PropertyType.apartment],
+              );
+            }),
+            _buildQuickFilterChip('Para alugar', () {
+              _currentFilters = _currentFilters.copyWith(
+                transactionType: TransactionType.rent,
+              );
+            }),
+            _buildQuickFilterChip('Com garagem', () {
+              _currentFilters = _currentFilters.copyWith(minParkingSpaces: 1);
+            }),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuickFilterChip(String label, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.1),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Text(
+          label,
+          style: AppTypography.labelSmall.copyWith(
+            color: AppColors.primary,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLocationFilters() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '📍 Localização',
+          style: AppTypography.h6.copyWith(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        
+        // Cidade
+        Text(
+          'Cidade',
+          style: AppTypography.labelMedium.copyWith(
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        TextField(
+          decoration: InputDecoration(
+            hintText: 'Ex: São Paulo',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: AppColors.border),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          ),
+          onChanged: (value) {
+            // Implementar lógica de filtro por cidade
+          },
+        ),
+        
+        const SizedBox(height: AppSpacing.md),
+        
+        // Bairro
+        Text(
+          'Bairro',
+          style: AppTypography.labelMedium.copyWith(
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        TextField(
+          decoration: InputDecoration(
+            hintText: 'Ex: Vila Madalena',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: AppColors.border),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          ),
+          onChanged: (value) {
+            // Implementar lógica de filtro por bairro
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPropertyTypeFilters() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '🏠 Tipo de Imóvel',
+          style: AppTypography.h6.copyWith(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        
+        _buildFilterChip('Casa', PropertyType.house, 
+            _currentFilters.propertyTypes.contains(PropertyType.house)),
+        const SizedBox(height: AppSpacing.sm),
+        _buildFilterChip('Apartamento', PropertyType.apartment, 
+            _currentFilters.propertyTypes.contains(PropertyType.apartment)),
+        const SizedBox(height: AppSpacing.sm),
+        _buildFilterChip('Comercial', PropertyType.commercial, 
+            _currentFilters.propertyTypes.contains(PropertyType.commercial)),
+        const SizedBox(height: AppSpacing.sm),
+        _buildFilterChip('Terreno', PropertyType.land, 
+            _currentFilters.propertyTypes.contains(PropertyType.land)),
+      ],
+    );
+  }
+
+  Widget _buildCharacteristicsFilters() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '🔧 Características',
+          style: AppTypography.h6.copyWith(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        
+        // Quartos
+        Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Quartos (mín)',
+                    style: AppTypography.labelMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  TextField(
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      hintText: 'Ex: 2',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: AppColors.border),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    ),
+                    onChanged: (value) {
+                      final bedrooms = int.tryParse(value);
+                      _currentFilters = _currentFilters.copyWith(minBedrooms: bedrooms);
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Quartos (máx)',
+                    style: AppTypography.labelMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  TextField(
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      hintText: 'Ex: 4',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: AppColors.border),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    ),
+                    onChanged: (value) {
+                      final bedrooms = int.tryParse(value);
+                      _currentFilters = _currentFilters.copyWith(maxBedrooms: bedrooms);
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        
+        const SizedBox(height: AppSpacing.md),
+        
+        // Banheiros
+        Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Banheiros (mín)',
+                    style: AppTypography.labelMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  TextField(
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      hintText: 'Ex: 1',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: AppColors.border),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    ),
+                    onChanged: (value) {
+                      final bathrooms = int.tryParse(value);
+                      _currentFilters = _currentFilters.copyWith(minBathrooms: bathrooms);
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Banheiros (máx)',
+                    style: AppTypography.labelMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  TextField(
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      hintText: 'Ex: 3',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: AppColors.border),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    ),
+                    onChanged: (value) {
+                      final bathrooms = int.tryParse(value);
+                      _currentFilters = _currentFilters.copyWith(maxBathrooms: bathrooms);
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        
+        const SizedBox(height: AppSpacing.md),
+        
+        // Vagas de garagem
+        Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Vagas (mín)',
+                    style: AppTypography.labelMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  TextField(
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      hintText: 'Ex: 1',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: AppColors.border),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    ),
+                    onChanged: (value) {
+                      final parking = int.tryParse(value);
+                      _currentFilters = _currentFilters.copyWith(minParkingSpaces: parking);
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Vagas (máx)',
+                    style: AppTypography.labelMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  TextField(
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      hintText: 'Ex: 3',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: AppColors.border),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    ),
+                    onChanged: (value) {
+                      final parking = int.tryParse(value);
+                      _currentFilters = _currentFilters.copyWith(maxParkingSpaces: parking);
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        
+        const SizedBox(height: AppSpacing.md),
+        
+        // Área
+        Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Área (mín)',
+                    style: AppTypography.labelMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  TextField(
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      hintText: 'Ex: 50',
+                      suffixText: 'm²',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: AppColors.border),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    ),
+                    onChanged: (value) {
+                      final area = double.tryParse(value);
+                      _currentFilters = _currentFilters.copyWith(minArea: area);
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Área (máx)',
+                    style: AppTypography.labelMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  TextField(
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      hintText: 'Ex: 150',
+                      suffixText: 'm²',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: AppColors.border),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    ),
+                    onChanged: (value) {
+                      final area = double.tryParse(value);
+                      _currentFilters = _currentFilters.copyWith(maxArea: area);
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRealtorSpecificFilters() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '📊 Filtros do Corretor',
+          style: AppTypography.h6.copyWith(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        
+        _buildSwitchTile(
+          'Apenas em destaque',
+          false, // Implementar lógica
+          (value) {
+            // Implementar lógica
+          },
+        ),
+        _buildSwitchTile(
+          'Apenas lançamentos',
+          false, // Implementar lógica
+          (value) {
+            // Implementar lógica
+          },
+        ),
+        
+        const SizedBox(height: AppSpacing.md),
+        
+        Text(
+          'Ordenar por',
+          style: AppTypography.labelMedium.copyWith(
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        DropdownButtonFormField<String>(
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: AppColors.border),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          ),
+          items: const [
+            DropdownMenuItem(value: 'date', child: Text('Data de cadastro')),
+            DropdownMenuItem(value: 'price', child: Text('Preço')),
+            DropdownMenuItem(value: 'status', child: Text('Status')),
+            DropdownMenuItem(value: 'interest', child: Text('Interesse')),
+          ],
+          onChanged: (value) {
+            // Implementar lógica de ordenação
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAdminSpecificFilters() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '👨‍💼 Filtros Administrativos',
+          style: AppTypography.h6.copyWith(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        
+        Text(
+          'Corretor',
+          style: AppTypography.labelMedium.copyWith(
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        DropdownButtonFormField<String>(
+          decoration: InputDecoration(
+            hintText: 'Selecionar corretor',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: AppColors.border),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          ),
+          items: const [
+            DropdownMenuItem(value: 'all', child: Text('Todos os corretores')),
+            DropdownMenuItem(value: 'realtor1', child: Text('Carlos Oliveira')),
+            DropdownMenuItem(value: 'realtor2', child: Text('Ana Silva')),
+            DropdownMenuItem(value: 'realtor3', child: Text('João Santos')),
+          ],
+          onChanged: (value) {
+            // Implementar lógica de filtro por corretor
+          },
+        ),
+        
+        const SizedBox(height: AppSpacing.md),
+        
+        Text(
+          'Performance',
+          style: AppTypography.labelMedium.copyWith(
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        DropdownButtonFormField<String>(
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: AppColors.border),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          ),
+          items: const [
+            DropdownMenuItem(value: 'all', child: Text('Todas as performances')),
+            DropdownMenuItem(value: 'high', child: Text('Alta performance')),
+            DropdownMenuItem(value: 'medium', child: Text('Média performance')),
+            DropdownMenuItem(value: 'low', child: Text('Baixa performance')),
+          ],
+          onChanged: (value) {
+            // Implementar lógica de filtro por performance
+          },
+        ),
+      ],
     );
   }
 }

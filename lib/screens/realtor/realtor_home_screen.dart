@@ -5,11 +5,12 @@ import '../../theme/app_spacing.dart';
 import '../../theme/app_breakpoints.dart';
 import '../../services/mock_data_service.dart';
 import '../../services/notification_service.dart';
+import '../../services/filter_service.dart';
 import '../../models/property_model.dart';
+import '../../models/filter_model.dart';
 import '../../widgets/common/fixed_sidebar.dart';
 import '../../widgets/common/custom_drawer.dart';
 import '../../widgets/common/status_badge.dart';
-import '../../widgets/common/responsive_screen.dart';
 import '../../widgets/common/responsive_layout.dart';
 import 'property_form_screen.dart';
 import '../user/notifications_screen.dart';
@@ -23,9 +24,12 @@ class RealtorHomeScreen extends StatefulWidget {
 
 class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
   List<Property> _properties = [];
+  List<Property> _filteredProperties = [];
   bool _isLoading = true;
   final String _realtorId = 'realtor1'; // Mock - usuário logado
   int _unreadNotificationsCount = 0;
+  RealtorPropertyFilters _filters = const RealtorPropertyFilters();
+  bool _sidebarVisible = true;
 
   @override
   void initState() {
@@ -42,8 +46,35 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
     Future.delayed(const Duration(milliseconds: 500), () {
       setState(() {
         _properties = MockDataService.getPropertiesByRealtor(_realtorId);
+        _applyFilters();
         _isLoading = false;
       });
+    });
+  }
+
+  void _applyFilters() {
+    _filteredProperties = FilterService.applyRealtorFilters(_properties, _filters);
+  }
+
+  void _onFiltersChanged(PropertyFilters filters) {
+    // Converter PropertyFilters para RealtorPropertyFilters
+    setState(() {
+      _filters = RealtorPropertyFilters(
+        propertyTypes: filters.propertyTypes,
+        cities: filters.cities,
+        neighborhoods: filters.neighborhoods,
+        minPrice: filters.minPrice,
+        maxPrice: filters.maxPrice,
+        transactionType: filters.transactionType,
+      );
+      _applyFilters();
+    });
+  }
+
+  void _onClearFilters() {
+    setState(() {
+      _filters = const RealtorPropertyFilters();
+      _applyFilters();
     });
   }
 
@@ -186,16 +217,102 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ResponsiveScreen(
-      title: 'Meus Imóveis',
-      sidebarType: SidebarType.navigation,
-      userType: DrawerUserType.realtor,
-      userName: 'Carlos Oliveira',
-      userEmail: 'carlos@imobiliaria.com',
-      userCreci: 'CRECI-SP 12345',
-      currentRoute: '/realtor',
-      showSidebar: !context.isMobile,
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: _buildAppBar(),
+      body: Row(
+        children: [
+          // Sidebar fixa de filtros
+          FixedSidebar(
+            type: SidebarType.filters,
+            currentRoute: '/realtor',
+            filters: PropertyFilters(
+              propertyTypes: _filters.propertyTypes,
+              cities: _filters.cities,
+              neighborhoods: _filters.neighborhoods,
+              minPrice: _filters.minPrice,
+              maxPrice: _filters.maxPrice,
+              transactionType: _filters.transactionType,
+            ),
+            onFiltersChanged: _onFiltersChanged,
+            onClearFilters: _onClearFilters,
+            isVisible: _sidebarVisible,
+            onToggleVisibility: () {
+              setState(() {
+                _sidebarVisible = !_sidebarVisible;
+              });
+            },
+            userType: DrawerUserType.realtor,
+          ),
+          
+          // Conteúdo principal
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _buildContent(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      title: Row(
+        children: [
+          const Icon(Icons.business, color: AppColors.accent),
+          const SizedBox(width: 8),
+          Text(
+            'Meus Imóveis',
+            style: AppTypography.h6.copyWith(
+              color: AppColors.textOnPrimary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+      backgroundColor: AppColors.primary,
+      foregroundColor: AppColors.textOnPrimary,
+      elevation: 0,
       actions: [
+        // Botão para alternar sidebar
+        IconButton(
+          onPressed: () {
+            setState(() {
+              _sidebarVisible = !_sidebarVisible;
+            });
+          },
+          icon: Icon(_sidebarVisible ? Icons.menu_open : Icons.menu),
+          tooltip: _sidebarVisible ? 'Ocultar filtros' : 'Mostrar filtros',
+        ),
+        // Indicador de filtros ativos
+        if (_filters.hasActiveFilters)
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: AppColors.accent,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.filter_list,
+                  color: AppColors.textOnPrimary,
+                  size: 16,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  'Filtros Ativos',
+                  style: AppTypography.labelSmall.copyWith(
+                    color: AppColors.textOnPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
         // Botão de notificações
         IconButton(
           onPressed: () {
@@ -203,7 +320,6 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
               context,
               MaterialPageRoute(builder: (context) => const NotificationsScreen()),
             ).then((_) {
-              // Recarregar contador de notificações quando voltar
               _loadNotifications();
             });
           },
@@ -243,14 +359,11 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
           icon: const Icon(Icons.add),
         ),
       ],
-      child: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _buildContent(),
     );
   }
 
   Widget _buildContent() {
-    if (_properties.isEmpty) {
+    if (_filteredProperties.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -262,7 +375,7 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
             ),
             SizedBox(height: context.responsiveSpacing(mobile: 16, tablet: 24, desktop: 32)),
             Text(
-              'Nenhum imóvel cadastrado',
+              'Nenhum imóvel encontrado',
               style: AppTypography.h6.copyWith(
                 color: AppColors.textSecondary,
                 fontSize: context.responsiveFontSize(mobile: 16, tablet: 18, desktop: 20),
@@ -270,7 +383,7 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
             ),
             SizedBox(height: context.responsiveSpacing(mobile: 8, tablet: 12, desktop: 16)),
             Text(
-              'Comece cadastrando seu primeiro imóvel',
+              'Tente ajustar os filtros ou cadastrar um novo imóvel',
               style: AppTypography.bodyMedium.copyWith(
                 color: AppColors.textHint,
                 fontSize: context.responsiveFontSize(mobile: 14, tablet: 16, desktop: 18),
@@ -303,13 +416,13 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
   }
 
   Widget _buildStatsHeader() {
-    final activeCount = _properties
+    final activeCount = _filteredProperties
         .where((p) => p.status == PropertyStatus.active)
         .length;
-    final soldCount = _properties
+    final soldCount = _filteredProperties
         .where((p) => p.status == PropertyStatus.sold)
         .length;
-    final archivedCount = _properties
+    final archivedCount = _filteredProperties
         .where((p) => p.status == PropertyStatus.archived)
         .length;
 
@@ -359,13 +472,14 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
   Widget _buildPropertiesList() {
     return ListView.builder(
       padding: context.responsivePadding,
-      itemCount: _properties.length,
+      itemCount: _filteredProperties.length,
       itemBuilder: (context, index) {
-        final property = _properties[index];
+        final property = _filteredProperties[index];
         return _buildPropertyListItem(property);
       },
     );
   }
+
 
   Widget _buildPropertyListItem(Property property) {
     return Container(

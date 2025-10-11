@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../models/property_model.dart';
+import '../../models/filter_model.dart';
 import '../../services/mock_data_service.dart';
 import '../../services/notification_service.dart';
+import '../../services/filter_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../widgets/common/fixed_sidebar.dart';
@@ -21,11 +23,48 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   bool _sidebarVisible = true;
   int _unreadNotificationsCount = 0;
+  AdminPropertyFilters _filters = const AdminPropertyFilters();
+  List<Property> _allProperties = [];
+  List<Property> _filteredProperties = [];
 
   @override
   void initState() {
     super.initState();
+    _loadProperties();
     _loadNotifications();
+  }
+
+  void _loadProperties() {
+    setState(() {
+      _allProperties = MockDataService.properties;
+      _applyFilters();
+    });
+  }
+
+  void _applyFilters() {
+    _filteredProperties = FilterService.applyAdminFilters(_allProperties, _filters);
+  }
+
+  void _onFiltersChanged(PropertyFilters filters) {
+    // Converter PropertyFilters para AdminPropertyFilters
+    setState(() {
+      _filters = AdminPropertyFilters(
+        propertyTypes: filters.propertyTypes,
+        cities: filters.cities,
+        neighborhoods: filters.neighborhoods,
+        minPrice: filters.minPrice,
+        maxPrice: filters.maxPrice,
+        transactionType: filters.transactionType,
+      );
+      _applyFilters();
+    });
+  }
+
+  void _onClearFilters() {
+    setState(() {
+      _filters = const AdminPropertyFilters();
+      _applyFilters();
+    });
   }
 
   @override
@@ -48,13 +87,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     }
   }
 
-  List<Property> get _filteredProperties {
-    var properties = MockDataService.properties;
-    
-    // Filtrar por status
-    if (_selectedStatus != null) {
-      properties = properties.where((p) => p.status == _selectedStatus).toList();
-    }
+  List<Property> get _searchFilteredProperties {
+    var properties = _filteredProperties;
     
     // Filtrar por busca
     if (_searchQuery.isNotEmpty) {
@@ -136,19 +170,27 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       ),
       body: Row(
         children: [
-          // Sidebar fixa de navegação
+          // Sidebar fixa de filtros
           FixedSidebar(
-            type: SidebarType.navigation,
-            userType: DrawerUserType.admin,
-            userName: 'Administrador',
-            userEmail: 'admin@imobiliaria.com',
+            type: SidebarType.filters,
             currentRoute: '/admin',
+            filters: PropertyFilters(
+              propertyTypes: _filters.propertyTypes,
+              cities: _filters.cities,
+              neighborhoods: _filters.neighborhoods,
+              minPrice: _filters.minPrice,
+              maxPrice: _filters.maxPrice,
+              transactionType: _filters.transactionType,
+            ),
+            onFiltersChanged: _onFiltersChanged,
+            onClearFilters: _onClearFilters,
             isVisible: _sidebarVisible,
             onToggleVisibility: () {
               setState(() {
                 _sidebarVisible = !_sidebarVisible;
               });
             },
+            userType: DrawerUserType.admin,
           ),
           
           // Conteúdo principal
@@ -252,7 +294,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   }
 
   Widget _buildPropertiesList() {
-    final properties = _filteredProperties;
+    final properties = _searchFilteredProperties;
     
     if (properties.isEmpty) {
       return Center(

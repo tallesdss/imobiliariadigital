@@ -1,6 +1,9 @@
+import 'property_model.dart';
+
 enum TransactionType { sale, rent, daily }
 
-class PropertyFilters {
+// Filtros para usuários
+class UserPropertyFilters {
   final double? minPrice;
   final double? maxPrice;
   final TransactionType? transactionType;
@@ -10,8 +13,20 @@ class PropertyFilters {
   final bool acceptProposal;
   final bool hasFinancing;
   final List<String> priceRanges;
+  final List<PropertyType> propertyTypes;
+  final List<String> cities;
+  final List<String> neighborhoods;
+  final int? minBedrooms;
+  final int? maxBedrooms;
+  final int? minBathrooms;
+  final int? maxBathrooms;
+  final int? minParkingSpaces;
+  final int? maxParkingSpaces;
+  final double? minArea;
+  final double? maxArea;
+  final List<String> savedFilters;
 
-  const PropertyFilters({
+  const UserPropertyFilters({
     this.minPrice,
     this.maxPrice,
     this.transactionType,
@@ -21,9 +36,21 @@ class PropertyFilters {
     this.acceptProposal = false,
     this.hasFinancing = false,
     this.priceRanges = const [],
+    this.propertyTypes = const [],
+    this.cities = const [],
+    this.neighborhoods = const [],
+    this.minBedrooms,
+    this.maxBedrooms,
+    this.minBathrooms,
+    this.maxBathrooms,
+    this.minParkingSpaces,
+    this.maxParkingSpaces,
+    this.minArea,
+    this.maxArea,
+    this.savedFilters = const [],
   });
 
-  PropertyFilters copyWith({
+  UserPropertyFilters copyWith({
     double? minPrice,
     double? maxPrice,
     TransactionType? transactionType,
@@ -33,8 +60,20 @@ class PropertyFilters {
     bool? acceptProposal,
     bool? hasFinancing,
     List<String>? priceRanges,
+    List<PropertyType>? propertyTypes,
+    List<String>? cities,
+    List<String>? neighborhoods,
+    int? minBedrooms,
+    int? maxBedrooms,
+    int? minBathrooms,
+    int? maxBathrooms,
+    int? minParkingSpaces,
+    int? maxParkingSpaces,
+    double? minArea,
+    double? maxArea,
+    List<String>? savedFilters,
   }) {
-    return PropertyFilters(
+    return UserPropertyFilters(
       minPrice: minPrice ?? this.minPrice,
       maxPrice: maxPrice ?? this.maxPrice,
       transactionType: transactionType ?? this.transactionType,
@@ -44,6 +83,18 @@ class PropertyFilters {
       acceptProposal: acceptProposal ?? this.acceptProposal,
       hasFinancing: hasFinancing ?? this.hasFinancing,
       priceRanges: priceRanges ?? this.priceRanges,
+      propertyTypes: propertyTypes ?? this.propertyTypes,
+      cities: cities ?? this.cities,
+      neighborhoods: neighborhoods ?? this.neighborhoods,
+      minBedrooms: minBedrooms ?? this.minBedrooms,
+      maxBedrooms: maxBedrooms ?? this.maxBedrooms,
+      minBathrooms: minBathrooms ?? this.minBathrooms,
+      maxBathrooms: maxBathrooms ?? this.maxBathrooms,
+      minParkingSpaces: minParkingSpaces ?? this.minParkingSpaces,
+      maxParkingSpaces: maxParkingSpaces ?? this.maxParkingSpaces,
+      minArea: minArea ?? this.minArea,
+      maxArea: maxArea ?? this.maxArea,
+      savedFilters: savedFilters ?? this.savedFilters,
     );
   }
 
@@ -56,7 +107,352 @@ class PropertyFilters {
         showOnlyWithPrice ||
         acceptProposal ||
         hasFinancing ||
-        priceRanges.isNotEmpty;
+        priceRanges.isNotEmpty ||
+        propertyTypes.isNotEmpty ||
+        cities.isNotEmpty ||
+        neighborhoods.isNotEmpty ||
+        minBedrooms != null ||
+        maxBedrooms != null ||
+        minBathrooms != null ||
+        maxBathrooms != null ||
+        minParkingSpaces != null ||
+        maxParkingSpaces != null ||
+        minArea != null ||
+        maxArea != null;
+  }
+
+  UserPropertyFilters clear() {
+    return const UserPropertyFilters();
+  }
+}
+
+// Filtros para corretores
+class RealtorPropertyFilters {
+  final List<PropertyStatus> statuses;
+  final DateTime? startDate;
+  final DateTime? endDate;
+  final DateTime? lastUpdateStart;
+  final DateTime? lastUpdateEnd;
+  final List<PropertyType> propertyTypes;
+  final List<String> cities;
+  final List<String> neighborhoods;
+  final double? minPrice;
+  final double? maxPrice;
+  final TransactionType? transactionType;
+  final bool showOnlyFeatured;
+  final bool showOnlyLaunches;
+  final String sortBy; // 'price', 'date', 'status', 'interest'
+  final bool sortAscending;
+  final int? minViews;
+  final int? minLeads;
+
+  const RealtorPropertyFilters({
+    this.statuses = const [],
+    this.startDate,
+    this.endDate,
+    this.lastUpdateStart,
+    this.lastUpdateEnd,
+    this.propertyTypes = const [],
+    this.cities = const [],
+    this.neighborhoods = const [],
+    this.minPrice,
+    this.maxPrice,
+    this.transactionType,
+    this.showOnlyFeatured = false,
+    this.showOnlyLaunches = false,
+    this.sortBy = 'date',
+    this.sortAscending = false,
+    this.minViews,
+    this.minLeads,
+  });
+
+  RealtorPropertyFilters copyWith({
+    List<PropertyStatus>? statuses,
+    DateTime? startDate,
+    DateTime? endDate,
+    DateTime? lastUpdateStart,
+    DateTime? lastUpdateEnd,
+    List<PropertyType>? propertyTypes,
+    List<String>? cities,
+    List<String>? neighborhoods,
+    double? minPrice,
+    double? maxPrice,
+    TransactionType? transactionType,
+    bool? showOnlyFeatured,
+    bool? showOnlyLaunches,
+    String? sortBy,
+    bool? sortAscending,
+    int? minViews,
+    int? minLeads,
+  }) {
+    return RealtorPropertyFilters(
+      statuses: statuses ?? this.statuses,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+      lastUpdateStart: lastUpdateStart ?? this.lastUpdateStart,
+      lastUpdateEnd: lastUpdateEnd ?? this.lastUpdateEnd,
+      propertyTypes: propertyTypes ?? this.propertyTypes,
+      cities: cities ?? this.cities,
+      neighborhoods: neighborhoods ?? this.neighborhoods,
+      minPrice: minPrice ?? this.minPrice,
+      maxPrice: maxPrice ?? this.maxPrice,
+      transactionType: transactionType ?? this.transactionType,
+      showOnlyFeatured: showOnlyFeatured ?? this.showOnlyFeatured,
+      showOnlyLaunches: showOnlyLaunches ?? this.showOnlyLaunches,
+      sortBy: sortBy ?? this.sortBy,
+      sortAscending: sortAscending ?? this.sortAscending,
+      minViews: minViews ?? this.minViews,
+      minLeads: minLeads ?? this.minLeads,
+    );
+  }
+
+  bool get hasActiveFilters {
+    return statuses.isNotEmpty ||
+        startDate != null ||
+        endDate != null ||
+        lastUpdateStart != null ||
+        lastUpdateEnd != null ||
+        propertyTypes.isNotEmpty ||
+        cities.isNotEmpty ||
+        neighborhoods.isNotEmpty ||
+        minPrice != null ||
+        maxPrice != null ||
+        transactionType != null ||
+        showOnlyFeatured ||
+        showOnlyLaunches ||
+        sortBy != 'date' ||
+        !sortAscending ||
+        minViews != null ||
+        minLeads != null;
+  }
+
+  RealtorPropertyFilters clear() {
+    return const RealtorPropertyFilters();
+  }
+}
+
+// Filtros para administradores
+class AdminPropertyFilters {
+  final List<String> realtorIds;
+  final List<PropertyStatus> statuses;
+  final DateTime? startDate;
+  final DateTime? endDate;
+  final List<PropertyType> propertyTypes;
+  final List<String> cities;
+  final List<String> neighborhoods;
+  final double? minPrice;
+  final double? maxPrice;
+  final TransactionType? transactionType;
+  final bool showOnlyFeatured;
+  final bool showOnlyLaunches;
+  final String sortBy; // 'price', 'date', 'status', 'realtor', 'performance'
+  final bool sortAscending;
+  final int? minViews;
+  final int? minLeads;
+  final String? performanceFilter; // 'high', 'medium', 'low'
+
+  const AdminPropertyFilters({
+    this.realtorIds = const [],
+    this.statuses = const [],
+    this.startDate,
+    this.endDate,
+    this.propertyTypes = const [],
+    this.cities = const [],
+    this.neighborhoods = const [],
+    this.minPrice,
+    this.maxPrice,
+    this.transactionType,
+    this.showOnlyFeatured = false,
+    this.showOnlyLaunches = false,
+    this.sortBy = 'date',
+    this.sortAscending = false,
+    this.minViews,
+    this.minLeads,
+    this.performanceFilter,
+  });
+
+  AdminPropertyFilters copyWith({
+    List<String>? realtorIds,
+    List<PropertyStatus>? statuses,
+    DateTime? startDate,
+    DateTime? endDate,
+    List<PropertyType>? propertyTypes,
+    List<String>? cities,
+    List<String>? neighborhoods,
+    double? minPrice,
+    double? maxPrice,
+    TransactionType? transactionType,
+    bool? showOnlyFeatured,
+    bool? showOnlyLaunches,
+    String? sortBy,
+    bool? sortAscending,
+    int? minViews,
+    int? minLeads,
+    String? performanceFilter,
+  }) {
+    return AdminPropertyFilters(
+      realtorIds: realtorIds ?? this.realtorIds,
+      statuses: statuses ?? this.statuses,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+      propertyTypes: propertyTypes ?? this.propertyTypes,
+      cities: cities ?? this.cities,
+      neighborhoods: neighborhoods ?? this.neighborhoods,
+      minPrice: minPrice ?? this.minPrice,
+      maxPrice: maxPrice ?? this.maxPrice,
+      transactionType: transactionType ?? this.transactionType,
+      showOnlyFeatured: showOnlyFeatured ?? this.showOnlyFeatured,
+      showOnlyLaunches: showOnlyLaunches ?? this.showOnlyLaunches,
+      sortBy: sortBy ?? this.sortBy,
+      sortAscending: sortAscending ?? this.sortAscending,
+      minViews: minViews ?? this.minViews,
+      minLeads: minLeads ?? this.minLeads,
+      performanceFilter: performanceFilter ?? this.performanceFilter,
+    );
+  }
+
+  bool get hasActiveFilters {
+    return realtorIds.isNotEmpty ||
+        statuses.isNotEmpty ||
+        startDate != null ||
+        endDate != null ||
+        propertyTypes.isNotEmpty ||
+        cities.isNotEmpty ||
+        neighborhoods.isNotEmpty ||
+        minPrice != null ||
+        maxPrice != null ||
+        transactionType != null ||
+        showOnlyFeatured ||
+        showOnlyLaunches ||
+        sortBy != 'date' ||
+        !sortAscending ||
+        minViews != null ||
+        minLeads != null ||
+        performanceFilter != null;
+  }
+
+  AdminPropertyFilters clear() {
+    return const AdminPropertyFilters();
+  }
+}
+
+// Classe base para compatibilidade com código existente
+class PropertyFilters {
+  final double? minPrice;
+  final double? maxPrice;
+  final TransactionType? transactionType;
+  final double? maxCondominium;
+  final double? maxIptu;
+  final bool showOnlyWithPrice;
+  final bool acceptProposal;
+  final bool hasFinancing;
+  final List<String> priceRanges;
+  final List<PropertyType> propertyTypes;
+  final List<String> cities;
+  final List<String> neighborhoods;
+  final int? minBedrooms;
+  final int? maxBedrooms;
+  final int? minBathrooms;
+  final int? maxBathrooms;
+  final int? minParkingSpaces;
+  final int? maxParkingSpaces;
+  final double? minArea;
+  final double? maxArea;
+  final List<String> savedFilters;
+
+  const PropertyFilters({
+    this.minPrice,
+    this.maxPrice,
+    this.transactionType,
+    this.maxCondominium,
+    this.maxIptu,
+    this.showOnlyWithPrice = false,
+    this.acceptProposal = false,
+    this.hasFinancing = false,
+    this.priceRanges = const [],
+    this.propertyTypes = const [],
+    this.cities = const [],
+    this.neighborhoods = const [],
+    this.minBedrooms,
+    this.maxBedrooms,
+    this.minBathrooms,
+    this.maxBathrooms,
+    this.minParkingSpaces,
+    this.maxParkingSpaces,
+    this.minArea,
+    this.maxArea,
+    this.savedFilters = const [],
+  });
+
+  PropertyFilters copyWith({
+    double? minPrice,
+    double? maxPrice,
+    TransactionType? transactionType,
+    double? maxCondominium,
+    double? maxIptu,
+    bool? showOnlyWithPrice,
+    bool? acceptProposal,
+    bool? hasFinancing,
+    List<String>? priceRanges,
+    List<PropertyType>? propertyTypes,
+    List<String>? cities,
+    List<String>? neighborhoods,
+    int? minBedrooms,
+    int? maxBedrooms,
+    int? minBathrooms,
+    int? maxBathrooms,
+    int? minParkingSpaces,
+    int? maxParkingSpaces,
+    double? minArea,
+    double? maxArea,
+    List<String>? savedFilters,
+  }) {
+    return PropertyFilters(
+      minPrice: minPrice ?? this.minPrice,
+      maxPrice: maxPrice ?? this.maxPrice,
+      transactionType: transactionType ?? this.transactionType,
+      maxCondominium: maxCondominium ?? this.maxCondominium,
+      maxIptu: maxIptu ?? this.maxIptu,
+      showOnlyWithPrice: showOnlyWithPrice ?? this.showOnlyWithPrice,
+      acceptProposal: acceptProposal ?? this.acceptProposal,
+      hasFinancing: hasFinancing ?? this.hasFinancing,
+      priceRanges: priceRanges ?? this.priceRanges,
+      propertyTypes: propertyTypes ?? this.propertyTypes,
+      cities: cities ?? this.cities,
+      neighborhoods: neighborhoods ?? this.neighborhoods,
+      minBedrooms: minBedrooms ?? this.minBedrooms,
+      maxBedrooms: maxBedrooms ?? this.maxBedrooms,
+      minBathrooms: minBathrooms ?? this.minBathrooms,
+      maxBathrooms: maxBathrooms ?? this.maxBathrooms,
+      minParkingSpaces: minParkingSpaces ?? this.minParkingSpaces,
+      maxParkingSpaces: maxParkingSpaces ?? this.maxParkingSpaces,
+      minArea: minArea ?? this.minArea,
+      maxArea: maxArea ?? this.maxArea,
+      savedFilters: savedFilters ?? this.savedFilters,
+    );
+  }
+
+  bool get hasActiveFilters {
+    return minPrice != null ||
+        maxPrice != null ||
+        transactionType != null ||
+        maxCondominium != null ||
+        maxIptu != null ||
+        showOnlyWithPrice ||
+        acceptProposal ||
+        hasFinancing ||
+        priceRanges.isNotEmpty ||
+        propertyTypes.isNotEmpty ||
+        cities.isNotEmpty ||
+        neighborhoods.isNotEmpty ||
+        minBedrooms != null ||
+        maxBedrooms != null ||
+        minBathrooms != null ||
+        maxBathrooms != null ||
+        minParkingSpaces != null ||
+        maxParkingSpaces != null ||
+        minArea != null ||
+        maxArea != null;
   }
 
   PropertyFilters clear() {
