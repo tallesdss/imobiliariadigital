@@ -3,6 +3,20 @@ import 'app_colors.dart';
 import 'app_typography.dart';
 
 class AppTheme {
+  // Cores
+  static Color get primaryColor => AppColors.primary;
+  
+  // Tipografia
+  static TextStyle? get headlineSmall => AppTypography.h6;
+  static TextStyle? get headlineMedium => AppTypography.h5;
+  static TextStyle? get headlineLarge => AppTypography.h4;
+  static TextStyle? get titleSmall => AppTypography.labelLarge;
+  static TextStyle? get titleMedium => AppTypography.h6;
+  static TextStyle? get titleLarge => AppTypography.h5;
+  static TextStyle? get bodySmall => AppTypography.bodySmall;
+  static TextStyle? get bodyMedium => AppTypography.bodyMedium;
+  static TextStyle? get bodyLarge => AppTypography.bodyLarge;
+  
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,

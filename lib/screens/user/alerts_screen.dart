@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_typography.dart';
-import '../../theme/app_spacing.dart';
-import '../../services/mock_data_service.dart';
-import '../../models/favorite_model.dart';
-import '../../widgets/common/status_badge.dart';
-import '../../widgets/common/custom_button.dart';
+import '../../models/alert_model.dart' as alert_models;
+import '../../services/notification_service.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/common/loading_widget.dart';
+import '../../widgets/common/error_widget.dart';
+import 'create_alert_screen.dart';
+import 'alert_settings_screen.dart';
 
+/// Tela de gerenciamento de alertas do usuário
 class AlertsScreen extends StatefulWidget {
   const AlertsScreen({super.key});
 
@@ -14,58 +15,145 @@ class AlertsScreen extends StatefulWidget {
   State<AlertsScreen> createState() => _AlertsScreenState();
 }
 
-class _AlertsScreenState extends State<AlertsScreen> {
-  List<PropertyAlert> _alerts = [];
+class _AlertsScreenState extends State<AlertsScreen>
+    with SingleTickerProviderStateMixin {
+  final NotificationService _notificationService = NotificationService();
+  late TabController _tabController;
+  
+  List<alert_models.PropertyAlert> _alerts = [];
+  List<alert_models.AlertHistory> _history = [];
+  Map<String, dynamic> _stats = {};
   bool _isLoading = true;
+  String? _error;
 
   @override
   void initState() {
     super.initState();
-    _loadAlerts();
+    _tabController = TabController(length: 3, vsync: this);
+    _loadData();
   }
 
-  void _loadAlerts() {
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  /// Carrega dados dos alertas
+  Future<void> _loadData() async {
     setState(() {
       _isLoading = true;
+      _error = null;
     });
 
-    Future.delayed(const Duration(milliseconds: 500), () {
+    try {
+      // Simular userId - em produção viria do AuthService
+      const userId = 'current_user_id';
+      
+      final results = await Future.wait([
+        _notificationService.getUserAlerts(userId),
+        _notificationService.getAlertHistory(userId),
+        _notificationService.getAlertStats(userId),
+      ]);
+
       setState(() {
-        _alerts = MockDataService.getUserAlerts('user1');
+        _alerts = results[0] as List<alert_models.PropertyAlert>;
+        _history = results[1] as List<alert_models.AlertHistory>;
+        _stats = results[2] as Map<String, dynamic>;
         _isLoading = false;
       });
-    });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
   }
 
-  void _showCreateAlertDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => CreateAlertDialog(
-        onAlertCreated: (alert) {
-          MockDataService.addAlert(alert);
-          _loadAlerts();
-        },
+  /// Cria um novo alerta
+  Future<void> _createAlert() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const CreateAlertScreen(),
       ),
     );
+
+    if (result == true) {
+      _loadData();
+    }
   }
 
-  void _removeAlert(String alertId) {
-    showDialog(
+  /// Edita um alerta existente
+  Future<void> _editAlert(alert_models.PropertyAlert alert) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CreateAlertScreen(alert: alert),
+      ),
+    );
+
+    if (result == true) {
+      _loadData();
+    }
+  }
+
+  /// Remove um alerta
+  Future<void> _deleteAlert(alert_models.PropertyAlert alert) async {
+    final confirmed = await _showDeleteConfirmation(alert);
+    if (confirmed == true) {
+      final success = await _notificationService.deleteAlert(alert.id);
+      if (success) {
+        _loadData();
+        _showSnackBar('Alerta removido com sucesso');
+      } else {
+        _showSnackBar('Erro ao remover alerta');
+      }
+    }
+  }
+
+  /// Alterna status ativo/inativo do alerta
+  Future<void> _toggleAlertStatus(alert_models.PropertyAlert alert) async {
+    final updatedAlert = alert.copyWith(isActive: !alert.isActive);
+    final success = await _notificationService.updateAlert(updatedAlert);
+    
+    if (success) {
+      _loadData();
+      _showSnackBar(
+        alert.isActive ? 'Alerta pausado' : 'Alerta ativado',
+      );
+    } else {
+      _showSnackBar('Erro ao atualizar alerta');
+    }
+  }
+
+  /// Marca alerta como lido
+  Future<void> _markAsRead(alert_models.AlertHistory history) async {
+    final success = await _notificationService.markAlertAsRead(history.id);
+    if (success) {
+      _loadData();
+    }
+  }
+
+  /// Mostra confirmação de exclusão
+  Future<bool?> _showDeleteConfirmation(alert_models.PropertyAlert alert) {
+    return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Remover Alerta'),
-        content: const Text('Tem certeza que deseja remover este alerta?'),
+        content: Text(
+          'Tem certeza que deseja remover este alerta?\n\n'
+          'Tipo: ${_getAlertTypeName(alert.type)}\n'
+          'Criado em: ${_formatDate(alert.createdAt)}',
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(context, false),
             child: const Text('Cancelar'),
           ),
           TextButton(
-            onPressed: () {
-              MockDataService.removeAlert(alertId);
-              Navigator.pop(context);
-              _loadAlerts();
-            },
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Remover'),
           ),
         ],
@@ -73,193 +161,319 @@ class _AlertsScreenState extends State<AlertsScreen> {
     );
   }
 
+  /// Mostra snackbar com mensagem
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  /// Obtém nome do tipo de alerta
+  String _getAlertTypeName(alert_models.AlertType type) {
+    switch (type) {
+      case alert_models.AlertType.priceDrop:
+        return 'Redução de Preço';
+      case alert_models.AlertType.statusChange:
+        return 'Mudança de Status';
+      case alert_models.AlertType.newProperty:
+        return 'Novo Imóvel';
+      case alert_models.AlertType.custom:
+        return 'Personalizado';
+    }
+  }
+
+  /// Formata data
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year}';
+  }
+
+  /// Formata data e hora
+  String _formatDateTime(DateTime date) {
+    return '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Meus Alertas'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.textOnPrimary,
         actions: [
           IconButton(
-            onPressed: _showCreateAlertDialog,
-            icon: const Icon(Icons.add_alert),
+            onPressed: _createAlert,
+            icon: const Icon(Icons.add),
+            tooltip: 'Criar Alerta',
+          ),
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AlertSettingsScreen(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.settings),
+            tooltip: 'Configurações',
           ),
         ],
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: 'Ativos', icon: Icon(Icons.notifications_active)),
+            Tab(text: 'Histórico', icon: Icon(Icons.history)),
+            Tab(text: 'Estatísticas', icon: Icon(Icons.analytics)),
+          ],
+        ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _buildContent(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showCreateAlertDialog,
-        backgroundColor: AppColors.primary,
-        child: const Icon(Icons.add_alert, color: Colors.white),
-      ),
+          ? const LoadingWidget()
+          : _error != null
+              ? CustomErrorWidget(
+                  message: _error!,
+                  onRetry: _loadData,
+                )
+              : TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildActiveAlertsTab(),
+                    _buildHistoryTab(),
+                    _buildStatsTab(),
+                  ],
+                ),
     );
   }
 
-  Widget _buildContent() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isTablet = screenWidth > 600;
-    
-    if (_alerts.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: EdgeInsets.all(isTablet ? 32 : 24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.notifications_none,
-                size: isTablet ? 100 : 80,
-                color: AppColors.textHint,
-              ),
-              SizedBox(height: isTablet ? 32 : AppSpacing.lg),
-              Text(
-                'Nenhum alerta criado',
-                style: AppTypography.h6.copyWith(
-                  color: AppColors.textSecondary,
-                  fontSize: isTablet ? 20 : 18,
-                ),
-              ),
-              SizedBox(height: isTablet ? 16 : AppSpacing.sm),
-              Text(
-                'Crie alertas para ser notificado sobre\nmudanças nos imóveis de interesse',
-                style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.textHint,
-                  fontSize: isTablet ? 16 : 14,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: isTablet ? 40 : AppSpacing.xl),
-              CustomButton(
-                text: 'Criar Primeiro Alerta',
-                onPressed: _showCreateAlertDialog,
-                type: ButtonType.filled,
-                size: isTablet ? ButtonSize.large : ButtonSize.medium,
-              ),
-            ],
-          ),
-        ),
-      );
-    }
+  /// Constrói aba de alertas ativos
+  Widget _buildActiveAlertsTab() {
+    final activeAlerts = _alerts.where((a) => a.isActive).toList();
+    final inactiveAlerts = _alerts.where((a) => !a.isActive).toList();
 
-    return ListView.builder(
-      padding: EdgeInsets.all(isTablet ? 24 : AppSpacing.lg),
-      itemCount: _alerts.length,
-      itemBuilder: (context, index) {
-        final alert = _alerts[index];
-        return _buildAlertCard(alert);
-      },
-    );
-  }
+    return RefreshIndicator(
+      onRefresh: _loadData,
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          if (activeAlerts.isNotEmpty) ...[
+            const Text(
+              'Alertas Ativos',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            ...activeAlerts.map((alert) => _buildAlertCard(alert)),
+            const SizedBox(height: 24),
+          ],
+          
+          if (inactiveAlerts.isNotEmpty) ...[
+            const Text(
+              'Alertas Pausados',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            ...inactiveAlerts.map((alert) => _buildAlertCard(alert)),
+          ],
 
-  Widget _buildAlertCard(PropertyAlert alert) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isTablet = screenWidth > 600;
-    
-    return Container(
-      margin: EdgeInsets.only(bottom: isTablet ? 20 : AppSpacing.md),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
+          if (_alerts.isEmpty)
+            _buildEmptyState(),
         ],
       ),
+    );
+  }
+
+  /// Constrói aba de histórico
+  Widget _buildHistoryTab() {
+    return RefreshIndicator(
+      onRefresh: _loadData,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: _history.length,
+        itemBuilder: (context, index) {
+          final history = _history[index];
+          return _buildHistoryCard(history);
+        },
+      ),
+    );
+  }
+
+  /// Constrói aba de estatísticas
+  Widget _buildStatsTab() {
+    return RefreshIndicator(
+      onRefresh: _loadData,
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          _buildStatsCard(),
+          const SizedBox(height: 16),
+          _buildAlertsByTypeCard(),
+        ],
+      ),
+    );
+  }
+
+  /// Constrói card de alerta
+  Widget _buildAlertCard(alert_models.PropertyAlert alert) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: alert.isActive ? Colors.green : Colors.grey,
+          child: Icon(
+            _getAlertTypeIcon(alert.type),
+            color: Colors.white,
+          ),
+        ),
+        title: Text(_getAlertTypeName(alert.type)),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Criado em: ${_formatDate(alert.createdAt)}'),
+            if (alert.triggerCount > 0)
+              Text('Disparado ${alert.triggerCount} vezes'),
+            if (alert.lastTriggered != null)
+              Text('Último disparo: ${_formatDateTime(alert.lastTriggered!)}'),
+          ],
+        ),
+        trailing: PopupMenuButton<String>(
+          onSelected: (value) {
+            switch (value) {
+              case 'edit':
+                _editAlert(alert);
+                break;
+              case 'toggle':
+                _toggleAlertStatus(alert);
+                break;
+              case 'delete':
+                _deleteAlert(alert);
+                break;
+            }
+          },
+          itemBuilder: (context) => [
+            const PopupMenuItem(
+              value: 'edit',
+              child: ListTile(
+                leading: Icon(Icons.edit),
+                title: Text('Editar'),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+            PopupMenuItem(
+              value: 'toggle',
+              child: ListTile(
+                leading: Icon(
+                  alert.isActive ? Icons.pause : Icons.play_arrow,
+                ),
+                title: Text(alert.isActive ? 'Pausar' : 'Ativar'),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+            const PopupMenuItem(
+              value: 'delete',
+              child: ListTile(
+                leading: Icon(Icons.delete, color: Colors.red),
+                title: Text('Remover', style: TextStyle(color: Colors.red)),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+          ],
+        ),
+        onTap: () => _editAlert(alert),
+      ),
+    );
+  }
+
+  /// Constrói card de histórico
+  Widget _buildHistoryCard(alert_models.AlertHistory history) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: history.wasRead ? Colors.grey : Colors.blue,
+          child: Icon(
+            _getAlertTypeIcon(history.type),
+            color: Colors.white,
+          ),
+        ),
+        title: Text(
+          history.message,
+          style: TextStyle(
+            fontWeight: history.wasRead ? FontWeight.normal : FontWeight.bold,
+          ),
+        ),
+        subtitle: Text(_formatDateTime(history.triggeredAt)),
+        trailing: history.wasRead
+            ? null
+            : IconButton(
+                onPressed: () => _markAsRead(history),
+                icon: const Icon(Icons.mark_email_read),
+                tooltip: 'Marcar como lido',
+              ),
+        onTap: () {
+          // Navegar para detalhes do imóvel
+          // NavigationService.navigateToPropertyDetail(history.propertyId);
+        },
+      ),
+    );
+  }
+
+  /// Constrói card de estatísticas
+  Widget _buildStatsCard() {
+    return Card(
       child: Padding(
-        padding: EdgeInsets.all(isTablet ? 24 : AppSpacing.lg),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const Text(
+              'Estatísticas Gerais',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
-                  child: Text(
-                    alert.propertyTitle,
-                    style: AppTypography.subtitle1.copyWith(
-                      fontWeight: FontWeight.w600,
-                      fontSize: isTablet ? 18 : 16,
-                    ),
+                  child: _buildStatItem(
+                    'Total de Alertas',
+                    '${_stats['totalAlerts'] ?? 0}',
+                    Icons.notifications,
+                    Colors.blue,
                   ),
                 ),
-                IconButton(
-                  onPressed: () => _removeAlert(alert.id),
-                  icon: Icon(
-                    Icons.close, 
-                    color: AppColors.textHint,
-                    size: isTablet ? 24 : 20,
-                  ),
-                  constraints: const BoxConstraints(),
-                  padding: EdgeInsets.zero,
-                ),
-              ],
-            ),
-            SizedBox(height: isTablet ? 16 : AppSpacing.sm),
-            Row(
-              children: [
-                Icon(
-                  _getAlertIcon(alert.type),
-                  size: isTablet ? 24 : 20,
-                  color: AppColors.primary,
-                ),
-                SizedBox(width: isTablet ? 12 : AppSpacing.sm),
-                Text(
-                  alert.typeDisplayName,
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: isTablet ? 16 : 14,
+                Expanded(
+                  child: _buildStatItem(
+                    'Alertas Ativos',
+                    '${_stats['activeAlerts'] ?? 0}',
+                    Icons.notifications_active,
+                    Colors.green,
                   ),
                 ),
               ],
             ),
-            if (alert.targetPrice != null) ...[
-              SizedBox(height: isTablet ? 16 : AppSpacing.sm),
-              Row(
-                children: [
-                  Icon(
-                    Icons.monetization_on_outlined,
-                    size: isTablet ? 24 : 20,
-                    color: AppColors.accent,
-                  ),
-                  SizedBox(width: isTablet ? 12 : AppSpacing.sm),
-                  Expanded(
-                    child: Text(
-                      'Preço alvo: R\$ ${alert.targetPrice!.toStringAsFixed(2).replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}',
-                      style: AppTypography.bodyMedium.copyWith(
-                        color: AppColors.accent,
-                        fontWeight: FontWeight.w600,
-                        fontSize: isTablet ? 16 : 14,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-            SizedBox(height: isTablet ? 20 : AppSpacing.md),
+            const SizedBox(height: 16),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Criado em ${_formatDate(alert.createdAt)}',
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.textHint,
-                    fontSize: isTablet ? 14 : 12,
+                Expanded(
+                  child: _buildStatItem(
+                    'Total de Disparos',
+                    '${_stats['totalTriggers'] ?? 0}',
+                    Icons.trending_up,
+                    Colors.orange,
                   ),
                 ),
-                SimpleBadge(
-                  text: alert.isActive ? 'Ativo' : 'Inativo',
-                  backgroundColor: alert.isActive
-                      ? AppColors.success.withValues(alpha: 0.1)
-                      : AppColors.textHint.withValues(alpha: 0.1),
-                  textColor: alert.isActive
-                      ? AppColors.success
-                      : AppColors.textHint,
+                Expanded(
+                  child: _buildStatItem(
+                    'Não Lidos',
+                    '${_stats['unreadAlerts'] ?? 0}',
+                    Icons.mark_email_unread,
+                    Colors.red,
+                  ),
                 ),
               ],
             ),
@@ -269,188 +483,154 @@ class _AlertsScreenState extends State<AlertsScreen> {
     );
   }
 
-  IconData _getAlertIcon(AlertType type) {
-    switch (type) {
-      case AlertType.priceReduction:
-        return Icons.trending_down;
-      case AlertType.sold:
-        return Icons.verified;
-      case AlertType.newSimilar:
-        return Icons.search;
-    }
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
-  }
-}
-
-class CreateAlertDialog extends StatefulWidget {
-  final Function(PropertyAlert) onAlertCreated;
-
-  const CreateAlertDialog({super.key, required this.onAlertCreated});
-
-  @override
-  State<CreateAlertDialog> createState() => _CreateAlertDialogState();
-}
-
-class _CreateAlertDialogState extends State<CreateAlertDialog> {
-  final _formKey = GlobalKey<FormState>();
-  final _targetPriceController = TextEditingController();
-  AlertType _selectedType = AlertType.priceReduction;
-  String? _selectedPropertyId;
-
-  @override
-  Widget build(BuildContext context) {
-    final properties = MockDataService.activeProperties;
-
-    return AlertDialog(
-      title: const Text('Criar Alerta'),
-      content: SizedBox(
-        width: double.maxFinite,
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Tipo de Alerta', style: AppTypography.subtitle2),
-              const SizedBox(height: AppSpacing.sm),
-              DropdownButtonFormField<AlertType>(
-                initialValue: _selectedType,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                ),
-                items: AlertType.values.map((type) {
-                  return DropdownMenuItem(
-                    value: type,
-                    child: Text(_getAlertDisplayName(type)),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedType = value!;
-                  });
-                },
+  /// Constrói card de alertas por tipo
+  Widget _buildAlertsByTypeCard() {
+    final alertsByType = _stats['alertsByType'] as Map<String, int>? ?? {};
+    
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Alertas por Tipo',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
               ),
-              const SizedBox(height: AppSpacing.md),
-              Text('Imóvel', style: AppTypography.subtitle2),
-              const SizedBox(height: AppSpacing.sm),
-              DropdownButtonFormField<String>(
-                initialValue: _selectedPropertyId,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
+            ),
+            const SizedBox(height: 16),
+            if (alertsByType.isEmpty)
+              const Text('Nenhum alerta criado ainda')
+            else
+              ...alertsByType.entries.map((entry) {
+                final type = entry.key;
+                final count = entry.value;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(_getAlertTypeNameFromString(type)),
+                      Chip(
+                        label: Text('$count'),
+                        backgroundColor: _getAlertTypeColor(type),
+                      ),
+                    ],
                   ),
-                ),
-                hint: const Text('Selecione um imóvel'),
-                items: properties.map((property) {
-                  return DropdownMenuItem(
-                    value: property.id,
-                    child: Text(
-                      property.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedPropertyId = value;
-                  });
-                },
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Selecione um imóvel';
-                  }
-                  return null;
-                },
-              ),
-              if (_selectedType == AlertType.priceReduction) ...[
-                const SizedBox(height: AppSpacing.md),
-                Text('Preço Alvo (R\$)', style: AppTypography.subtitle2),
-                const SizedBox(height: AppSpacing.sm),
-                TextFormField(
-                  controller: _targetPriceController,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    hintText: 'Ex: 800000',
-                  ),
-                  keyboardType: TextInputType.number,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Digite o preço alvo';
-                    }
-                    if (double.tryParse(value) == null) {
-                      return 'Digite um valor válido';
-                    }
-                    return null;
-                  },
-                ),
-              ],
-            ],
-          ),
+                );
+              }),
+          ],
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
+    );
+  }
+
+  /// Constrói item de estatística
+  Widget _buildStatItem(String label, String value, IconData icon, Color color) {
+    return Column(
+      children: [
+        Icon(icon, color: color, size: 32),
+        const SizedBox(height: 8),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
         ),
-        ElevatedButton(
-          onPressed: _createAlert,
-          child: const Text('Criar Alerta'),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12),
+          textAlign: TextAlign.center,
         ),
       ],
     );
   }
 
-  String _getAlertDisplayName(AlertType type) {
+  /// Constrói estado vazio
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.notifications_off,
+            size: 64,
+            color: Colors.grey[400],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Nenhum alerta criado',
+            style: TextStyle(
+              fontSize: 18,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Crie alertas para ser notificado sobre\nimóveis que atendem seus critérios',
+            style: TextStyle(
+              color: Colors.grey[500],
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: _createAlert,
+            icon: const Icon(Icons.add),
+            label: const Text('Criar Primeiro Alerta'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Obtém ícone do tipo de alerta
+  IconData _getAlertTypeIcon(alert_models.AlertType type) {
     switch (type) {
-      case AlertType.priceReduction:
+      case alert_models.AlertType.priceDrop:
+        return Icons.trending_down;
+      case alert_models.AlertType.statusChange:
+        return Icons.swap_horiz;
+      case alert_models.AlertType.newProperty:
+        return Icons.home_work;
+      case alert_models.AlertType.custom:
+        return Icons.tune;
+    }
+  }
+
+  /// Obtém nome do tipo de alerta a partir da string
+  String _getAlertTypeNameFromString(String type) {
+    switch (type) {
+      case 'priceDrop':
         return 'Redução de Preço';
-      case AlertType.sold:
-        return 'Imóvel Vendido';
-      case AlertType.newSimilar:
-        return 'Imóvel Similar';
+      case 'statusChange':
+        return 'Mudança de Status';
+      case 'newProperty':
+        return 'Novo Imóvel';
+      case 'custom':
+        return 'Personalizado';
+      default:
+        return type;
     }
   }
 
-  void _createAlert() {
-    if (_formKey.currentState!.validate()) {
-      final property = MockDataService.getPropertyById(_selectedPropertyId!);
-      if (property != null) {
-        final alert = PropertyAlert(
-          id: '',
-          userId: 'user1',
-          propertyId: property.id,
-          propertyTitle: property.title,
-          type: _selectedType,
-          targetPrice: _selectedType == AlertType.priceReduction
-              ? double.tryParse(_targetPriceController.text)
-              : null,
-          createdAt: DateTime.now(),
-        );
-
-        widget.onAlertCreated(alert);
-        Navigator.pop(context);
-      }
+  /// Obtém cor do tipo de alerta
+  Color _getAlertTypeColor(String type) {
+    switch (type) {
+      case 'priceDrop':
+        return Colors.red[100]!;
+      case 'statusChange':
+        return Colors.blue[100]!;
+      case 'newProperty':
+        return Colors.green[100]!;
+      case 'custom':
+        return Colors.purple[100]!;
+      default:
+        return Colors.grey[100]!;
     }
-  }
-
-  @override
-  void dispose() {
-    _targetPriceController.dispose();
-    super.dispose();
   }
 }

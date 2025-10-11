@@ -1,1033 +1,390 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:share_plus/share_plus.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_typography.dart';
-import '../../services/property_service.dart';
-import '../../services/favorite_service.dart';
-import '../../services/alert_service.dart';
 import '../../models/property_model.dart';
-import '../../models/favorite_model.dart';
-import '../../widgets/common/media_gallery.dart';
-import 'user_chat_screen.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/common/loading_widget.dart';
+import '../../widgets/common/error_widget.dart';
 
-class PropertyDetailScreen extends StatefulWidget {
-  final String propertyId;
+class PropertyDetailScreen extends StatelessWidget {
+  final Property property;
 
-  const PropertyDetailScreen({super.key, required this.propertyId});
-
-  @override
-  State<PropertyDetailScreen> createState() => _PropertyDetailScreenState();
-}
-
-class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
-  Property? _property;
-  bool _isLoading = true;
-  bool _isFavorite = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadPropertyDetails();
-  }
-
-  Future<void> _loadPropertyDetails() async {
-    if (kDebugMode) {
-      debugPrint('Iniciando carregamento do imóvel: ${widget.propertyId}');
-    }
-    
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      // Verificar cache de favorito primeiro para melhor UX
-      final cachedFavoriteStatus = FavoriteService.isPropertyFavoritedFromCache(widget.propertyId);
-      if (cachedFavoriteStatus != null) {
-        setState(() {
-          _isFavorite = cachedFavoriteStatus;
-        });
-      }
-
-      if (kDebugMode) {
-        debugPrint('Carregando dados do imóvel e favorito em paralelo...');
-      }
-
-      // Carregar detalhes do imóvel e status de favorito em paralelo
-      final results = await Future.wait([
-        PropertyService.getPropertyById(widget.propertyId),
-        FavoriteService.isPropertyFavorited(widget.propertyId),
-      ]);
-
-      final property = results[0] as Property;
-      final isFavorite = results[1] as bool;
-
-      if (kDebugMode) {
-        debugPrint('Dados carregados com sucesso: ${property.title}');
-      }
-
-      if (mounted) {
-        setState(() {
-          _property = property;
-          _isFavorite = isFavorite;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('Erro ao carregar detalhes do imóvel: $e');
-      }
-      
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erro ao carregar imóvel: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> _toggleFavorite() async {
-    if (_property == null) return;
-
-    try {
-      await FavoriteService.toggleFavorite(_property!.id);
-      
-      if (mounted) {
-        setState(() {
-          _isFavorite = !_isFavorite;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              _isFavorite
-                  ? 'Imóvel adicionado aos favoritos'
-                  : 'Imóvel removido dos favoritos',
-            ),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erro ao alterar favorito: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  void _shareProperty() async {
-    if (_property == null) return;
-
-    final text =
-        '''
-${_property!.title}
-
-${_property!.formattedPrice}
-${_property!.typeDisplayName}
-
-${_property!.address}, ${_property!.city} - ${_property!.state}
-
-Características:
-${_property!.attributes['bedrooms'] != null ? '• ${_property!.attributes['bedrooms']} quartos\n' : ''}${_property!.attributes['bathrooms'] != null ? '• ${_property!.attributes['bathrooms']} banheiros\n' : ''}${_property!.attributes['area'] != null ? '• ${_property!.attributes['area']}m² de área\n' : ''}${_property!.attributes['parking'] != null ? '• ${_property!.attributes['parking']} vagas\n' : ''}
-Contato: ${_property!.realtorName} - ${_property!.realtorPhone}
-''';
-
-    try {
-      await Share.share(text, subject: _property!.title);
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Erro ao compartilhar imóvel')),
-        );
-      }
-    }
-  }
-
-  void _contactRealtor() async {
-    if (_property == null) return;
-
-    final phone = _property!.realtorPhone.replaceAll(RegExp(r'[^\d]'), '');
-    final message = 'Olá! Tenho interesse no imóvel: ${_property!.title}';
-    final whatsappUrl = Uri.parse(
-      'https://wa.me/55$phone?text=${Uri.encodeComponent(message)}',
-    );
-
-    try {
-      if (await canLaunchUrl(whatsappUrl)) {
-        await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'WhatsApp não disponível - ${_property!.realtorName} - $phone',
-              ),
-              action: SnackBarAction(
-                label: 'Copiar',
-                onPressed: () => _copyToClipboard(phone),
-              ),
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Erro ao abrir WhatsApp - ${_property!.realtorName} - $phone',
-            ),
-            action: SnackBarAction(
-              label: 'Copiar',
-              onPressed: () => _copyToClipboard(phone),
-            ),
-          ),
-        );
-      }
-    }
-  }
-
-  void _copyToClipboard(String text) async {
-    try {
-      await Clipboard.setData(ClipboardData(text: text));
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Copiado para a área de transferência'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Erro ao copiar para a área de transferência'),
-          ),
-        );
-      }
-    }
-  }
-
-  void _openMap() async {
-    if (_property == null) return;
-
-    final address =
-        '${_property!.address}, ${_property!.city}, ${_property!.state}, ${_property!.zipCode}';
-    final encodedAddress = Uri.encodeComponent(address);
-
-    // Tenta abrir no Google Maps
-    final googleMapsUrl = Uri.parse(
-      'https://www.google.com/maps/search/?api=1&query=$encodedAddress',
-    );
-
-    try {
-      if (await canLaunchUrl(googleMapsUrl)) {
-        await launchUrl(googleMapsUrl, mode: LaunchMode.externalApplication);
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Não foi possível abrir o mapa')),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Erro ao abrir o mapa')));
-      }
-    }
-  }
-
-  void _openInternalChat() {
-    if (_property == null) return;
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const UserChatScreen()),
-    );
-  }
-
-  void _createAlert() {
-    if (_property == null) return;
-
-    showDialog(
-      context: context,
-      builder: (context) => CreatePropertyAlertDialog(
-        property: _property!,
-        onAlertCreated: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Alerta criado com sucesso!')),
-          );
-        },
-      ),
-    );
-  }
+  const PropertyDetailScreen({
+    super.key,
+    required this.property,
+  });
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Carregando...'),
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.textOnPrimary,
-        ),
-        body: const Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    if (_property == null) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Imóvel não encontrado'),
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.textOnPrimary,
-        ),
-        body: const Center(child: Text('Imóvel não encontrado')),
-      );
-    }
-
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: CustomScrollView(
-        slivers: [
-          _buildSliverAppBar(),
-          SliverToBoxAdapter(
-            child: Column(
+      appBar: AppBar(
+        title: Text(property.title),
+        backgroundColor: AppTheme.primaryColor,
+        foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.share),
+            onPressed: () {
+              // Implementar compartilhamento
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.favorite_border),
+            onPressed: () {
+              // Implementar favoritos
+            },
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Galeria de imagens
+            _buildImageGallery(),
+            
+            // Informações principais
+            _buildMainInfo(),
+            
+            // Características
+            _buildCharacteristics(),
+            
+            // Localização
+            _buildLocation(),
+            
+            // Contato
+            _buildContact(),
+          ],
+        ),
+      ),
+      bottomNavigationBar: _buildBottomBar(),
+    );
+  }
+
+  Widget _buildImageGallery() {
+    return Container(
+      height: 300,
+      child: property.photos.isNotEmpty
+          ? PageView.builder(
+              itemCount: property.photos.length,
+              itemBuilder: (context, index) {
+                return Image.network(
+                  property.photos[index],
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: Colors.grey[200],
+                      child: const Icon(
+                        Icons.home,
+                        size: 80,
+                        color: Colors.grey,
+                      ),
+                    );
+                  },
+                );
+              },
+            )
+          : Container(
+              color: Colors.grey[200],
+              child: const Center(
+                child: Icon(
+                  Icons.home,
+                  size: 80,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+    );
+  }
+
+  Widget _buildMainInfo() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            property.title,
+            style: AppTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            property.description,
+            style: AppTheme.bodyLarge,
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Text(
+                property.formattedPrice,
+                style: AppTheme.headlineMedium?.copyWith(
+                  color: AppTheme.primaryColor,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Spacer(),
+              if (property.transactionType != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryColor,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    _getTransactionTypeLabel(property.transactionType!),
+                    style: AppTheme.bodyMedium?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCharacteristics() {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Características',
+              style: AppTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 16,
+              runSpacing: 16,
               children: [
-                _buildPropertyInfo(),
-                _buildAttributes(),
-                _buildDescription(),
-                _buildActionButtons(),
-                _buildRealtorInfo(),
-                _buildLocationInfo(),
-                const SizedBox(height: 100), // Espaço para o botão fixo
+                _buildCharacteristic(
+                  Icons.bed,
+                  'Quartos',
+                  '${property.attributes['bedrooms'] ?? 0}',
+                ),
+                _buildCharacteristic(
+                  Icons.bathtub,
+                  'Banheiros',
+                  '${property.attributes['bathrooms'] ?? 0}',
+                ),
+                _buildCharacteristic(
+                  Icons.square_foot,
+                  'Área',
+                  '${property.attributes['area'] ?? 0}m²',
+                ),
+                _buildCharacteristic(
+                  Icons.local_parking,
+                  'Vagas',
+                  '${property.attributes['parking_spaces'] ?? 0}',
+                ),
               ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-      bottomNavigationBar: _buildBottomActions(),
     );
   }
 
-  Widget _buildSliverAppBar() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isTablet = screenWidth > 600;
-    
-    return SliverAppBar(
-      expandedHeight: isTablet ? 400 : 300,
-      pinned: true,
-      backgroundColor: AppColors.primary,
-      foregroundColor: AppColors.textOnPrimary,
-      actions: [
-        IconButton(
-          onPressed: _toggleFavorite,
-          icon: Icon(
-            _isFavorite ? Icons.favorite : Icons.favorite_border,
-            color: _isFavorite ? Colors.red : AppColors.textOnPrimary,
-            size: isTablet ? 28 : 24,
-          ),
+  Widget _buildCharacteristic(IconData icon, String label, String value) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          icon,
+          color: AppTheme.primaryColor,
+          size: 24,
         ),
-        IconButton(
-          onPressed: _shareProperty, 
-          icon: Icon(
-            Icons.share,
-            size: isTablet ? 28 : 24,
-          ),
+        const SizedBox(width: 8),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              value,
+              style: AppTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              label,
+              style: AppTheme.bodySmall?.copyWith(
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
         ),
       ],
-      flexibleSpace: FlexibleSpaceBar(
-        background: MediaGallery(
-          photos: _property!.photos,
-          videos: _property!.videos,
-        ),
-      ),
     );
   }
 
-  Widget _buildPropertyInfo() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isTablet = screenWidth > 600;
-    
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(isTablet ? 24 : 16),
-      color: Colors.white,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Tipo e preço
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: isTablet ? 12 : 8, 
-                  vertical: isTablet ? 6 : 4,
+  Widget _buildLocation() {
+    return Card(
+      margin: const EdgeInsets.all(16),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Localização',
+              style: AppTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Icon(
+                  Icons.location_on,
+                  color: AppTheme.primaryColor,
                 ),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  _property!.typeDisplayName,
-                  style: AppTypography.labelSmall.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w600,
-                    fontSize: isTablet ? 14 : 12,
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        property.address,
+                        style: AppTheme.bodyLarge,
+                      ),
+                      Text(
+                        '${property.city}, ${property.state}',
+                        style: AppTheme.bodyMedium?.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              Text(
-                _property!.formattedPrice, 
-                style: AppTypography.priceMain.copyWith(
-                  fontSize: isTablet ? 24 : 20,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: isTablet ? 20 : 16),
-          // Título
-          Text(
-            _property!.title, 
-            style: AppTypography.h4.copyWith(
-              fontSize: isTablet ? 26 : 22,
+              ],
             ),
-          ),
-          SizedBox(height: isTablet ? 12 : 8),
-          // Localização
-          Row(
-            children: [
-              Icon(
-                Icons.location_on_outlined,
-                size: isTablet ? 20 : 16,
-                color: AppColors.textSecondary,
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContact() {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Contato',
+              style: AppTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
               ),
-              SizedBox(width: isTablet ? 8 : 4),
-              Expanded(
-                child: Text(
-                  '${_property!.address}, ${_property!.city} - ${_property!.state}',
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: isTablet ? 16 : 14,
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: AppTheme.primaryColor,
+                  child: Text(
+                    property.realtorName.isNotEmpty 
+                        ? property.realtorName[0].toUpperCase()
+                        : 'C',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAttributes() {
-    final attributes = <Widget>[];
-
-    if (_property!.attributes['bedrooms'] != null) {
-      attributes.add(
-        _buildAttributeItem(
-          Icons.bed_outlined,
-          '${_property!.attributes['bedrooms']}',
-          _property!.attributes['bedrooms'] == 1 ? 'Quarto' : 'Quartos',
-        ),
-      );
-    }
-
-    if (_property!.attributes['bathrooms'] != null) {
-      attributes.add(
-        _buildAttributeItem(
-          Icons.bathroom_outlined,
-          '${_property!.attributes['bathrooms']}',
-          _property!.attributes['bathrooms'] == 1 ? 'Banheiro' : 'Banheiros',
-        ),
-      );
-    }
-
-    if (_property!.attributes['area'] != null) {
-      attributes.add(
-        _buildAttributeItem(
-          Icons.square_foot_outlined,
-          '${_property!.attributes['area']}m²',
-          'Área',
-        ),
-      );
-    }
-
-    if (_property!.attributes['parking'] != null) {
-      attributes.add(
-        _buildAttributeItem(
-          Icons.directions_car_outlined,
-          '${_property!.attributes['parking']}',
-          _property!.attributes['parking'] == 1 ? 'Vaga' : 'Vagas',
-        ),
-      );
-    }
-
-    if (_property!.attributes['floor'] != null) {
-      attributes.add(
-        _buildAttributeItem(
-          Icons.layers_outlined,
-          '${_property!.attributes['floor']}º',
-          'Andar',
-        ),
-      );
-    }
-
-    if (_property!.attributes['land_area'] != null) {
-      attributes.add(
-        _buildAttributeItem(
-          Icons.landscape_outlined,
-          '${_property!.attributes['land_area']}m²',
-          'Terreno',
-        ),
-      );
-    }
-
-    if (attributes.isEmpty) return const SizedBox.shrink();
-
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(top: 8),
-      padding: const EdgeInsets.all(16),
-      color: Colors.white,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Características', style: AppTypography.h6),
-          const SizedBox(height: 16),
-          Wrap(spacing: 16, runSpacing: 16, children: attributes),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAttributeItem(IconData icon, String value, String label) {
-    return SizedBox(
-      width: 80,
-      child: Column(
-        children: [
-          Icon(icon, size: 24, color: AppColors.primary),
-          const SizedBox(height: 8),
-          Text(value, style: AppTypography.labelLarge),
-          Text(
-            label,
-            style: AppTypography.caption,
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDescription() {
-    if (_property!.description.isEmpty) return const SizedBox.shrink();
-
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(top: 8),
-      padding: const EdgeInsets.all(16),
-      color: Colors.white,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Descrição', style: AppTypography.h6),
-          const SizedBox(height: 12),
-          Text(_property!.description, style: AppTypography.bodyMedium),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionButtons() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isTablet = screenWidth > 600;
-    
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(top: 8),
-      padding: EdgeInsets.all(isTablet ? 24 : 16),
-      color: Colors.white,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Ações', 
-            style: AppTypography.h6.copyWith(
-              fontSize: isTablet ? 20 : 18,
-            ),
-          ),
-          SizedBox(height: isTablet ? 20 : 16),
-          isTablet 
-              ? Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: _createAlert,
-                        icon: const Icon(Icons.add_alert),
-                        label: const Text('Criar Alerta'),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: AppColors.accent),
-                          foregroundColor: AppColors.accent,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        property.realtorName,
+                        style: AppTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: _shareProperty,
-                        icon: const Icon(Icons.share),
-                        label: const Text('Compartilhar'),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: AppColors.primary),
-                          foregroundColor: AppColors.primary,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                      Text(
+                        property.realtorPhone,
+                        style: AppTheme.bodyMedium?.copyWith(
+                          color: Colors.grey[600],
                         ),
                       ),
-                    ),
-                  ],
-                )
-              : Column(
-                  children: [
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: _createAlert,
-                        icon: const Icon(Icons.add_alert),
-                        label: const Text('Criar Alerta'),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: AppColors.accent),
-                          foregroundColor: AppColors.accent,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: _shareProperty,
-                        icon: const Icon(Icons.share),
-                        label: const Text('Compartilhar'),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: AppColors.primary),
-                          foregroundColor: AppColors.primary,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRealtorInfo() {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(top: 8),
-      padding: const EdgeInsets.all(16),
-      color: Colors.white,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Corretor Responsável', style: AppTypography.h6),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 24,
-                backgroundColor: AppColors.primary,
-                child: Text(
-                  _property!.realtorName.substring(0, 1).toUpperCase(),
-                  style: AppTypography.h6.copyWith(
-                    color: AppColors.textOnPrimary,
+                    ],
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _property!.realtorName,
-                      style: AppTypography.labelLarge,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _property!.realtorPhone,
-                      style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              IconButton(
-                onPressed: _contactRealtor,
-                icon: const Icon(Icons.chat, color: AppColors.primary),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLocationInfo() {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(top: 8),
-      padding: const EdgeInsets.all(16),
-      color: Colors.white,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Localização', style: AppTypography.h6),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              const Icon(Icons.location_on, color: AppColors.primary),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(_property!.address, style: AppTypography.bodyMedium),
-                    Text(
-                      '${_property!.city} - ${_property!.state}',
-                      style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    Text(
-                      'CEP: ${_property!.zipCode}',
-                      style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: _openMap,
-              icon: const Icon(Icons.map),
-              label: const Text('Ver no Mapa'),
+              ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildBottomActions() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isTablet = screenWidth > 600;
-    
+  Widget _buildBottomBar() {
     return Container(
-      padding: EdgeInsets.all(isTablet ? 20 : 16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: Colors.black.withOpacity(0.1),
             blurRadius: 8,
-            offset: const Offset(0, -2),
+            offset: const Offset(0, -4),
           ),
         ],
       ),
-      child: isTablet
-          ? Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  width: 200,
-                  child: OutlinedButton.icon(
-                    onPressed: _contactRealtor,
-                    icon: const Icon(Icons.phone),
-                    label: const Text('Ligar'),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: AppColors.primary),
-                      foregroundColor: AppColors.primary,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                SizedBox(
-                  width: 200,
-                  child: OutlinedButton.icon(
-                    onPressed: _openInternalChat,
-                    icon: const Icon(Icons.chat_bubble),
-                    label: const Text('Chat'),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: AppColors.accent),
-                      foregroundColor: AppColors.accent,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                SizedBox(
-                  width: 200,
-                  child: ElevatedButton.icon(
-                    onPressed: _contactRealtor,
-                    icon: const Icon(Icons.message),
-                    label: const Text('WhatsApp'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: AppColors.textOnPrimary,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                  ),
-                ),
-              ],
-            )
-          : Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: _contactRealtor,
-                    icon: const Icon(Icons.phone),
-                    label: const Text('Ligar'),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: AppColors.primary),
-                      foregroundColor: AppColors.primary,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: _openInternalChat,
-                    icon: const Icon(Icons.chat_bubble),
-                    label: const Text('Chat'),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: AppColors.accent),
-                      foregroundColor: AppColors.accent,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  flex: 2,
-                  child: ElevatedButton.icon(
-                    onPressed: _contactRealtor,
-                    icon: const Icon(Icons.message),
-                    label: const Text('WhatsApp'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: AppColors.textOnPrimary,
-                    ),
-                  ),
-                ),
-              ],
+      child: Row(
+        children: [
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: () {
+                // Implementar ligação
+              },
+              icon: const Icon(Icons.phone),
+              label: const Text('Ligar'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppTheme.primaryColor,
+                side: BorderSide(color: AppTheme.primaryColor),
+              ),
             ),
-    );
-  }
-}
-
-class CreatePropertyAlertDialog extends StatefulWidget {
-  final Property property;
-  final VoidCallback onAlertCreated;
-
-  const CreatePropertyAlertDialog({
-    super.key,
-    required this.property,
-    required this.onAlertCreated,
-  });
-
-  @override
-  State<CreatePropertyAlertDialog> createState() =>
-      _CreatePropertyAlertDialogState();
-}
-
-class _CreatePropertyAlertDialogState extends State<CreatePropertyAlertDialog> {
-  final _formKey = GlobalKey<FormState>();
-  final _targetPriceController = TextEditingController();
-  AlertType _selectedType = AlertType.priceReduction;
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Criar Alerta'),
-      content: SizedBox(
-        width: double.maxFinite,
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Informações do imóvel
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.background,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.property.title,
-                      style: AppTypography.subtitle2.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      widget.property.formattedPrice,
-                      style: AppTypography.bodyMedium.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text('Tipo de Alerta', style: AppTypography.subtitle2),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<AlertType>(
-                initialValue: _selectedType,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                ),
-                items: AlertType.values.map((type) {
-                  return DropdownMenuItem(
-                    value: type,
-                    child: Text(_getAlertDisplayName(type)),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedType = value!;
-                  });
-                },
-              ),
-              if (_selectedType == AlertType.priceReduction) ...[
-                const SizedBox(height: 16),
-                Text('Preço Alvo (R\$)', style: AppTypography.subtitle2),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _targetPriceController,
-                  decoration: InputDecoration(
-                    border: const OutlineInputBorder(),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    hintText: 'Digite o preço desejado',
-                    helperText:
-                        'Preço atual: ${widget.property.formattedPrice}',
-                  ),
-                  keyboardType: TextInputType.number,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Digite o preço alvo';
-                    }
-                    final price = double.tryParse(value);
-                    if (price == null) {
-                      return 'Digite um valor válido';
-                    }
-                    if (price >= widget.property.price) {
-                      return 'O preço alvo deve ser menor que o atual';
-                    }
-                    return null;
-                  },
-                ),
-              ],
-            ],
           ),
-        ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: ElevatedButton.icon(
+              onPressed: () {
+                // Implementar WhatsApp
+              },
+              icon: const Icon(Icons.message),
+              label: const Text('WhatsApp'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryColor,
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ),
+        ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
-        ),
-        ElevatedButton(
-          onPressed: _createAlert,
-          child: const Text('Criar Alerta'),
-        ),
-      ],
     );
   }
 
-  String _getAlertDisplayName(AlertType type) {
+  String _getTransactionTypeLabel(PropertyTransactionType type) {
     switch (type) {
-      case AlertType.priceReduction:
-        return 'Redução de Preço';
-      case AlertType.sold:
-        return 'Imóvel Vendido';
-      case AlertType.newSimilar:
-        return 'Imóvel Similar';
+      case PropertyTransactionType.sale:
+        return 'Venda';
+      case PropertyTransactionType.rent:
+        return 'Aluguel';
+      case PropertyTransactionType.daily:
+        return 'Temporada';
     }
-  }
-
-  Future<void> _createAlert() async {
-    if (_formKey.currentState!.validate()) {
-      try {
-        await AlertService.createAlert(
-          propertyId: widget.property.id,
-          propertyTitle: widget.property.title,
-          type: _selectedType,
-          targetPrice: _selectedType == AlertType.priceReduction
-              ? double.tryParse(_targetPriceController.text)
-              : null,
-        );
-        
-        if (mounted) {
-          widget.onAlertCreated();
-          Navigator.pop(context);
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Erro ao criar alerta: $e'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _targetPriceController.dispose();
-    super.dispose();
   }
 }
-

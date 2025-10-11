@@ -1,291 +1,261 @@
 import 'package:flutter/material.dart';
 import '../../models/property_model.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_typography.dart';
+import '../../theme/app_theme.dart';
 
 class PropertyCard extends StatelessWidget {
   final Property property;
+  final VoidCallback? onTap;
+  final VoidCallback? onFavorite;
   final bool isFavorite;
-  final VoidCallback? onFavoriteToggle;
-  final VoidCallback? onCompare;
-  final bool isCompact;
 
   const PropertyCard({
     super.key,
     required this.property,
+    this.onTap,
+    this.onFavorite,
     this.isFavorite = false,
-    this.onFavoriteToggle,
-    this.onCompare,
-    this.isCompact = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildImageSection(),
-          _buildContentSection(),
-          _buildAttributesSection(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildImageSection() {
-    return Stack(
-      children: [
-        ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-          child: Container(
-            height: isCompact ? 150 : 200,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: AppColors.surfaceVariant,
-              image: property.photos.isNotEmpty
-                  ? DecorationImage(
-                      image: NetworkImage(property.photos.first),
-                      fit: BoxFit.cover,
-                      onError: (exception, stackTrace) {},
-                    )
-                  : null,
-            ),
-            child: property.photos.isEmpty
-                ? const Icon(
-                    Icons.home_work_outlined,
-                    size: 64,
-                    color: AppColors.textHint,
-                  )
-                : null,
-          ),
-        ),
-        // Código do imóvel
-        Positioned(
-          top: 12,
-          left: 12,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.7),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              'Cód: ${property.id.substring(0, 5)}',
-              style: AppTypography.labelSmall.copyWith(color: Colors.white),
-            ),
-          ),
-        ),
-        // Botões de ação
-        Positioned(
-          top: 12,
-          right: 12,
-          child: Row(
-            children: [
-              if (onCompare != null && !isCompact)
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    shape: BoxShape.circle,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Imagem do imóvel
+            Expanded(
+              flex: 3,
+              child: Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(12),
+                    ),
+                    child: Container(
+                      width: double.infinity,
+                      color: Colors.grey[200],
+                      child: property.photos.isNotEmpty
+                          ? Image.network(
+                              property.photos.first,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Icon(
+                                  Icons.home,
+                                  size: 40,
+                                  color: Colors.grey,
+                                );
+                              },
+                            )
+                          : const Icon(
+                              Icons.home,
+                              size: 40,
+                              color: Colors.grey,
+                            ),
+                    ),
                   ),
-                  child: IconButton(
-                    onPressed: onCompare,
-                    icon: const Icon(Icons.compare_arrows),
-                    iconSize: 20,
-                    padding: const EdgeInsets.all(8),
-                    constraints: const BoxConstraints(),
+                  
+                  // Badges
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: Row(
+                      children: [
+                        if (property.isFeatured)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryColor,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              'DESTAQUE',
+                              style: AppTheme.bodySmall?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        if (property.isLaunch) ...[
+                          const SizedBox(width: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.green,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              'LANÇAMENTO',
+                              style: AppTheme.bodySmall?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
-                ),
-              if (onCompare != null && !isCompact) const SizedBox(width: 8),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.9),
-                  shape: BoxShape.circle,
-                ),
-                child: IconButton(
-                  onPressed: onFavoriteToggle,
-                  icon: Icon(
-                    isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: isFavorite ? Colors.red : AppColors.textSecondary,
-                  ),
-                  iconSize: 20,
-                  padding: const EdgeInsets.all(8),
-                  constraints: const BoxConstraints(),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildContentSection() {
-    return Padding(
-      padding: EdgeInsets.all(isCompact ? 10 : 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Tipo do imóvel
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              property.typeDisplayName,
-              style: AppTypography.labelSmall.copyWith(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w600,
-                fontSize: isCompact ? 10 : 11,
+                  
+                  // Botão de favorito
+                  if (onFavorite != null)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: GestureDetector(
+                        onTap: onFavorite,
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.9),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            isFavorite ? Icons.favorite : Icons.favorite_border,
+                            color: isFavorite ? Colors.red : Colors.grey[600],
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
-          ),
-          SizedBox(height: isCompact ? 4 : 8),
-          // Título
-          Text(
-            property.title,
-            style: isCompact ? AppTypography.bodyMedium : AppTypography.h6,
-            maxLines: isCompact ? 1 : 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          SizedBox(height: isCompact ? 2 : 4),
-          // Localização
-          Row(
-            children: [
-              Icon(
-                Icons.location_on_outlined,
-                size: isCompact ? 14 : 16,
-                color: AppColors.textSecondary,
-              ),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Text(
-                  '${property.city}, ${property.state}',
-                  style: AppTypography.bodySmall.copyWith(
-                    fontSize: isCompact ? 11 : 12,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+            
+            // Informações do imóvel
+            Expanded(
+              flex: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Título
+                    Text(
+                      property.title,
+                      style: AppTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    
+                    // Endereço
+                    Text(
+                      property.address,
+                      style: AppTheme.bodySmall?.copyWith(
+                        color: Colors.grey[600],
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+                    
+                    // Características
+                    Row(
+                      children: [
+                        _buildFeature(
+                          Icons.bed,
+                          '${property.attributes['bedrooms'] ?? 0}',
+                        ),
+                        const SizedBox(width: 12),
+                        _buildFeature(
+                          Icons.bathtub,
+                          '${property.attributes['bathrooms'] ?? 0}',
+                        ),
+                        const SizedBox(width: 12),
+                        _buildFeature(
+                          Icons.square_foot,
+                          '${property.attributes['area'] ?? 0}m²',
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    
+                    // Preço
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            property.formattedPrice,
+                            style: AppTheme.titleSmall?.copyWith(
+                              color: AppTheme.primaryColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        if (property.transactionType != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              _getTransactionTypeLabel(property.transactionType!),
+                              style: AppTheme.bodySmall?.copyWith(
+                                color: AppTheme.primaryColor,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-          SizedBox(height: isCompact ? 6 : 12),
-          // Preço
-          Text(
-            property.formattedPrice, 
-            style: isCompact ? AppTypography.bodyMedium.copyWith(
-              color: AppColors.primary,
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            ) : AppTypography.priceSecondary,
-          ),
-          // Descrição resumida (apenas para cards não compactos)
-          if (property.description.isNotEmpty && !isCompact) ...[
-            const SizedBox(height: 8),
-            Text(
-              property.description,
-              style: AppTypography.bodySmall,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
             ),
           ],
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildAttributesSection() {
-    final attributes = <Widget>[];
-
-    if (property.attributes['bedrooms'] != null) {
-      attributes.add(
-        _buildAttributeItem(
-          Icons.bed_outlined,
-          '${property.attributes['bedrooms']}',
-          'quartos',
-        ),
-      );
-    }
-
-    if (property.attributes['bathrooms'] != null) {
-      attributes.add(
-        _buildAttributeItem(
-          Icons.bathroom_outlined,
-          '${property.attributes['bathrooms']}',
-          'banheiros',
-        ),
-      );
-    }
-
-    if (property.attributes['area'] != null) {
-      attributes.add(
-        _buildAttributeItem(
-          Icons.square_foot_outlined,
-          '${property.attributes['area']}m²',
-          '',
-        ),
-      );
-    }
-
-    if (property.attributes['parking'] != null) {
-      attributes.add(
-        _buildAttributeItem(
-          Icons.directions_car_outlined,
-          '${property.attributes['parking']}',
-          'vagas',
-        ),
-      );
-    }
-
-    if (attributes.isEmpty) return const SizedBox.shrink();
-
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: isCompact ? 10 : 16,
-        vertical: isCompact ? 8 : 12,
-      ),
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: AppColors.border, width: 1)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: attributes.take(isCompact ? 3 : 4).toList(),
-      ),
-    );
-  }
-
-  Widget _buildAttributeItem(IconData icon, String value, String label) {
-    return Column(
+  Widget _buildFeature(IconData icon, String value) {
+    return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: isCompact ? 16 : 20, color: AppColors.textSecondary),
-        SizedBox(height: isCompact ? 1 : 4),
-        Text(
-          value, 
-          style: isCompact ? AppTypography.labelSmall.copyWith(fontSize: 10) : AppTypography.labelMedium,
+        Icon(
+          icon,
+          size: 14,
+          color: Colors.grey[600],
         ),
-        if (label.isNotEmpty) 
-          Text(
-            label, 
-            style: isCompact ? AppTypography.caption.copyWith(fontSize: 9) : AppTypography.overline,
+        const SizedBox(width: 4),
+        Text(
+          value,
+          style: AppTheme.bodySmall?.copyWith(
+            color: Colors.grey[600],
           ),
+        ),
       ],
     );
+  }
+
+  String _getTransactionTypeLabel(PropertyTransactionType type) {
+    switch (type) {
+      case PropertyTransactionType.sale:
+        return 'Venda';
+      case PropertyTransactionType.rent:
+        return 'Aluguel';
+      case PropertyTransactionType.daily:
+        return 'Temporada';
+    }
   }
 }
