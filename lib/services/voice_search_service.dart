@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -89,7 +88,7 @@ class VoiceSearchService {
         },
         listenFor: timeout,
         pauseFor: const Duration(seconds: 3),
-        partialResults: true,
+        listenOptions: SpeechListenOptions(partialResults: true),
         localeId: locale,
         onSoundLevelChange: (level) {
           // Callback para mudanças no nível de som
@@ -162,7 +161,7 @@ class VoiceSearchService {
       return locales.map((locale) => LocaleName(
         localeId: locale.localeId,
         name: locale.name,
-        countryCode: locale.countryCode ?? '',
+        countryCode: locale.localeId.split('_').length > 1 ? locale.localeId.split('_')[1] : '',
       )).toList();
     } catch (e) {
       if (kDebugMode) {

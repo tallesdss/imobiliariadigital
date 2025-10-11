@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../../models/property_model.dart';
 import '../../models/search_model.dart';
 import '../../services/search_service.dart';
-import '../../services/voice_search_service.dart';
-import '../../services/image_search_service.dart';
-import '../../services/location_service.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/common/loading_widget.dart';
 import '../../widgets/common/error_widget.dart';
@@ -34,9 +30,7 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
   final _maxAreaController = TextEditingController();
   
   // Estado da busca
-  SearchQuery _searchQuery = const SearchQuery();
   bool _isLoading = false;
-  List<Property> _searchResults = [];
   String? _errorMessage;
   
   // Filtros
@@ -120,7 +114,6 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
       final results = await SearchService.searchProperties(query);
       
       setState(() {
-        _searchResults = results;
         _isLoading = false;
       });
 
@@ -338,7 +331,7 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
       label: Text(label),
       selected: isSelected,
       onSelected: (_) => onTap(),
-      selectedColor: AppTheme.primaryColor.withOpacity(0.2),
+      selectedColor: AppTheme.primaryColor.withValues(alpha: 0.2),
       checkmarkColor: AppTheme.primaryColor,
     );
   }
@@ -484,7 +477,7 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
           children: [
             Expanded(
               child: DropdownButtonFormField<int>(
-                value: _minBedrooms,
+                initialValue: _minBedrooms,
                 decoration: const InputDecoration(
                   labelText: 'Quartos (mín)',
                   border: OutlineInputBorder(),
@@ -502,7 +495,7 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
             const SizedBox(width: 16),
             Expanded(
               child: DropdownButtonFormField<int>(
-                value: _maxBedrooms,
+                initialValue: _maxBedrooms,
                 decoration: const InputDecoration(
                   labelText: 'Quartos (máx)',
                   border: OutlineInputBorder(),
@@ -524,7 +517,7 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
           children: [
             Expanded(
               child: DropdownButtonFormField<int>(
-                value: _minBathrooms,
+                initialValue: _minBathrooms,
                 decoration: const InputDecoration(
                   labelText: 'Banheiros (mín)',
                   border: OutlineInputBorder(),
@@ -542,7 +535,7 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
             const SizedBox(width: 16),
             Expanded(
               child: DropdownButtonFormField<int>(
-                value: _minParkingSpaces,
+                initialValue: _minParkingSpaces,
                 decoration: const InputDecoration(
                   labelText: 'Vagas (mín)',
                   border: OutlineInputBorder(),
@@ -570,7 +563,7 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
         Text('Localização', style: AppTheme.titleMedium),
         const SizedBox(height: 8),
         DropdownButtonFormField<PropertyTransactionType>(
-          value: _selectedTransactionType,
+          initialValue: _selectedTransactionType,
           decoration: const InputDecoration(
             labelText: 'Tipo de Transação',
             border: OutlineInputBorder(),
@@ -642,7 +635,7 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
           children: [
             Expanded(
               child: DropdownButtonFormField<String>(
-                value: _sortBy,
+                initialValue: _sortBy,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                 ),
@@ -658,7 +651,7 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
             const SizedBox(width: 16),
             Expanded(
               child: DropdownButtonFormField<bool>(
-                value: _sortAscending,
+                initialValue: _sortAscending,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                 ),

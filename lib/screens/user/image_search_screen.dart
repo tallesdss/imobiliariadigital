@@ -3,11 +3,9 @@ import 'package:flutter/material.dart';
 import '../../models/property_model.dart';
 import '../../models/search_model.dart';
 import '../../services/image_search_service.dart' as image_service;
-import '../../services/search_service.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/common/loading_widget.dart';
 import '../../widgets/common/error_widget.dart';
-import '../../widgets/cards/property_card.dart';
 import 'property_detail_screen.dart';
 import 'search_results_screen.dart';
 
@@ -156,7 +154,7 @@ class _ImageSearchScreenState extends State<ImageSearchScreen> {
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),
@@ -272,9 +270,9 @@ class _ImageSearchScreenState extends State<ImageSearchScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
+                  color: Colors.orange.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                  border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [
@@ -399,7 +397,7 @@ class _ImageSearchScreenState extends State<ImageSearchScreen> {
                                     vertical: 2,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: Colors.green.withOpacity(0.1),
+                                    color: Colors.green.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(

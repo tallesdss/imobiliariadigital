@@ -11,6 +11,7 @@ import '../screens/user/favorites_screen.dart';
 import '../screens/user/alerts_screen.dart';
 import '../screens/user/user_chat_screen.dart';
 import '../screens/user/user_profile_screen.dart';
+import '../screens/user/notifications_screen.dart';
 import '../screens/realtor/realtor_home_screen.dart';
 import '../screens/realtor/property_form_screen.dart';
 import '../screens/realtor/realtor_profile_screen.dart';
@@ -77,31 +78,36 @@ class NavigationService {
         builder: (context, state) => const UserHomeScreen(),
         routes: [
           GoRoute(
-            path: '/property/:propertyId',
+            path: 'property/:propertyId',
             name: 'property-detail',
             builder: (context, state) => PropertyDetailScreen(
-              propertyId: state.pathParameters['propertyId']!,
+              property: null, // Será carregado baseado no propertyId
             ),
           ),
           GoRoute(
-            path: '/favorites',
+            path: 'favorites',
             name: 'favorites',
             builder: (context, state) => const FavoritesScreen(),
           ),
           GoRoute(
-            path: '/alerts',
+            path: 'alerts',
             name: 'alerts',
             builder: (context, state) => const AlertsScreen(),
           ),
           GoRoute(
-            path: '/chat',
+            path: 'chat',
             name: 'user-chat',
             builder: (context, state) => const UserChatScreen(),
           ),
           GoRoute(
-            path: '/profile',
+            path: 'profile',
             name: 'user-profile',
             builder: (context, state) => const UserProfileScreen(),
+          ),
+          GoRoute(
+            path: 'notifications',
+            name: 'user-notifications',
+            builder: (context, state) => const NotificationsScreen(),
           ),
         ],
       ),
@@ -113,12 +119,12 @@ class NavigationService {
         builder: (context, state) => const RealtorHomeScreen(),
         routes: [
           GoRoute(
-            path: '/property/new',
+            path: 'property/new',
             name: 'property-new',
             builder: (context, state) => const PropertyFormScreen(),
           ),
           GoRoute(
-            path: '/property/edit/:propertyId',
+            path: 'property/edit/:propertyId',
             name: 'property-edit',
             builder: (context, state) {
               final propertyId = state.pathParameters['propertyId']!;
@@ -127,22 +133,22 @@ class NavigationService {
             },
           ),
           GoRoute(
-            path: '/profile',
+            path: 'profile',
             name: 'realtor-profile',
             builder: (context, state) => const RealtorProfileScreen(),
           ),
           GoRoute(
-            path: '/chat',
+            path: 'chat',
             name: 'realtor-chat',
             builder: (context, state) => const RealtorChatScreen(),
           ),
           GoRoute(
-            path: '/reports',
+            path: 'reports',
             name: 'realtor-reports',
             builder: (context, state) => const RealtorReportsScreen(),
           ),
           GoRoute(
-            path: '/help',
+            path: 'help',
             name: 'realtor-help',
             builder: (context, state) => const RealtorHelpScreen(),
           ),
@@ -156,27 +162,27 @@ class NavigationService {
         builder: (context, state) => const AdminHomeScreen(),
         routes: [
           GoRoute(
-            path: '/realtors',
+            path: 'realtors',
             name: 'admin-realtors',
             builder: (context, state) => const AdminRealtorsScreen(),
           ),
           GoRoute(
-            path: '/dashboard',
+            path: 'dashboard',
             name: 'admin-dashboard',
             builder: (context, state) => const AdminDashboardScreen(),
           ),
           GoRoute(
-            path: '/chat',
+            path: 'chat',
             name: 'admin-chat',
             builder: (context, state) => const AdminChatScreen(),
           ),
           GoRoute(
-            path: '/property/new',
+            path: 'property/new',
             name: 'admin-property-new',
             builder: (context, state) => const AdminPropertyFormScreen(),
           ),
           GoRoute(
-            path: '/property/edit/:propertyId',
+            path: 'property/edit/:propertyId',
             name: 'admin-property-edit',
             builder: (context, state) {
               final propertyId = state.pathParameters['propertyId']!;
@@ -185,17 +191,17 @@ class NavigationService {
             },
           ),
           GoRoute(
-            path: '/reports',
+            path: 'reports',
             name: 'admin-reports',
             builder: (context, state) => const AdminReportsScreen(),
           ),
           GoRoute(
-            path: '/settings',
+            path: 'settings',
             name: 'admin-settings',
             builder: (context, state) => const AdminSettingsScreen(),
           ),
           GoRoute(
-            path: '/help',
+            path: 'help',
             name: 'admin-help',
             builder: (context, state) => const AdminHelpScreen(),
           ),

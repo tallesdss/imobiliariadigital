@@ -205,7 +205,7 @@ class AlertCriteria {
     }
 
     // Verificar tipo de imóvel
-    if (propertyType != null && property['type'] != propertyType.name) {
+    if (propertyType != null && property['type'] != propertyType!.name) {
       return false;
     }
 
@@ -242,7 +242,9 @@ class AlertCriteria {
     // Verificar condomínio
     final condominium = property['condominium']?.toDouble();
     if (condominium != null && maxCondominium != null && 
-        condominium > maxCondominium!) return false;
+        condominium > maxCondominium!) {
+      return false;
+    }
 
     // Verificar IPTU
     final iptu = property['iptu']?.toDouble();
@@ -321,6 +323,26 @@ class NotificationSettings {
     return allowedHours.contains(currentHour) && 
            allowedDays.contains(currentDay);
   }
+
+  NotificationSettings copyWith({
+    bool? pushEnabled,
+    bool? emailEnabled,
+    bool? smsEnabled,
+    List<int>? allowedHours,
+    List<int>? allowedDays,
+    int? maxNotificationsPerDay,
+    bool? quietMode,
+  }) {
+    return NotificationSettings(
+      pushEnabled: pushEnabled ?? this.pushEnabled,
+      emailEnabled: emailEnabled ?? this.emailEnabled,
+      smsEnabled: smsEnabled ?? this.smsEnabled,
+      allowedHours: allowedHours ?? this.allowedHours,
+      allowedDays: allowedDays ?? this.allowedDays,
+      maxNotificationsPerDay: maxNotificationsPerDay ?? this.maxNotificationsPerDay,
+      quietMode: quietMode ?? this.quietMode,
+    );
+  }
 }
 
 /// Modelo para histórico de alertas
@@ -376,6 +398,38 @@ class AlertHistory {
       'wasRead': wasRead,
       'metadata': metadata,
     };
+  }
+
+  // Getters para compatibilidade
+  String get title => message;
+  bool get isRead => wasRead;
+  
+  String get typeDisplayName {
+    switch (type) {
+      case AlertType.priceDrop:
+        return 'Redução de Preço';
+      case AlertType.statusChange:
+        return 'Mudança de Status';
+      case AlertType.newProperty:
+        return 'Novo Imóvel';
+      case AlertType.custom:
+        return 'Alerta Personalizado';
+    }
+  }
+
+  String get timeAgo {
+    final now = DateTime.now();
+    final difference = now.difference(triggeredAt);
+    
+    if (difference.inDays > 0) {
+      return '${difference.inDays} dia${difference.inDays > 1 ? 's' : ''} atrás';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours} hora${difference.inHours > 1 ? 's' : ''} atrás';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes} minuto${difference.inMinutes > 1 ? 's' : ''} atrás';
+    } else {
+      return 'Agora';
+    }
   }
 }
 

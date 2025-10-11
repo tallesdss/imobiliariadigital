@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../models/search_model.dart';
 import '../../services/voice_search_service.dart';
 import '../../services/search_service.dart';
 import '../../theme/app_theme.dart';
@@ -287,11 +286,11 @@ class _VoiceSearchScreenState extends State<VoiceSearchScreen>
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: _isListening 
-                    ? AppTheme.primaryColor.withOpacity(0.1)
+                    ? AppTheme.primaryColor.withValues(alpha: 0.1)
                     : AppTheme.primaryColor,
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.primaryColor.withOpacity(0.3),
+                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
                     blurRadius: _isListening ? 20 : 10,
                     spreadRadius: _isListening ? 5 : 2,
                   ),
@@ -323,7 +322,7 @@ class _VoiceSearchScreenState extends State<VoiceSearchScreen>
           size: const Size(200, 200),
           painter: WavePainter(
             animation: _waveAnimation.value,
-            color: AppTheme.primaryColor.withOpacity(0.3),
+            color: AppTheme.primaryColor.withValues(alpha: 0.3),
           ),
         );
       },
@@ -362,9 +361,9 @@ class _VoiceSearchScreenState extends State<VoiceSearchScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.green.withOpacity(0.1),
+        color: Colors.green.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.green.withOpacity(0.3)),
+        border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [

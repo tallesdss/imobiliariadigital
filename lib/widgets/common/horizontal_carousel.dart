@@ -77,7 +77,7 @@ class HorizontalCarousel extends StatelessWidget {
                   child: PropertyCard(
                     property: property,
                     isFavorite: favoritePropertyIds.contains(property.id),
-                    onFavoriteToggle: () => onFavoriteToggle(property.id),
+                    onFavorite: () => onFavoriteToggle(property.id),
                     onCompare: () {}, // Não usado no carrossel
                     isCompact: true,
                   ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_spacing.dart';
@@ -10,11 +11,7 @@ import '../../models/property_model.dart';
 import '../../models/filter_model.dart';
 import '../../widgets/cards/property_card.dart';
 import '../../widgets/common/fixed_sidebar.dart';
-import 'property_detail_screen.dart';
-import 'favorites_screen.dart';
 import 'property_comparison_screen.dart';
-import 'notifications_screen.dart';
-import 'user_profile_screen.dart';
 
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});
@@ -73,8 +70,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
   Future<void> _loadNotifications() async {
     try {
-      await NotificationService.initialize();
-      final unreadCount = await NotificationService.getUnreadCount();
+      final notificationService = NotificationService();
+      await notificationService.initialize();
+      final unreadCount = await notificationService.getUnreadCount('user_id');
       if (mounted) {
         setState(() {
           _unreadNotificationsCount = unreadCount;
@@ -295,15 +293,13 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 margin: EdgeInsets.only(
                   right: index == properties.length - 1 ? 0 : AppSpacing.md,
                 ),
-                child: GestureDetector(
+                child: PropertyCard(
+                  property: property,
+                  isFavorite: _favoritePropertyIds.contains(property.id),
                   onTap: () => _navigateToPropertyDetail(property.id),
-                  child: PropertyCard(
-                    property: property,
-                    isFavorite: _favoritePropertyIds.contains(property.id),
-                    onFavoriteToggle: () => _toggleFavorite(property.id),
-                    onCompare: () {},
-                    isCompact: true,
-                  ),
+                  onFavorite: () => _toggleFavorite(property.id),
+                  onCompare: () {},
+                  isCompact: true,
                 ),
               );
             },
@@ -314,12 +310,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   }
 
   void _navigateToPropertyDetail(String propertyId) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PropertyDetailScreen(propertyId: propertyId),
-      ),
-    );
+    context.go('/user/property/$propertyId');
   }
 
   void _showUserMenu() {
@@ -347,12 +338,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               title: const Text('Meu Perfil'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const UserProfileScreen(),
-                  ),
-                );
+                context.go('/user/profile');
               },
             ),
             ListTile(
@@ -360,12 +346,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               title: const Text('Favoritos'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const FavoritesScreen(),
-                  ),
-                );
+                context.go('/user/favorites');
               },
             ),
             ListTile(
@@ -373,13 +354,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               title: const Text('Notificações'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const NotificationsScreen()),
-                ).then((_) {
-                  // Recarregar contador de notificações quando voltar
-                  _loadNotifications();
-                });
+                context.go('/user/notifications');
               },
             ),
             ListTile(
@@ -387,7 +362,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               title: const Text('Alertas'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushNamed(context, '/alerts');
+                context.go('/user/alerts');
               },
             ),
             ListTile(
@@ -395,7 +370,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               title: const Text('Mensagens'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushNamed(context, '/user-chat');
+                context.go('/user/chat');
               },
             ),
             const Divider(),
@@ -419,11 +394,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               title: const Text('Sair'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  '/',
-                  (route) => false,
-                );
+                context.go('/login');
               },
             ),
             const SizedBox(height: 16),
@@ -434,6 +405,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   }
 
   void _navigateToComparison() {
+    // TODO: Implementar rota para comparação de propriedades
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -571,13 +543,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             ),
             IconButton(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const NotificationsScreen()),
-                ).then((_) {
-                  // Recarregar contador de notificações quando voltar
-                  _loadNotifications();
-                });
+                context.go('/user/notifications');
               },
               icon: Stack(
                 children: [
@@ -612,10 +578,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             ),
             IconButton(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const FavoritesScreen()),
-                );
+                context.go('/user/favorites');
               },
               icon: Stack(
                 children: [
@@ -874,14 +837,12 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         itemCount: propertiesToShow.length,
         itemBuilder: (context, index) {
           final property = propertiesToShow[index];
-          return GestureDetector(
+          return PropertyCard(
+            property: property,
+            isFavorite: _favoritePropertyIds.contains(property.id),
             onTap: () => _navigateToPropertyDetail(property.id),
-            child: PropertyCard(
-              property: property,
-              isFavorite: _favoritePropertyIds.contains(property.id),
-              onFavoriteToggle: () => _toggleFavorite(property.id),
-              onCompare: () => _toggleCompare(property.id),
-            ),
+            onFavorite: () => _toggleFavorite(property.id),
+            onCompare: () => _toggleCompare(property.id),
           );
         },
       );
@@ -900,14 +861,12 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       ),
       itemBuilder: (context, index) {
         final property = propertiesToShow[index];
-        return GestureDetector(
+        return PropertyCard(
+          property: property,
+          isFavorite: _favoritePropertyIds.contains(property.id),
           onTap: () => _navigateToPropertyDetail(property.id),
-          child: PropertyCard(
-            property: property,
-            isFavorite: _favoritePropertyIds.contains(property.id),
-            onFavoriteToggle: () => _toggleFavorite(property.id),
-            onCompare: () => _toggleCompare(property.id),
-          ),
+          onFavorite: () => _toggleFavorite(property.id),
+          onCompare: () => _toggleCompare(property.id),
         );
       },
     );

@@ -65,6 +65,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         ),
         const SizedBox(height: 16),
         ResponsiveGrid(
+          mobileColumns: 1,
+          tabletColumns: 2,
+          desktopColumns: 4,
+          spacing: context.responsiveSpacing(mobile: 12, tablet: 16, desktop: 16),
+          runSpacing: context.responsiveSpacing(mobile: 12, tablet: 16, desktop: 16),
           children: [
             _buildStatCard(
               'Imóveis Ativos',
@@ -95,11 +100,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               'Profissionais ativos',
             ),
           ],
-          mobileColumns: 1,
-          tabletColumns: 2,
-          desktopColumns: 4,
-          spacing: context.responsiveSpacing(mobile: 12, tablet: 16, desktop: 16),
-          runSpacing: context.responsiveSpacing(mobile: 12, tablet: 16, desktop: 16),
         ),
       ],
     );

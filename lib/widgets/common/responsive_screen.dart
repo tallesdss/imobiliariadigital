@@ -180,13 +180,13 @@ class ResponsiveDashboard extends StatelessWidget {
   Widget _buildCardsGrid(BuildContext context, DeviceType deviceType) {
 
     return ResponsiveGrid(
-      children: cards,
       mobileColumns: 1,
       tabletColumns: 2,
       desktopColumns: 3,
       largeDesktopColumns: 4,
       spacing: context.responsiveSpacing(mobile: 12, tablet: 16, desktop: 20),
       runSpacing: context.responsiveSpacing(mobile: 12, tablet: 16, desktop: 20),
+      children: cards,
     );
   }
 }

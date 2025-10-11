@@ -1,19 +1,81 @@
 import 'package:flutter/material.dart';
 import '../../models/property_model.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/common/loading_widget.dart';
-import '../../widgets/common/error_widget.dart';
 
-class PropertyDetailScreen extends StatelessWidget {
-  final Property property;
+class PropertyDetailScreen extends StatefulWidget {
+  final Property? property;
+  final String? propertyId;
 
   const PropertyDetailScreen({
     super.key,
-    required this.property,
+    this.property,
+    this.propertyId,
   });
 
   @override
+  State<PropertyDetailScreen> createState() => _PropertyDetailScreenState();
+}
+
+class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
+  Property? _property;
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.property != null) {
+      _property = widget.property;
+      _isLoading = false;
+    } else if (widget.propertyId != null) {
+      _loadProperty(widget.propertyId!);
+    } else {
+      _error = 'ID do imóvel não fornecido';
+      _isLoading = false;
+    }
+  }
+
+  Future<void> _loadProperty(String propertyId) async {
+    try {
+      // Aqui você carregaria o imóvel do serviço
+      // Por enquanto, vamos simular um erro
+      setState(() {
+        _error = 'Imóvel não encontrado';
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = 'Erro ao carregar imóvel: $e';
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (_error != null || _property == null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Erro'),
+          backgroundColor: AppTheme.primaryColor,
+          foregroundColor: Colors.white,
+        ),
+        body: Center(
+          child: Text(_error ?? 'Imóvel não encontrado'),
+        ),
+      );
+    }
+
+    final property = _property!;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(property.title),
@@ -39,28 +101,28 @@ class PropertyDetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Galeria de imagens
-            _buildImageGallery(),
+            _buildImageGallery(property),
             
             // Informações principais
-            _buildMainInfo(),
+            _buildMainInfo(property),
             
             // Características
-            _buildCharacteristics(),
+            _buildCharacteristics(property),
             
             // Localização
-            _buildLocation(),
+            _buildLocation(property),
             
             // Contato
-            _buildContact(),
+            _buildContact(property),
           ],
         ),
       ),
-      bottomNavigationBar: _buildBottomBar(),
+      bottomNavigationBar: _buildBottomBar(property),
     );
   }
 
-  Widget _buildImageGallery() {
-    return Container(
+  Widget _buildImageGallery(Property property) {
+    return SizedBox(
       height: 300,
       child: property.photos.isNotEmpty
           ? PageView.builder(
@@ -95,7 +157,7 @@ class PropertyDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMainInfo() {
+  Widget _buildMainInfo(Property property) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -148,7 +210,7 @@ class PropertyDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCharacteristics() {
+  Widget _buildCharacteristics(Property property) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       child: Padding(
@@ -226,7 +288,7 @@ class PropertyDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLocation() {
+  Widget _buildLocation(Property property) {
     return Card(
       margin: const EdgeInsets.all(16),
       child: Padding(
@@ -273,7 +335,7 @@ class PropertyDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildContact() {
+  Widget _buildContact(Property property) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       child: Padding(
@@ -330,14 +392,14 @@ class PropertyDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomBar() {
+  Widget _buildBottomBar(Property property) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, -4),
           ),

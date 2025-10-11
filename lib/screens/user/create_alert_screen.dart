@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../models/alert_model.dart' as alert_models;
 import '../../services/notification_service.dart';
-import '../../theme/app_theme.dart';
 
 /// Tela para criar ou editar alertas
 class CreateAlertScreen extends StatefulWidget {
@@ -170,11 +169,13 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
         );
         
         final success = await _notificationService.updateAlert(updatedAlert);
-        if (success) {
-          Navigator.pop(context, true);
-          _showSnackBar('Alerta atualizado com sucesso');
-        } else {
-          _showSnackBar('Erro ao atualizar alerta');
+        if (mounted) {
+          if (success) {
+            Navigator.pop(context, true);
+            _showSnackBar('Alerta atualizado com sucesso');
+          } else {
+            _showSnackBar('Erro ao atualizar alerta');
+          }
         }
       } else {
         // Criar novo alerta
@@ -185,11 +186,13 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
           notificationSettings: _notificationSettings,
         );
         
-        if (alertId != null) {
-          Navigator.pop(context, true);
-          _showSnackBar('Alerta criado com sucesso');
-        } else {
-          _showSnackBar('Erro ao criar alerta');
+        if (mounted) {
+          if (alertId != null) {
+            Navigator.pop(context, true);
+            _showSnackBar('Alerta criado com sucesso');
+          } else {
+            _showSnackBar('Erro ao criar alerta');
+          }
         }
       }
     } catch (e) {
@@ -378,7 +381,7 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
 
             // Tipo de propriedade
             DropdownButtonFormField<alert_models.AlertPropertyType>(
-              value: _selectedPropertyType,
+              initialValue: _selectedPropertyType,
               decoration: const InputDecoration(
                 labelText: 'Tipo de Imóvel',
               ),

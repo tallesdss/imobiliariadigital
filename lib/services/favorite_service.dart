@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import '../models/favorite_model.dart';
 import '../models/property_model.dart';
@@ -239,7 +240,7 @@ class FavoriteService {
         propertyId: propertyId,
       );
     } catch (e) {
-      print('Erro ao criar alerta de preço para favorito: $e');
+      debugPrint('Erro ao criar alerta de preço para favorito: $e');
       return null;
     }
   }
@@ -263,7 +264,7 @@ class FavoriteService {
         propertyId: propertyId,
       );
     } catch (e) {
-      print('Erro ao criar alerta de status para favorito: $e');
+      debugPrint('Erro ao criar alerta de status para favorito: $e');
       return null;
     }
   }
@@ -285,13 +286,13 @@ class FavoriteService {
         maxBedrooms: favoriteProperty.bedrooms,
         minBathrooms: favoriteProperty.bathrooms,
         maxBathrooms: favoriteProperty.bathrooms,
-        minArea: favoriteProperty.area != null ? favoriteProperty.area! * 0.8 : null,
-        maxArea: favoriteProperty.area != null ? favoriteProperty.area! * 1.2 : null,
+        minArea: favoriteProperty.area * 0.8,
+        maxArea: favoriteProperty.area * 1.2,
         hasGarage: favoriteProperty.hasGarage,
         acceptsProposal: favoriteProperty.acceptsProposal,
         hasFinancing: favoriteProperty.hasFinancing,
-        maxPrice: favoriteProperty.price != null ? favoriteProperty.price! * 1.1 : null,
-        minPrice: favoriteProperty.price != null ? favoriteProperty.price! * 0.8 : null,
+        maxPrice: favoriteProperty.price * 1.1,
+        minPrice: favoriteProperty.price * 0.8,
       );
 
       return await notificationService.createAlert(
@@ -300,7 +301,7 @@ class FavoriteService {
         criteria: criteria,
       );
     } catch (e) {
-      print('Erro ao criar alerta de imóveis similares: $e');
+      debugPrint('Erro ao criar alerta de imóveis similares: $e');
       return null;
     }
   }
@@ -333,7 +334,7 @@ class FavoriteService {
 
       return createdAlerts;
     } catch (e) {
-      print('Erro ao criar alertas para favoritos: $e');
+      debugPrint('Erro ao criar alertas para favoritos: $e');
       return [];
     }
   }
@@ -357,7 +358,7 @@ class FavoriteService {
         await notificationService.deleteAlert(alert.id);
       }
     } catch (e) {
-      print('Erro ao remover alertas do favorito: $e');
+      debugPrint('Erro ao remover alertas do favorito: $e');
     }
   }
 
@@ -381,32 +382,24 @@ class FavoriteService {
             : 0,
       };
     } catch (e) {
-      print('Erro ao obter estatísticas de alertas de favoritos: $e');
+      debugPrint('Erro ao obter estatísticas de alertas de favoritos: $e');
       return {};
     }
   }
 
   /// Mapeia tipo de propriedade para enum do alerta
-  static alert_models.AlertPropertyType? _mapPropertyType(String? propertyType) {
+  static alert_models.AlertPropertyType? _mapPropertyType(PropertyType? propertyType) {
     if (propertyType == null) return null;
     
-    switch (propertyType.toLowerCase()) {
-      case 'apartment':
-      case 'apartamento':
+    switch (propertyType) {
+      case PropertyType.apartment:
         return alert_models.AlertPropertyType.apartment;
-      case 'house':
-      case 'casa':
+      case PropertyType.house:
         return alert_models.AlertPropertyType.house;
-      case 'commercial':
-      case 'comercial':
+      case PropertyType.commercial:
         return alert_models.AlertPropertyType.commercial;
-      case 'land':
-      case 'terreno':
+      case PropertyType.land:
         return alert_models.AlertPropertyType.land;
-      case 'rural':
-        return alert_models.AlertPropertyType.rural;
-      default:
-        return null;
     }
   }
 
@@ -441,23 +434,17 @@ class FavoriteService {
 
       for (final favorite in favorites) {
         // Agrupar por cidade
-        if (favorite.city != null) {
-          groupedByCity[favorite.city!] ??= [];
-          groupedByCity[favorite.city!]!.add(favorite);
-        }
+        groupedByCity[favorite.city] ??= [];
+        groupedByCity[favorite.city]!.add(favorite);
 
         // Agrupar por tipo
-        if (favorite.type != null) {
-          groupedByType[favorite.type!] ??= [];
-          groupedByType[favorite.type!]!.add(favorite);
-        }
+        groupedByType[favorite.type.name] ??= [];
+        groupedByType[favorite.type.name]!.add(favorite);
 
         // Agrupar por faixa de preço
-        if (favorite.price != null) {
-          final priceRange = _getPriceRange(favorite.price!);
-          groupedByPriceRange[priceRange] ??= [];
-          groupedByPriceRange[priceRange]!.add(favorite);
-        }
+        final priceRange = _getPriceRange(favorite.price);
+        groupedByPriceRange[priceRange] ??= [];
+        groupedByPriceRange[priceRange]!.add(favorite);
       }
 
       // Criar sugestões baseadas nos grupos
@@ -504,7 +491,7 @@ class FavoriteService {
 
       return suggestions;
     } catch (e) {
-      print('Erro ao sugerir alertas baseados em favoritos: $e');
+      debugPrint('Erro ao sugerir alertas baseados em favoritos: $e');
       return [];
     }
   }

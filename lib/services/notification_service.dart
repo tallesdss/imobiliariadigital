@@ -2,11 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import '../models/alert_model.dart' as alert_models;
-import '../models/property_model.dart';
-import 'supabase_service.dart';
 
 /// Serviço para gerenciar alertas e notificações
 class NotificationService {
@@ -18,7 +17,6 @@ class NotificationService {
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin _localNotifications = 
       FlutterLocalNotificationsPlugin();
-  final SupabaseService _supabaseService = SupabaseService();
 
   StreamSubscription<QuerySnapshot>? _alertsSubscription;
   StreamSubscription<QuerySnapshot>? _propertiesSubscription;
@@ -97,23 +95,23 @@ class NotificationService {
     );
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('Usuário autorizou notificações');
+      debugPrint('Usuário autorizou notificações');
     } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
-      print('Usuário autorizou notificações provisórias');
+      debugPrint('Usuário autorizou notificações provisórias');
     } else {
-      print('Usuário negou ou não autorizou notificações');
+      debugPrint('Usuário negou ou não autorizou notificações');
     }
   }
 
   /// Handler para notificações em background
   static Future<void> _firebaseMessagingBackgroundHandler(
       RemoteMessage message) async {
-    print('Mensagem em background: ${message.messageId}');
+    debugPrint('Mensagem em background: ${message.messageId}');
   }
 
   /// Handler para mensagens em foreground
   Future<void> _handleForegroundMessage(RemoteMessage message) async {
-    print('Mensagem em foreground: ${message.messageId}');
+    debugPrint('Mensagem em foreground: ${message.messageId}');
     
     // Mostrar notificação local quando o app está em foreground
     await _showLocalNotification(
@@ -125,14 +123,14 @@ class NotificationService {
 
   /// Handler para quando o app é aberto via notificação
   Future<void> _handleMessageOpenedApp(RemoteMessage message) async {
-    print('App aberto via notificação: ${message.messageId}');
+    debugPrint('App aberto via notificação: ${message.messageId}');
     // Navegar para a tela apropriada baseada nos dados da notificação
     _handleNotificationNavigation(message.data);
   }
 
   /// Handler para quando uma notificação local é tocada
   void _onNotificationTapped(NotificationResponse response) {
-    print('Notificação local tocada: ${response.payload}');
+    debugPrint('Notificação local tocada: ${response.payload}');
     if (response.payload != null) {
       final data = jsonDecode(response.payload!);
       _handleNotificationNavigation(data);
@@ -223,12 +221,12 @@ class NotificationService {
       );
 
       if (response.statusCode == 200) {
-        print('Notificação push enviada com sucesso');
+        debugPrint('Notificação push enviada com sucesso');
       } else {
-        print('Erro ao enviar notificação push: ${response.statusCode}');
+        debugPrint('Erro ao enviar notificação push: ${response.statusCode}');
       }
     } catch (e) {
-      print('Erro ao enviar notificação push: $e');
+      debugPrint('Erro ao enviar notificação push: $e');
     }
   }
 
@@ -262,7 +260,7 @@ class NotificationService {
 
       return alertId;
     } catch (e) {
-      print('Erro ao criar alerta: $e');
+      debugPrint('Erro ao criar alerta: $e');
       return null;
     }
   }
@@ -281,7 +279,7 @@ class NotificationService {
 
       return true;
     } catch (e) {
-      print('Erro ao atualizar alerta: $e');
+      debugPrint('Erro ao atualizar alerta: $e');
       return false;
     }
   }
@@ -293,7 +291,7 @@ class NotificationService {
       await _firestore.collection('alerts').doc(alertId).delete();
       return true;
     } catch (e) {
-      print('Erro ao remover alerta: $e');
+      debugPrint('Erro ao remover alerta: $e');
       return false;
     }
   }
@@ -311,7 +309,7 @@ class NotificationService {
           .map((doc) => alert_models.PropertyAlert.fromMap(doc.data()))
           .toList();
     } catch (e) {
-      print('Erro ao obter alertas do usuário: $e');
+      debugPrint('Erro ao obter alertas do usuário: $e');
       return [];
     }
   }
@@ -332,7 +330,7 @@ class NotificationService {
           .map((doc) => alert_models.AlertHistory.fromMap(doc.data()))
           .toList();
     } catch (e) {
-      print('Erro ao obter histórico de alertas: $e');
+      debugPrint('Erro ao obter histórico de alertas: $e');
       return [];
     }
   }
@@ -422,7 +420,7 @@ class NotificationService {
       });
 
     } catch (e) {
-      print('Erro ao disparar alerta: $e');
+      debugPrint('Erro ao disparar alerta: $e');
     }
   }
 
@@ -502,7 +500,7 @@ class NotificationService {
       final doc = await _firestore.collection('users').doc(userId).get();
       return doc.data()?['fcmToken'];
     } catch (e) {
-      print('Erro ao obter token FCM: $e');
+      debugPrint('Erro ao obter token FCM: $e');
       return null;
     }
   }
@@ -515,7 +513,7 @@ class NotificationService {
         'lastTokenUpdate': Timestamp.fromDate(DateTime.now()),
       });
     } catch (e) {
-      print('Erro ao salvar token FCM: $e');
+      debugPrint('Erro ao salvar token FCM: $e');
     }
   }
 
@@ -527,14 +525,14 @@ class NotificationService {
   ) async {
     // Implementar integração com serviço de email
     // Por exemplo, SendGrid, AWS SES, etc.
-    print('Enviando email para usuário $userId: $message');
+    debugPrint('Enviando email para usuário $userId: $message');
   }
 
   /// Envia notificação por SMS
   Future<void> _sendSMSNotification(String userId, String message) async {
     // Implementar integração com serviço de SMS
     // Por exemplo, Twilio, AWS SNS, etc.
-    print('Enviando SMS para usuário $userId: $message');
+    debugPrint('Enviando SMS para usuário $userId: $message');
   }
 
   /// Marca alerta como lido
@@ -545,7 +543,7 @@ class NotificationService {
       });
       return true;
     } catch (e) {
-      print('Erro ao marcar alerta como lido: $e');
+      debugPrint('Erro ao marcar alerta como lido: $e');
       return false;
     }
   }
@@ -568,7 +566,7 @@ class NotificationService {
         'alertsByType': _groupAlertsByType(alerts),
       };
     } catch (e) {
-      print('Erro ao obter estatísticas de alertas: $e');
+      debugPrint('Erro ao obter estatísticas de alertas: $e');
       return {};
     }
   }
@@ -599,11 +597,74 @@ class NotificationService {
       }
       
       await batch.commit();
-      print('Histórico antigo limpo: ${oldHistory.docs.length} registros removidos');
+      debugPrint('Histórico antigo limpo: ${oldHistory.docs.length} registros removidos');
     } catch (e) {
-      print('Erro ao limpar histórico antigo: $e');
+      debugPrint('Erro ao limpar histórico antigo: $e');
     }
   }
+
+  /// Obtém notificações de um usuário
+  Future<List<alert_models.AlertHistory>> getNotifications(String userId) async {
+    return await getAlertHistory(userId);
+  }
+
+  /// Obtém notificações não lidas
+  Future<List<alert_models.AlertHistory>> getUnreadNotifications(String userId) async {
+    final notifications = await getAlertHistory(userId);
+    return notifications.where((n) => !n.wasRead).toList();
+  }
+
+  /// Obtém contagem de notificações não lidas
+  Future<int> getUnreadCount(String userId) async {
+    final unreadNotifications = await getUnreadNotifications(userId);
+    return unreadNotifications.length;
+  }
+
+  /// Ordena notificações por data
+  List<alert_models.AlertHistory> sortNotifications(List<alert_models.AlertHistory> notifications) {
+    notifications.sort((a, b) => b.triggeredAt.compareTo(a.triggeredAt));
+    return notifications;
+  }
+
+  /// Marca notificação como lida
+  Future<bool> markAsRead(String historyId) async {
+    return await markAlertAsRead(historyId);
+  }
+
+  /// Marca todas as notificações como lidas
+  Future<bool> markAllAsRead(String userId) async {
+    try {
+      final unreadNotifications = await getUnreadNotifications(userId);
+      final batch = _firestore.batch();
+      
+      for (final notification in unreadNotifications) {
+        batch.update(
+          _firestore.collection('alert_history').doc(notification.id),
+          {'wasRead': true}
+        );
+      }
+      
+      await batch.commit();
+      return true;
+    } catch (e) {
+      debugPrint('Erro ao marcar todas as notificações como lidas: $e');
+      return false;
+    }
+  }
+
+  /// Remove uma notificação
+  Future<bool> deleteNotification(String historyId) async {
+    try {
+      await _firestore.collection('alert_history').doc(historyId).delete();
+      return true;
+    } catch (e) {
+      debugPrint('Erro ao remover notificação: $e');
+      return false;
+    }
+  }
+
+  /// Notificações em cache (para uso em tempo real)
+  List<alert_models.AlertHistory> cachedNotifications = [];
 
   /// Dispose do serviço
   void dispose() {

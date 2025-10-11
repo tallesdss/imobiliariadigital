@@ -6,8 +6,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/property_model.dart';
 import '../models/search_model.dart';
 import 'property_service.dart';
-import 'supabase_service.dart';
-import '../config/supabase_config.dart';
 
 class SearchService {
   static const String _searchHistoryKey = 'search_history';

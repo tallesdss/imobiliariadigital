@@ -16,6 +16,7 @@ class Property {
   final String city;
   final String state;
   final String zipCode;
+  final String? neighborhood;
   final List<String> photos;
   final List<String> videos;
   final Map<String, dynamic> attributes; // bedrooms, bathrooms, area, etc.
@@ -40,6 +41,7 @@ class Property {
     required this.city,
     required this.state,
     required this.zipCode,
+    this.neighborhood,
     required this.photos,
     required this.videos,
     required this.attributes,
@@ -65,6 +67,7 @@ class Property {
     String? city,
     String? state,
     String? zipCode,
+    String? neighborhood,
     List<String>? photos,
     List<String>? videos,
     Map<String, dynamic>? attributes,
@@ -89,6 +92,7 @@ class Property {
       city: city ?? this.city,
       state: state ?? this.state,
       zipCode: zipCode ?? this.zipCode,
+      neighborhood: neighborhood ?? this.neighborhood,
       photos: photos ?? this.photos,
       videos: videos ?? this.videos,
       attributes: attributes ?? this.attributes,
@@ -133,6 +137,14 @@ class Property {
     }
   }
 
+  // Getters para propriedades comuns
+  int get bedrooms => attributes['bedrooms'] ?? 0;
+  int get bathrooms => attributes['bathrooms'] ?? 0;
+  double get area => (attributes['area'] ?? 0).toDouble();
+  bool get hasGarage => attributes['hasGarage'] ?? false;
+  bool get acceptsProposal => attributes['acceptsProposal'] ?? false;
+  bool get hasFinancing => attributes['hasFinancing'] ?? false;
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -146,6 +158,7 @@ class Property {
       'city': city,
       'state': state,
       'zipCode': zipCode,
+      'neighborhood': neighborhood,
       'photos': photos,
       'videos': videos,
       'attributes': attributes,
@@ -173,6 +186,7 @@ class Property {
       city: json['cidade'] ?? json['city'] ?? '',
       state: json['estado'] ?? json['state'] ?? '',
       zipCode: json['cep'] ?? json['zipCode'] ?? '',
+      neighborhood: json['bairro'] ?? json['neighborhood'],
       photos: List<String>.from(json['fotos'] ?? json['photos'] ?? []),
       videos: List<String>.from(json['videos'] ?? []),
       attributes: Map<String, dynamic>.from(json['atributos'] ?? json['attributes'] ?? {}),

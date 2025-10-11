@@ -80,8 +80,9 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
 
   Future<void> _loadNotifications() async {
     try {
-      await NotificationService.initialize();
-      final unreadCount = await NotificationService.getUnreadCount();
+      final notificationService = NotificationService();
+      await notificationService.initialize();
+      final unreadCount = await notificationService.getUnreadCount('realtor_user_id');
       if (mounted) {
         setState(() {
           _unreadNotificationsCount = unreadCount;
@@ -430,16 +431,16 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
       color: Colors.white,
       padding: context.responsivePadding,
       child: ResponsiveGrid(
-        children: [
-          _buildStatCard('Ativos', activeCount, AppColors.success),
-          _buildStatCard('Vendidos', soldCount, AppColors.accent),
-          _buildStatCard('Arquivados', archivedCount, AppColors.textHint),
-        ],
         mobileColumns: 1,
         tabletColumns: 3,
         desktopColumns: 3,
         spacing: context.responsiveSpacing(mobile: 12, tablet: 16, desktop: 16),
         runSpacing: context.responsiveSpacing(mobile: 12, tablet: 16, desktop: 16),
+        children: [
+          _buildStatCard('Ativos', activeCount, AppColors.success),
+          _buildStatCard('Vendidos', soldCount, AppColors.accent),
+          _buildStatCard('Arquivados', archivedCount, AppColors.textHint),
+        ],
       ),
     );
   }

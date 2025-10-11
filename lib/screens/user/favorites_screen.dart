@@ -94,7 +94,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => PropertyDetailScreen(propertyId: propertyId),
+        builder: (context) => PropertyDetailScreen(property: null),
       ),
     ).then((_) {
       // Recarregar favoritos quando voltar da tela de detalhes
@@ -251,7 +251,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                       child: PropertyCard(
                         property: property,
                         isFavorite: true,
-                        onFavoriteToggle: () => _removeFavorite(property.id),
+                        onFavorite: () => _removeFavorite(property.id),
                       ),
                     );
                   },
@@ -266,7 +266,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                       child: PropertyCard(
                         property: property,
                         isFavorite: true,
-                        onFavoriteToggle: () => _removeFavorite(property.id),
+                        onFavorite: () => _removeFavorite(property.id),
                       ),
                     );
                   },

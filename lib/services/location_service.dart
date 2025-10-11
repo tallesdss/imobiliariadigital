@@ -7,7 +7,6 @@ import '../models/search_model.dart';
 import '../models/property_model.dart';
 
 class LocationService {
-  static const double _defaultRadius = 10.0; // km
   static const int _maxResults = 100;
 
   /// Verifica se o serviço de localização está habilitado
@@ -70,8 +69,10 @@ class LocationService {
 
       // Obter posição atual
       final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 10),
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 10),
+        ),
       );
 
       // Fazer geocoding reverso para obter endereço
@@ -334,7 +335,7 @@ class LocationService {
   ) {
     // Em uma implementação real, isso viria da API de rotas
     // Por enquanto, retornamos uma polyline simples
-    return 'mock_polyline_${startLat}_${startLon}_${endLat}_${endLon}';
+    return 'mock_polyline_$startLat\_$startLon\_$endLat\_$endLon';
   }
 
   /// Obtém informações de trânsito

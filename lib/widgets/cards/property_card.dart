@@ -6,14 +6,18 @@ class PropertyCard extends StatelessWidget {
   final Property property;
   final VoidCallback? onTap;
   final VoidCallback? onFavorite;
+  final VoidCallback? onCompare;
   final bool isFavorite;
+  final bool isCompact;
 
   const PropertyCard({
     super.key,
     required this.property,
     this.onTap,
     this.onFavorite,
+    this.onCompare,
     this.isFavorite = false,
+    this.isCompact = false,
   });
 
   @override
@@ -119,7 +123,7 @@ class PropertyCard extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white.withValues(alpha: 0.9),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
@@ -205,7 +209,7 @@ class PropertyCard extends StatelessWidget {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: AppTheme.primaryColor.withOpacity(0.1),
+                              color: AppTheme.primaryColor.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(

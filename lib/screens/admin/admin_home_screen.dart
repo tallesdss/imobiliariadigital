@@ -75,8 +75,9 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
   Future<void> _loadNotifications() async {
     try {
-      await NotificationService.initialize();
-      final unreadCount = await NotificationService.getUnreadCount();
+      final notificationService = NotificationService();
+      await notificationService.initialize();
+      final unreadCount = await notificationService.getUnreadCount('admin_user_id');
       if (mounted) {
         setState(() {
           _unreadNotificationsCount = unreadCount;

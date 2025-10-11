@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../services/notification_service.dart';
-import '../../models/notification_model.dart';
+import '../../models/alert_model.dart' as alert_models;
 import 'property_detail_screen.dart';
 import 'user_chat_screen.dart';
 
@@ -14,7 +14,7 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
-  List<NotificationModel> _notifications = [];
+  List<alert_models.AlertHistory> _notifications = [];
   bool _isLoading = true;
   String _selectedFilter = 'all'; // all, unread, byType
 
@@ -30,22 +30,22 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     });
 
     try {
+      final notificationService = NotificationService();
+      
       // Tentar carregar do cache primeiro para melhor UX
-      if (!forceRefresh && NotificationService.cachedNotifications.isNotEmpty) {
+      if (!forceRefresh && notificationService.cachedNotifications.isNotEmpty) {
         setState(() {
-          _notifications = NotificationService.cachedNotifications;
+          _notifications = notificationService.cachedNotifications;
           _isLoading = false;
         });
       }
 
       // Carregar dados atualizados da API
-      final notifications = await NotificationService.getNotifications(
-        forceRefresh: forceRefresh,
-      );
+      final notifications = await notificationService.getNotifications('user_id');
       
       if (mounted) {
         setState(() {
-          _notifications = NotificationService.sortNotifications(notifications);
+          _notifications = notificationService.sortNotifications(notifications);
           _isLoading = false;
         });
       }
@@ -67,15 +67,25 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Future<void> _markAsRead(String notificationId) async {
     try {
-      await NotificationService.markAsRead(notificationId);
+      final notificationService = NotificationService();
+      await notificationService.markAsRead(notificationId);
       
       if (mounted) {
         setState(() {
           final index = _notifications.indexWhere((n) => n.id == notificationId);
           if (index != -1) {
-            _notifications[index] = _notifications[index].copyWith(
-              isRead: true,
-              readAt: DateTime.now(),
+            // Atualizar a notificação como lida
+            final notification = _notifications[index];
+            _notifications[index] = alert_models.AlertHistory(
+              id: notification.id,
+              alertId: notification.alertId,
+              userId: notification.userId,
+              propertyId: notification.propertyId,
+              type: notification.type,
+              message: notification.message,
+              triggeredAt: notification.triggeredAt,
+              wasRead: true,
+              metadata: notification.metadata,
             );
           }
         });
@@ -94,14 +104,22 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Future<void> _markAllAsRead() async {
     try {
-      await NotificationService.markAllAsRead();
+      final notificationService = NotificationService();
+      await notificationService.markAllAsRead('user_id');
       
       if (mounted) {
         setState(() {
           _notifications = _notifications.map((notification) {
-            return notification.copyWith(
-              isRead: true,
-              readAt: DateTime.now(),
+            return alert_models.AlertHistory(
+              id: notification.id,
+              alertId: notification.alertId,
+              userId: notification.userId,
+              propertyId: notification.propertyId,
+              type: notification.type,
+              message: notification.message,
+              triggeredAt: notification.triggeredAt,
+              wasRead: true,
+              metadata: notification.metadata,
             );
           }).toList();
         });
@@ -127,7 +145,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Future<void> _deleteNotification(String notificationId) async {
     try {
-      await NotificationService.deleteNotification(notificationId);
+      final notificationService = NotificationService();
+      await notificationService.deleteNotification(notificationId);
       
       if (mounted) {
         setState(() {
@@ -153,30 +172,33 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     }
   }
 
-  void _handleNotificationTap(NotificationModel notification) {
+  void _handleNotificationTap(alert_models.AlertHistory notification) {
     // Marcar como lida se não estiver lida
-    if (!notification.isRead) {
+    if (!notification.wasRead) {
       _markAsRead(notification.id);
     }
 
     // Navegar baseado no tipo de notificação
     switch (notification.type) {
-      case NotificationType.propertyUpdate:
-      case NotificationType.favoriteMatch:
-      case NotificationType.priceChange:
-      case NotificationType.newProperty:
-        if (notification.propertyId != null) {
+      case alert_models.AlertType.statusChange:
+      case alert_models.AlertType.priceDrop:
+      case alert_models.AlertType.newProperty:
+        if (notification.propertyId.isNotEmpty) {
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => PropertyDetailScreen(
-                propertyId: notification.propertyId!,
+                property: null,
+                propertyId: notification.propertyId,
               ),
             ),
           );
+        } else {
+          // Mostrar detalhes da notificação se não houver propertyId
+          _showNotificationDetails(notification);
         }
         break;
-      case NotificationType.newMessage:
+      case alert_models.AlertType.custom:
         // Navegar para a tela de chat geral
         Navigator.push(
           context,
@@ -185,19 +207,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           ),
         );
         break;
-      case NotificationType.systemAlert:
-      case NotificationType.appointmentReminder:
-        // Mostrar detalhes da notificação
-        _showNotificationDetails(notification);
-        break;
     }
   }
 
-  void _showNotificationDetails(NotificationModel notification) {
+  void _showNotificationDetails(alert_models.AlertHistory notification) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(notification.title),
+        title: Text(notification.message),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -239,42 +256,36 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  IconData _getNotificationIcon(NotificationType type) {
+  IconData _getNotificationIcon(alert_models.AlertType type) {
     switch (type) {
-      case NotificationType.propertyUpdate:
+      case alert_models.AlertType.statusChange:
         return Icons.home;
-      case NotificationType.newMessage:
+      case alert_models.AlertType.custom:
         return Icons.message;
-      case NotificationType.favoriteMatch:
-        return Icons.favorite;
-      case NotificationType.systemAlert:
-        return Icons.warning;
-      case NotificationType.appointmentReminder:
-        return Icons.schedule;
-      case NotificationType.priceChange:
-        return Icons.trending_up;
-      case NotificationType.newProperty:
+      case alert_models.AlertType.priceDrop:
+        return Icons.trending_down;
+      case alert_models.AlertType.newProperty:
         return Icons.add_home;
     }
   }
 
-  Color _getPriorityColor(NotificationPriority priority) {
-    switch (priority) {
-      case NotificationPriority.low:
-        return Colors.grey;
-      case NotificationPriority.medium:
-        return Colors.blue;
-      case NotificationPriority.high:
-        return Colors.orange;
-      case NotificationPriority.urgent:
+  Color _getPriorityColor(alert_models.AlertType type) {
+    switch (type) {
+      case alert_models.AlertType.priceDrop:
         return Colors.red;
+      case alert_models.AlertType.newProperty:
+        return Colors.green;
+      case alert_models.AlertType.statusChange:
+        return Colors.orange;
+      case alert_models.AlertType.custom:
+        return Colors.blue;
     }
   }
 
-  List<NotificationModel> _getFilteredNotifications() {
+  List<alert_models.AlertHistory> _getFilteredNotifications() {
     switch (_selectedFilter) {
       case 'unread':
-        return NotificationService.getUnreadNotifications(_notifications);
+        return _notifications.where((n) => !n.wasRead).toList();
       default:
         return _notifications;
     }
@@ -420,7 +431,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    '${NotificationService.getUnreadNotifications(_notifications).length}',
+                    '${_notifications.where((n) => !n.wasRead).length}',
                     style: AppTypography.caption.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -448,11 +459,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  Widget _buildNotificationCard(NotificationModel notification, bool isTablet) {
+  Widget _buildNotificationCard(alert_models.AlertHistory notification, bool isTablet) {
     return Card(
       margin: EdgeInsets.only(bottom: isTablet ? 16 : 12),
-      elevation: notification.isRead ? 1 : 3,
-      color: notification.isRead ? Colors.white : AppColors.primary.withValues(alpha: 0.05),
+      elevation: notification.wasRead ? 1 : 3,
+      color: notification.wasRead ? Colors.white : AppColors.primary.withValues(alpha: 0.05),
       child: InkWell(
         onTap: () => _handleNotificationTap(notification),
         borderRadius: BorderRadius.circular(12),
@@ -466,12 +477,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 width: isTablet ? 48 : 40,
                 height: isTablet ? 48 : 40,
                 decoration: BoxDecoration(
-                  color: _getPriorityColor(notification.priority).withValues(alpha: 0.1),
+                  color: _getPriorityColor(notification.type).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Icon(
                   _getNotificationIcon(notification.type),
-                  color: _getPriorityColor(notification.priority),
+                  color: _getPriorityColor(notification.type),
                   size: isTablet ? 24 : 20,
                 ),
               ),
@@ -526,19 +537,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           ),
                         ),
                         const Spacer(),
-                        if (notification.priority == NotificationPriority.high ||
-                            notification.priority == NotificationPriority.urgent)
+                        if (notification.type == alert_models.AlertType.priceDrop ||
+                            notification.type == alert_models.AlertType.priceDrop)
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 6,
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: _getPriorityColor(notification.priority),
+                              color: _getPriorityColor(notification.type),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
-                              notification.priorityDisplayName,
+                              notification.typeDisplayName,
                               style: AppTypography.caption.copyWith(
                                 color: Colors.white,
                                 fontSize: isTablet ? 12 : 10,

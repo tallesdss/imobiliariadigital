@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/alert_model.dart' as alert_models;
 import '../../services/notification_service.dart';
-import '../../theme/app_theme.dart';
 
 /// Tela de configurações de alertas
 class AlertSettingsScreen extends StatefulWidget {

@@ -3,11 +3,9 @@ import 'package:geolocator/geolocator.dart';
 import '../../models/property_model.dart';
 import '../../models/search_model.dart';
 import '../../services/location_service.dart';
-import '../../services/search_service.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/common/loading_widget.dart';
 import '../../widgets/common/error_widget.dart';
-import '../../widgets/cards/property_card.dart';
 import 'property_detail_screen.dart';
 import 'search_results_screen.dart';
 
@@ -24,7 +22,6 @@ class _MapSearchScreenState extends State<MapSearchScreen> {
   String? _errorMessage;
   LocationData? _currentLocation;
   List<PropertyWithDistance> _nearbyProperties = [];
-  List<PointOfInterest> _nearbyPOIs = [];
   double _searchRadius = 5.0; // km
   bool _showPOIs = true;
   String _selectedFilter = 'all';
@@ -98,19 +95,8 @@ class _MapSearchScreenState extends State<MapSearchScreen> {
         _searchRadius,
       );
 
-      // Buscar pontos de interesse se habilitado
-      List<PointOfInterest> pois = [];
-      if (_showPOIs) {
-        pois = await LocationService.getNearbyPointsOfInterest(
-          _currentLocation!.latitude,
-          _currentLocation!.longitude,
-          _searchRadius,
-        );
-      }
-
       setState(() {
         _nearbyProperties = properties;
-        _nearbyPOIs = pois;
         _isLoading = false;
       });
     } catch (e) {
@@ -365,7 +351,7 @@ class _MapSearchScreenState extends State<MapSearchScreen> {
               Switch(
                 value: _showPOIs,
                 onChanged: _onPOIsToggled,
-                activeColor: AppTheme.primaryColor,
+                activeThumbColor: AppTheme.primaryColor,
               ),
             ],
           ),
@@ -382,7 +368,7 @@ class _MapSearchScreenState extends State<MapSearchScreen> {
         label: Text(label),
         selected: isSelected,
         onSelected: (_) => _onFilterChanged(value),
-        selectedColor: AppTheme.primaryColor.withOpacity(0.2),
+        selectedColor: AppTheme.primaryColor.withValues(alpha: 0.2),
         checkmarkColor: AppTheme.primaryColor,
       ),
     );
@@ -436,7 +422,7 @@ class _MapSearchScreenState extends State<MapSearchScreen> {
             // Indicador de carregamento
             if (_isLoading)
               Container(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
                 child: const Center(
                   child: LoadingWidget(),
                 ),
@@ -457,7 +443,7 @@ class _MapSearchScreenState extends State<MapSearchScreen> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, -4),
           ),

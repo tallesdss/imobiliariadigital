@@ -1,15 +1,11 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import '../models/property_model.dart';
 import '../models/search_model.dart';
 
 class ImageSearchService {
-  static const String _mockApiEndpoint = 'https://api.example.com/image-search';
   static const int _maxImageSize = 5 * 1024 * 1024; // 5MB
   static const List<String> _supportedFormats = ['jpg', 'jpeg', 'png', 'webp'];
 

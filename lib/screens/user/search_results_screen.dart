@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import '../../models/property_model.dart';
 import '../../models/search_model.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/common/loading_widget.dart';
-import '../../widgets/common/error_widget.dart';
 import '../../widgets/cards/property_card.dart';
 import 'property_detail_screen.dart';
 
