@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 import '../../models/property_model.dart';
-import '../../services/mock_data_service.dart';
+import '../../models/realtor_model.dart';
+import '../../services/property_service.dart';
+import '../../services/realtor_service.dart';
+import '../../services/upload_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_spacing.dart';
@@ -23,23 +27,57 @@ class _AdminPropertyFormScreenState extends State<AdminPropertyFormScreen> {
   final _addressController = TextEditingController();
   final _cityController = TextEditingController();
   final _stateController = TextEditingController();
+  final _zipCodeController = TextEditingController();
   final _areaController = TextEditingController();
   final _bedroomsController = TextEditingController();
   final _bathroomsController = TextEditingController();
   final _garageController = TextEditingController();
+  final _condoFeeController = TextEditingController();
+  final _iptuController = TextEditingController();
+  final _commercialAreaController = TextEditingController();
+  final _parkingSpacesController = TextEditingController();
+  final _elevatorsController = TextEditingController();
+  final _floorsController = TextEditingController();
 
   PropertyType _selectedType = PropertyType.apartment;
   PropertyStatus _selectedStatus = PropertyStatus.active;
+  PropertyTransactionType? _selectedTransactionType;
   String? _selectedRealtorId;
 
   List<String> _selectedPhotos = [];
   List<String> _selectedVideos = [];
+  List<Realtor> _realtors = [];
+  
+  bool _isSaving = false;
+  bool _isFeatured = false;
+  bool _isLaunch = false;
+  bool _acceptsProposal = false;
+  bool _hasFinancing = false;
 
   @override
   void initState() {
     super.initState();
+    _loadRealtors();
     if (widget.property != null) {
       _loadPropertyData();
+    }
+  }
+
+  Future<void> _loadRealtors() async {
+    try {
+      final realtors = await RealtorService.getActiveRealtors();
+      setState(() {
+        _realtors = realtors;
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao carregar corretores: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 
@@ -51,15 +89,29 @@ class _AdminPropertyFormScreenState extends State<AdminPropertyFormScreen> {
     _addressController.text = property.address;
     _cityController.text = property.city;
     _stateController.text = property.state;
+    _zipCodeController.text = property.zipCode;
     _areaController.text = property.attributes['area']?.toString() ?? '';
     _bedroomsController.text = property.attributes['bedrooms']?.toString() ?? '';
     _bathroomsController.text = property.attributes['bathrooms']?.toString() ?? '';
     _garageController.text = property.attributes['garage']?.toString() ?? '';
+    _condoFeeController.text = property.attributes['condo_fee']?.toString() ?? '';
+    _iptuController.text = property.attributes['iptu']?.toString() ?? '';
+    _commercialAreaController.text = property.attributes['commercial_area']?.toString() ?? '';
+    _parkingSpacesController.text = property.attributes['parking_spaces']?.toString() ?? '';
+    _elevatorsController.text = property.attributes['elevators']?.toString() ?? '';
+    _floorsController.text = property.attributes['floors']?.toString() ?? '';
+    
     _selectedType = property.type;
     _selectedStatus = property.status;
+    _selectedTransactionType = property.transactionType;
     _selectedRealtorId = property.realtorId;
     _selectedPhotos = List.from(property.photos);
     _selectedVideos = List.from(property.videos);
+    
+    _isFeatured = property.isFeatured;
+    _isLaunch = property.isLaunch;
+    _acceptsProposal = property.attributes['accepts_proposal'] == true;
+    _hasFinancing = property.attributes['has_financing'] == true;
   }
 
   @override
@@ -70,10 +122,17 @@ class _AdminPropertyFormScreenState extends State<AdminPropertyFormScreen> {
     _addressController.dispose();
     _cityController.dispose();
     _stateController.dispose();
+    _zipCodeController.dispose();
     _areaController.dispose();
     _bedroomsController.dispose();
     _bathroomsController.dispose();
     _garageController.dispose();
+    _condoFeeController.dispose();
+    _iptuController.dispose();
+    _commercialAreaController.dispose();
+    _parkingSpacesController.dispose();
+    _elevatorsController.dispose();
+    _floorsController.dispose();
     super.dispose();
   }
 
@@ -116,6 +175,10 @@ class _AdminPropertyFormScreenState extends State<AdminPropertyFormScreen> {
               const SizedBox(height: AppSpacing.xl),
               _buildMediaSection(),
               const SizedBox(height: AppSpacing.xl),
+              if (_selectedType == PropertyType.commercial) ...[
+                _buildCommercialAttributesSection(),
+                const SizedBox(height: AppSpacing.xl),
+              ],
               _buildStatusSection(),
               const SizedBox(height: AppSpacing.xl),
               _buildSaveButton(),
@@ -364,6 +427,74 @@ class _AdminPropertyFormScreenState extends State<AdminPropertyFormScreen> {
             ),
           ],
         ),
+        const SizedBox(height: AppSpacing.md),
+        Row(
+          children: [
+            Expanded(
+              child: TextFormField(
+                controller: _zipCodeController,
+                decoration: const InputDecoration(
+                  labelText: 'CEP',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'CEP é obrigatório';
+                  }
+                  return null;
+                },
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: TextFormField(
+                controller: _condoFeeController,
+                decoration: const InputDecoration(
+                  labelText: 'Condomínio (R\$)',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.md),
+        Row(
+          children: [
+            Expanded(
+              child: TextFormField(
+                controller: _iptuController,
+                decoration: const InputDecoration(
+                  labelText: 'IPTU Mensal (R\$)',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: DropdownButtonFormField<PropertyTransactionType>(
+                initialValue: _selectedTransactionType,
+                decoration: const InputDecoration(
+                  labelText: 'Tipo de Transação',
+                  border: OutlineInputBorder(),
+                ),
+                items: PropertyTransactionType.values.map((type) {
+                  return DropdownMenuItem(
+                    value: type,
+                    child: Text(_getTransactionTypeDisplayName(type)),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedTransactionType = value;
+                  });
+                },
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -389,13 +520,29 @@ class _AdminPropertyFormScreenState extends State<AdminPropertyFormScreen> {
                 label: const Text('Adicionar Foto'),
               ),
             ),
-            const SizedBox(width: AppSpacing.md),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: _addMultiplePhotos,
+                icon: const Icon(Icons.photo_library),
+                label: const Text('Múltiplas Fotos'),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Row(
+          children: [
             Expanded(
               child: OutlinedButton.icon(
                 onPressed: _addVideo,
                 icon: const Icon(Icons.video_library),
                 label: const Text('Adicionar Vídeo'),
               ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Container(), // Espaço vazio para manter layout
             ),
           ],
         ),
@@ -484,12 +631,12 @@ class _AdminPropertyFormScreenState extends State<AdminPropertyFormScreen> {
     );
   }
 
-  Widget _buildStatusSection() {
+  Widget _buildCommercialAttributesSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Status e Corretor',
+          'Atributos Comerciais',
           style: AppTypography.h6.copyWith(
             color: AppColors.primary,
             fontWeight: FontWeight.bold,
@@ -499,7 +646,74 @@ class _AdminPropertyFormScreenState extends State<AdminPropertyFormScreen> {
         Row(
           children: [
             Expanded(
-              child:               DropdownButtonFormField<PropertyStatus>(
+              child: TextFormField(
+                controller: _commercialAreaController,
+                decoration: const InputDecoration(
+                  labelText: 'Área Comercial (m²)',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: TextFormField(
+                controller: _parkingSpacesController,
+                decoration: const InputDecoration(
+                  labelText: 'Vagas de Estacionamento',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.md),
+        Row(
+          children: [
+            Expanded(
+              child: TextFormField(
+                controller: _elevatorsController,
+                decoration: const InputDecoration(
+                  labelText: 'Número de Elevadores',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: TextFormField(
+                controller: _floorsController,
+                decoration: const InputDecoration(
+                  labelText: 'Número de Andares',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatusSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Status e Configurações',
+          style: AppTypography.h6.copyWith(
+            color: AppColors.primary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        Row(
+          children: [
+            Expanded(
+              child: DropdownButtonFormField<PropertyStatus>(
                 initialValue: _selectedStatus,
                 decoration: const InputDecoration(
                   labelText: 'Status',
@@ -520,13 +734,13 @@ class _AdminPropertyFormScreenState extends State<AdminPropertyFormScreen> {
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
-              child:               DropdownButtonFormField<String>(
+              child: DropdownButtonFormField<String>(
                 initialValue: _selectedRealtorId,
                 decoration: const InputDecoration(
                   labelText: 'Corretor Responsável',
                   border: OutlineInputBorder(),
                 ),
-                items: MockDataService.realtors.map((realtor) {
+                items: _realtors.map((realtor) {
                   return DropdownMenuItem(
                     value: realtor.id,
                     child: Text(realtor.name),
@@ -547,6 +761,68 @@ class _AdminPropertyFormScreenState extends State<AdminPropertyFormScreen> {
             ),
           ],
         ),
+        const SizedBox(height: AppSpacing.md),
+        Row(
+          children: [
+            Expanded(
+              child: CheckboxListTile(
+                title: const Text('Destaque'),
+                subtitle: const Text('Exibir em destaque na home'),
+                value: _isFeatured,
+                onChanged: (value) {
+                  setState(() {
+                    _isFeatured = value ?? false;
+                  });
+                },
+                controlAffinity: ListTileControlAffinity.leading,
+              ),
+            ),
+            Expanded(
+              child: CheckboxListTile(
+                title: const Text('Lançamento'),
+                subtitle: const Text('Marcar como lançamento'),
+                value: _isLaunch,
+                onChanged: (value) {
+                  setState(() {
+                    _isLaunch = value ?? false;
+                  });
+                },
+                controlAffinity: ListTileControlAffinity.leading,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.md),
+        Row(
+          children: [
+            Expanded(
+              child: CheckboxListTile(
+                title: const Text('Aceita Proposta'),
+                subtitle: const Text('Permitir propostas de preço'),
+                value: _acceptsProposal,
+                onChanged: (value) {
+                  setState(() {
+                    _acceptsProposal = value ?? false;
+                  });
+                },
+                controlAffinity: ListTileControlAffinity.leading,
+              ),
+            ),
+            Expanded(
+              child: CheckboxListTile(
+                title: const Text('Tem Financiamento'),
+                subtitle: const Text('Disponível para financiamento'),
+                value: _hasFinancing,
+                onChanged: (value) {
+                  setState(() {
+                    _hasFinancing = value ?? false;
+                  });
+                },
+                controlAffinity: ListTileControlAffinity.leading,
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -555,95 +831,203 @@ class _AdminPropertyFormScreenState extends State<AdminPropertyFormScreen> {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: _saveProperty,
+        onPressed: _isSaving ? null : _saveProperty,
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: AppColors.textOnPrimary,
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
         ),
-        child: Text(
-          widget.property != null ? 'Atualizar Imóvel' : 'Cadastrar Imóvel',
-          style: AppTypography.bodyLarge.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        child: _isSaving
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.textOnPrimary),
+                ),
+              )
+            : Text(
+                widget.property != null ? 'Atualizar Imóvel' : 'Cadastrar Imóvel',
+                style: AppTypography.bodyLarge.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
       ),
     );
   }
 
-  void _addPhoto() {
-    // Mock: adicionar foto fake
-    setState(() {
-      _selectedPhotos.add('https://picsum.photos/400/300?random=${_selectedPhotos.length}');
-    });
+  Future<void> _addPhoto() async {
+    try {
+      final url = await UploadService.pickAndUploadImage();
+      if (url != null) {
+        setState(() {
+          _selectedPhotos.add(url);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao adicionar foto: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _addMultiplePhotos() async {
+    try {
+      final urls = await UploadService.pickAndUploadMultipleImages();
+      if (urls.isNotEmpty) {
+        setState(() {
+          _selectedPhotos.addAll(urls);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao adicionar fotos: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
   }
 
   void _removePhoto(int index) {
+    final photoUrl = _selectedPhotos[index];
     setState(() {
       _selectedPhotos.removeAt(index);
     });
+    
+    // Remove o arquivo do storage em background
+    UploadService.deleteFile(photoUrl);
   }
 
-  void _addVideo() {
-    // Mock: adicionar vídeo fake
-    setState(() {
-      _selectedVideos.add('Vídeo ${_selectedVideos.length + 1} - Tour Virtual');
-    });
+  Future<void> _addVideo() async {
+    try {
+      final url = await UploadService.pickAndUploadVideo();
+      if (url != null) {
+        setState(() {
+          _selectedVideos.add(url);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao adicionar vídeo: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
   }
 
   void _removeVideo(int index) {
+    final videoUrl = _selectedVideos[index];
     setState(() {
       _selectedVideos.removeAt(index);
     });
+    
+    // Remove o arquivo do storage em background
+    UploadService.deleteFile(videoUrl);
   }
 
-  void _saveProperty() {
-    if (_formKey.currentState!.validate()) {
-      // Mock: salvar imóvel
-      final selectedRealtor = MockDataService.realtors
-          .firstWhere((r) => r.id == _selectedRealtorId);
+  Future<void> _saveProperty() async {
+    if (!_formKey.currentState!.validate()) return;
+    
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      final selectedRealtor = _realtors.firstWhere((r) => r.id == _selectedRealtorId);
       
-      Property(
-        id: widget.property?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
-        title: _titleController.text,
-        description: _descriptionController.text,
+      // Preparar atributos do imóvel
+      final attributes = <String, dynamic>{
+        'area': int.tryParse(_areaController.text) ?? 0,
+        'bedrooms': int.tryParse(_bedroomsController.text) ?? 0,
+        'bathrooms': int.tryParse(_bathroomsController.text) ?? 0,
+        'garage': int.tryParse(_garageController.text) ?? 0,
+        'condo_fee': double.tryParse(_condoFeeController.text),
+        'iptu': double.tryParse(_iptuController.text),
+        'accepts_proposal': _acceptsProposal,
+        'has_financing': _hasFinancing,
+      };
+
+      // Adicionar atributos específicos para imóveis comerciais
+      if (_selectedType == PropertyType.commercial) {
+        attributes['commercial_area'] = int.tryParse(_commercialAreaController.text);
+        attributes['parking_spaces'] = int.tryParse(_parkingSpacesController.text);
+        attributes['elevators'] = int.tryParse(_elevatorsController.text);
+        attributes['floors'] = int.tryParse(_floorsController.text);
+      }
+
+      final property = Property(
+        id: widget.property?.id ?? const Uuid().v4(),
+        title: _titleController.text.trim(),
+        description: _descriptionController.text.trim(),
         price: double.parse(_priceController.text),
         type: _selectedType,
         status: _selectedStatus,
-        address: _addressController.text,
-        city: _cityController.text,
-        state: _stateController.text,
-        zipCode: '00000-000', // Mock zipCode
+        transactionType: _selectedTransactionType,
+        address: _addressController.text.trim(),
+        city: _cityController.text.trim(),
+        state: _stateController.text.trim(),
+        zipCode: _zipCodeController.text.trim(),
         photos: _selectedPhotos,
         videos: _selectedVideos,
-        attributes: {
-          'area': int.parse(_areaController.text),
-          'bedrooms': int.parse(_bedroomsController.text),
-          'bathrooms': int.parse(_bathroomsController.text),
-          'garage': int.parse(_garageController.text),
-        },
+        attributes: attributes,
         realtorId: _selectedRealtorId!,
         realtorName: selectedRealtor.name,
         realtorPhone: selectedRealtor.phone,
         adminContact: 'admin@imobiliariadigital.com',
         createdAt: widget.property?.createdAt ?? DateTime.now(),
         updatedAt: DateTime.now(),
+        isFeatured: _isFeatured,
+        isLaunch: _isLaunch,
       );
 
-      // Simular salvamento
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            widget.property != null 
-                ? 'Imóvel atualizado com sucesso!' 
-                : 'Imóvel cadastrado com sucesso!',
+      // Salvar no banco de dados
+      if (widget.property != null) {
+        await PropertyService.updateProperty(property);
+      } else {
+        await PropertyService.createProperty(property);
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              widget.property != null 
+                  ? 'Imóvel atualizado com sucesso!' 
+                  : 'Imóvel cadastrado com sucesso!',
+            ),
+            backgroundColor: AppColors.success,
           ),
-          backgroundColor: AppColors.success,
-        ),
-      );
+        );
 
-      // Voltar para a tela anterior
-      Navigator.of(context).pop();
+        // Voltar para a tela anterior
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao salvar imóvel: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
     }
   }
 
@@ -670,6 +1054,17 @@ class _AdminPropertyFormScreenState extends State<AdminPropertyFormScreen> {
         return 'Arquivado';
       case PropertyStatus.suspended:
         return 'Suspenso';
+    }
+  }
+
+  String _getTransactionTypeDisplayName(PropertyTransactionType type) {
+    switch (type) {
+      case PropertyTransactionType.sale:
+        return 'Venda';
+      case PropertyTransactionType.rent:
+        return 'Aluguel';
+      case PropertyTransactionType.daily:
+        return 'Temporada';
     }
   }
 }

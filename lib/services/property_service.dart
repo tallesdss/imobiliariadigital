@@ -177,6 +177,93 @@ class PropertyService {
     }
   }
 
+  /// Cria um novo imóvel
+  static Future<Property> createProperty(Property property) async {
+    try {
+      final propertyData = _propertyToJson(property);
+      
+      final response = await SupabaseService.client
+          .from(SupabaseConfig.propertiesTable)
+          .insert(propertyData)
+          .select()
+          .single();
+      
+      return Property.fromJson(response);
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Erro ao criar imóvel: $e');
+      }
+      throw Exception('Erro ao criar imóvel. Tente novamente.');
+    }
+  }
+
+  /// Atualiza um imóvel existente
+  static Future<Property> updateProperty(Property property) async {
+    try {
+      final propertyData = _propertyToJson(property);
+      
+      final response = await SupabaseService.client
+          .from(SupabaseConfig.propertiesTable)
+          .update(propertyData)
+          .eq('id', property.id)
+          .select()
+          .single();
+      
+      return Property.fromJson(response);
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Erro ao atualizar imóvel: $e');
+      }
+      throw Exception('Erro ao atualizar imóvel. Tente novamente.');
+    }
+  }
+
+  /// Remove um imóvel (soft delete - marca como arquivado)
+  static Future<void> deleteProperty(String id) async {
+    try {
+      await SupabaseService.client
+          .from(SupabaseConfig.propertiesTable)
+          .update({
+            'status': 'arquivado',
+            'data_atualizacao': DateTime.now().toIso8601String(),
+          })
+          .eq('id', id);
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Erro ao remover imóvel: $e');
+      }
+      throw Exception('Erro ao remover imóvel. Tente novamente.');
+    }
+  }
+
+  /// Converte Property para formato do banco de dados
+  static Map<String, dynamic> _propertyToJson(Property property) {
+    return {
+      'id': property.id,
+      'titulo': property.title,
+      'descricao': property.description,
+      'preco': property.price,
+      'tipo_imovel': _getTypeString(property.type),
+      'status': _getStatusString(property.status),
+      'tipo_transacao': property.transactionType != null ? _getTransactionTypeString(property.transactionType!) : null,
+      'endereco': property.address,
+      'cidade': property.city,
+      'estado': property.state,
+      'cep': property.zipCode,
+      'fotos': property.photos,
+      'videos': property.videos,
+      'atributos': property.attributes,
+      'corretor_id': property.realtorId,
+      'nome_corretor': property.realtorName,
+      'telefone_corretor': property.realtorPhone,
+      'contato_admin': property.adminContact,
+      'data_criacao': property.createdAt.toIso8601String(),
+      'data_atualizacao': property.updatedAt.toIso8601String(),
+      'destaque': property.isFeatured,
+      'lancamento': property.isLaunch,
+    };
+  }
+
   static String _getTypeString(PropertyType type) {
     switch (type) {
       case PropertyType.house:
@@ -187,6 +274,30 @@ class PropertyService {
         return 'comercial';
       case PropertyType.land:
         return 'terreno';
+    }
+  }
+
+  static String _getStatusString(PropertyStatus status) {
+    switch (status) {
+      case PropertyStatus.active:
+        return 'ativo';
+      case PropertyStatus.sold:
+        return 'vendido';
+      case PropertyStatus.archived:
+        return 'arquivado';
+      case PropertyStatus.suspended:
+        return 'suspenso';
+    }
+  }
+
+  static String _getTransactionTypeString(PropertyTransactionType transactionType) {
+    switch (transactionType) {
+      case PropertyTransactionType.sale:
+        return 'venda';
+      case PropertyTransactionType.rent:
+        return 'aluguel';
+      case PropertyTransactionType.daily:
+        return 'temporada';
     }
   }
 }
