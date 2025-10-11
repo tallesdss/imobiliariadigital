@@ -4,6 +4,8 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_spacing.dart';
 import '../../widgets/common/custom_drawer.dart';
+import 'realtor_support_tickets_screen.dart';
+import 'interactive_tutorial_screen.dart';
 
 class RealtorHelpScreen extends StatefulWidget {
   const RealtorHelpScreen({super.key});
@@ -447,17 +449,10 @@ class _RealtorHelpScreenState extends State<RealtorHelpScreen> {
   }
 
   void _showTutorial() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Tutorial Inicial'),
-        content: const Text('Em breve disponível!'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const InteractiveTutorialScreen(),
       ),
     );
   }
@@ -479,33 +474,19 @@ class _RealtorHelpScreenState extends State<RealtorHelpScreen> {
   }
 
   void _openLiveChat() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Chat ao Vivo'),
-        content: const Text('Em breve disponível!'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const RealtorSupportTicketsScreen(),
       ),
     );
   }
 
   void _reportProblem() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Reportar Problema'),
-        content: const Text('Em breve disponível!'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const RealtorSupportTicketsScreen(),
       ),
     );
   }
