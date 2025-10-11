@@ -4,8 +4,11 @@ import '../../models/realtor_model.dart';
 import '../../services/mock_data_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
+import '../../theme/app_breakpoints.dart';
 import '../../widgets/common/fixed_sidebar.dart';
 import '../../widgets/common/custom_drawer.dart';
+import '../../widgets/common/responsive_screen.dart';
+import '../../widgets/common/responsive_layout.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -15,7 +18,6 @@ class AdminDashboardScreen extends StatefulWidget {
 }
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
-  bool _sidebarVisible = true;
 
   @override
   Widget build(BuildContext context) {
@@ -31,57 +33,20 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     // Ranking de corretores
     final realtorRanking = _getRealtorRanking(realtors, properties);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Dashboard Administrativo'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.textOnPrimary,
-        actions: [
-          // Botão para alternar sidebar
-          IconButton(
-            onPressed: () {
-              setState(() {
-                _sidebarVisible = !_sidebarVisible;
-              });
-            },
-            icon: Icon(_sidebarVisible ? Icons.menu_open : Icons.menu),
-            tooltip: _sidebarVisible ? 'Ocultar menu' : 'Mostrar menu',
-          ),
-        ],
-      ),
-      body: Row(
-        children: [
-          // Sidebar fixa de navegação
-          FixedSidebar(
-            type: SidebarType.navigation,
-            userType: DrawerUserType.admin,
-            userName: 'Administrador',
-            userEmail: 'admin@imobiliaria.com',
-            currentRoute: '/admin/dashboard',
-            isVisible: _sidebarVisible,
-            onToggleVisibility: () {
-              setState(() {
-                _sidebarVisible = !_sidebarVisible;
-              });
-            },
-          ),
-          
-          // Conteúdo principal
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildOverviewSection(activeProperties, soldProperties, archivedProperties, activeRealtors),
-                  const SizedBox(height: 24),
-                  _buildRealtorRankingSection(realtorRanking),
-                  const SizedBox(height: 24),
-                  _buildPerformanceChartSection(),
-                ],
-              ),
-            ),
-          ),
+    return ResponsiveScreen(
+      title: 'Dashboard Administrativo',
+      sidebarType: SidebarType.navigation,
+      userType: DrawerUserType.admin,
+      userName: 'Administrador',
+      userEmail: 'admin@imobiliaria.com',
+      currentRoute: '/admin/dashboard',
+      showSidebar: !context.isMobile,
+      child: ResponsiveDashboard(
+        title: 'Visão Geral',
+        cards: [
+          _buildOverviewSection(activeProperties, soldProperties, archivedProperties, activeRealtors),
+          _buildRealtorRankingSection(realtorRanking),
+          _buildPerformanceChartSection(),
         ],
       ),
     );
@@ -99,83 +64,67 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        Row(
+        ResponsiveGrid(
           children: [
-            Expanded(
-              child: _buildStatCard(
-                'Imóveis Ativos',
-                activeProperties.toString(),
-                Icons.home_work_outlined,
-                AppColors.primary,
-                'Disponíveis para venda',
-              ),
+            _buildStatCard(
+              'Imóveis Ativos',
+              activeProperties.toString(),
+              Icons.home_work_outlined,
+              AppColors.primary,
+              'Disponíveis para venda',
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildStatCard(
-                'Vendidos',
-                soldProperties.toString(),
-                Icons.check_circle_outline,
-                AppColors.success,
-                'Negócios concluídos',
-              ),
+            _buildStatCard(
+              'Vendidos',
+              soldProperties.toString(),
+              Icons.check_circle_outline,
+              AppColors.success,
+              'Negócios concluídos',
+            ),
+            _buildStatCard(
+              'Arquivados',
+              archivedProperties.toString(),
+              Icons.archive_outlined,
+              AppColors.warning,
+              'Fora de circulação',
+            ),
+            _buildStatCard(
+              'Corretores Ativos',
+              activeRealtors.toString(),
+              Icons.people_outline,
+              AppColors.info,
+              'Profissionais ativos',
             ),
           ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildStatCard(
-                'Arquivados',
-                archivedProperties.toString(),
-                Icons.archive_outlined,
-                AppColors.warning,
-                'Fora de circulação',
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildStatCard(
-                'Corretores Ativos',
-                activeRealtors.toString(),
-                Icons.people_outline,
-                AppColors.info,
-                'Profissionais ativos',
-              ),
-            ),
-          ],
+          mobileColumns: 1,
+          tabletColumns: 2,
+          desktopColumns: 4,
+          spacing: context.responsiveSpacing(mobile: 12, tablet: 16, desktop: 16),
+          runSpacing: context.responsiveSpacing(mobile: 12, tablet: 16, desktop: 16),
         ),
       ],
     );
   }
 
   Widget _buildStatCard(String title, String value, IconData icon, Color color, String subtitle) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
+    return Card(
+      child: Padding(
+        padding: context.responsivePadding,
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(context.responsiveSpacing(mobile: 8, tablet: 10, desktop: 12)),
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(icon, color: color, size: 24),
+                child: Icon(
+                  icon, 
+                  color: color, 
+                  size: context.responsiveFontSize(mobile: 20, tablet: 24, desktop: 28),
+                ),
               ),
               const Spacer(),
               Text(
@@ -183,15 +132,17 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 style: AppTypography.h4.copyWith(
                   color: color,
                   fontWeight: FontWeight.bold,
+                  fontSize: context.responsiveFontSize(mobile: 20, tablet: 24, desktop: 28),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: context.responsiveSpacing(mobile: 8, tablet: 12, desktop: 16)),
           Text(
             title,
             style: AppTypography.h6.copyWith(
               fontWeight: FontWeight.w600,
+              fontSize: context.responsiveFontSize(mobile: 14, tablet: 16, desktop: 18),
             ),
           ),
           const SizedBox(height: 4),
@@ -199,73 +150,73 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             subtitle,
             style: AppTypography.bodySmall.copyWith(
               color: AppColors.textSecondary,
+              fontSize: context.responsiveFontSize(mobile: 12, tablet: 14, desktop: 16),
             ),
           ),
         ],
+        ),
       ),
     );
   }
 
   Widget _buildRealtorRankingSection(List<Map<String, dynamic>> realtorRanking) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Ranking de Corretores',
-          style: AppTypography.h5.copyWith(
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+    return Card(
+      child: Padding(
+        padding: context.responsivePadding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Ranking de Corretores',
+              style: AppTypography.h5.copyWith(
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
               ),
-            ],
-          ),
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.emoji_events, color: AppColors.primary),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Top Performers',
-                      style: AppTypography.h6.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.bold,
-                      ),
+            ),
+            SizedBox(height: context.responsiveSpacing()),
+            Container(
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
                     ),
-                  ],
-                ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.emoji_events, color: AppColors.primary),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Top Performers',
+                          style: AppTypography.h6.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: realtorRanking.length,
+                    separatorBuilder: (context, index) => const Divider(height: 1),
+                    itemBuilder: (context, index) {
+                      final realtor = realtorRanking[index];
+                      return _buildRealtorRankingItem(realtor, index + 1);
+                    },
+                  ),
+                ],
               ),
-              ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: realtorRanking.length,
-                separatorBuilder: (context, index) => const Divider(height: 1),
-                itemBuilder: (context, index) {
-                  final realtor = realtorRanking[index];
-                  return _buildRealtorRankingItem(realtor, index + 1);
-                },
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 

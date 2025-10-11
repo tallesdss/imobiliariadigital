@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_spacing.dart';
+import '../../theme/app_breakpoints.dart';
 import '../../models/filter_model.dart';
 import 'custom_drawer.dart';
 
@@ -44,8 +45,10 @@ class FixedSidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isTablet = screenWidth > 600;
+    // Em mobile, usar drawer ao invés de sidebar fixa
+    if (context.isMobile) {
+      return const SizedBox.shrink(); // Será renderizado como drawer
+    }
     
     if (!isVisible) {
       return Container(
@@ -94,7 +97,7 @@ class FixedSidebar extends StatelessWidget {
     }
 
     return Container(
-      width: isTablet ? 320 : 280,
+      width: context.sidebarWidth,
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(
@@ -103,16 +106,16 @@ class FixedSidebar extends StatelessWidget {
       ),
       child: Column(
         children: [
-          _buildHeader(context, isTablet),
+          _buildHeader(context),
           Expanded(
-            child: _buildContent(context, isTablet),
+            child: _buildContent(context),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context, bool isTablet) {
+  Widget _buildHeader(BuildContext context) {
     return Container(
       height: 60,
       decoration: const BoxDecoration(
@@ -155,24 +158,24 @@ class FixedSidebar extends StatelessWidget {
     );
   }
 
-  Widget _buildContent(BuildContext context, bool isTablet) {
+  Widget _buildContent(BuildContext context) {
     switch (type) {
       case SidebarType.navigation:
-        return _buildNavigationContent(context, isTablet);
+        return _buildNavigationContent(context);
       case SidebarType.filters:
-        return _buildFiltersContent(context, isTablet);
+        return _buildFiltersContent(context);
       case SidebarType.combined:
-        return _buildCombinedContent(context, isTablet);
+        return _buildCombinedContent(context);
     }
   }
 
-  Widget _buildNavigationContent(BuildContext context, bool isTablet) {
+  Widget _buildNavigationContent(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
         children: [
           // Header do usuário
           if (userName != null && userEmail != null)
-            _buildUserHeader(isTablet),
+            _buildUserHeader(context),
           
           // Menu items
           ..._buildMenuItems(context),
@@ -185,7 +188,7 @@ class FixedSidebar extends StatelessWidget {
     );
   }
 
-  Widget _buildFiltersContent(BuildContext context, bool isTablet) {
+  Widget _buildFiltersContent(BuildContext context) {
     if (filters == null || onFiltersChanged == null) {
       return const Center(
         child: Text('Filtros não disponíveis'),
@@ -196,17 +199,16 @@ class FixedSidebar extends StatelessWidget {
       filters: filters!,
       onFiltersChanged: onFiltersChanged!,
       onClearFilters: onClearFilters ?? () {},
-      isTablet: isTablet,
     );
   }
 
-  Widget _buildCombinedContent(BuildContext context, bool isTablet) {
+  Widget _buildCombinedContent(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
         children: [
           // Header do usuário
           if (userName != null && userEmail != null)
-            _buildUserHeader(isTablet),
+            _buildUserHeader(context),
           
           // Menu items
           ..._buildMenuItems(context),
@@ -220,7 +222,6 @@ class FixedSidebar extends StatelessWidget {
               filters: filters!,
               onFiltersChanged: onFiltersChanged!,
               onClearFilters: onClearFilters ?? () {},
-              isTablet: isTablet,
             ),
           
           const Divider(),
@@ -230,9 +231,9 @@ class FixedSidebar extends StatelessWidget {
     );
   }
 
-  Widget _buildUserHeader(bool isTablet) {
+  Widget _buildUserHeader(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(isTablet ? 20 : 16),
+      padding: context.responsivePadding,
       decoration: const BoxDecoration(
         gradient: AppColors.primaryGradient,
       ),
@@ -242,7 +243,7 @@ class FixedSidebar extends StatelessWidget {
           Row(
             children: [
               CircleAvatar(
-                radius: isTablet ? 32 : 24,
+                radius: context.isTablet ? 32 : 24,
                 backgroundColor: Colors.white.withValues(alpha: 0.2),
                 backgroundImage: userAvatar != null
                     ? NetworkImage(userAvatar!)
@@ -641,14 +642,12 @@ class FilterSidebarContent extends StatefulWidget {
   final PropertyFilters filters;
   final Function(PropertyFilters) onFiltersChanged;
   final VoidCallback onClearFilters;
-  final bool isTablet;
 
   const FilterSidebarContent({
     super.key,
     required this.filters,
     required this.onFiltersChanged,
     required this.onClearFilters,
-    required this.isTablet,
   });
 
   @override
@@ -713,7 +712,7 @@ class _FilterSidebarContentState extends State<FilterSidebarContent> {
         // Filtros
         Expanded(
           child: SingleChildScrollView(
-            padding: EdgeInsets.all(widget.isTablet ? 20 : 16),
+            padding: context.responsivePadding,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -733,7 +732,7 @@ class _FilterSidebarContentState extends State<FilterSidebarContent> {
         
         // Botões aplicar e limpar
         Container(
-          padding: EdgeInsets.all(widget.isTablet ? 20 : 16),
+          padding: context.responsivePadding,
           decoration: const BoxDecoration(
             color: AppColors.surface,
             border: Border(
@@ -754,7 +753,7 @@ class _FilterSidebarContentState extends State<FilterSidebarContent> {
                         foregroundColor: AppColors.error,
                         side: const BorderSide(color: AppColors.error),
                         padding: EdgeInsets.symmetric(
-                          vertical: widget.isTablet ? 16 : 12,
+                          vertical: context.responsiveSpacing(mobile: 12, tablet: 16, desktop: 16),
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -779,7 +778,7 @@ class _FilterSidebarContentState extends State<FilterSidebarContent> {
                     backgroundColor: AppColors.primary,
                     foregroundColor: AppColors.textOnPrimary,
                     padding: EdgeInsets.symmetric(
-                      vertical: widget.isTablet ? 16 : 12,
+                      vertical: context.responsiveSpacing(mobile: 12, tablet: 16, desktop: 16),
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),

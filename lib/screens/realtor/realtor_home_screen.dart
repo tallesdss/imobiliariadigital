@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_spacing.dart';
+import '../../theme/app_breakpoints.dart';
 import '../../services/mock_data_service.dart';
 import '../../services/notification_service.dart';
 import '../../models/property_model.dart';
 import '../../widgets/common/fixed_sidebar.dart';
 import '../../widgets/common/custom_drawer.dart';
 import '../../widgets/common/status_badge.dart';
+import '../../widgets/common/responsive_screen.dart';
+import '../../widgets/common/responsive_layout.dart';
 import 'property_form_screen.dart';
 import '../user/notifications_screen.dart';
 
@@ -21,7 +24,6 @@ class RealtorHomeScreen extends StatefulWidget {
 class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
   List<Property> _properties = [];
   bool _isLoading = true;
-  bool _sidebarVisible = true;
   final String _realtorId = 'realtor1'; // Mock - usuário logado
   int _unreadNotificationsCount = 0;
 
@@ -184,102 +186,66 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Meus Imóveis'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.textOnPrimary,
-        actions: [
-          // Botão de notificações
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const NotificationsScreen()),
-              ).then((_) {
-                // Recarregar contador de notificações quando voltar
-                _loadNotifications();
-              });
-            },
-            icon: Stack(
-              children: [
-                const Icon(Icons.notifications_outlined),
-                if (_unreadNotificationsCount > 0)
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
+    return ResponsiveScreen(
+      title: 'Meus Imóveis',
+      sidebarType: SidebarType.navigation,
+      userType: DrawerUserType.realtor,
+      userName: 'Carlos Oliveira',
+      userEmail: 'carlos@imobiliaria.com',
+      userCreci: 'CRECI-SP 12345',
+      currentRoute: '/realtor',
+      showSidebar: !context.isMobile,
+      actions: [
+        // Botão de notificações
+        IconButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+            ).then((_) {
+              // Recarregar contador de notificações quando voltar
+              _loadNotifications();
+            });
+          },
+          icon: Stack(
+            children: [
+              const Icon(Icons.notifications_outlined),
+              if (_unreadNotificationsCount > 0)
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: const BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Text(
+                      '$_unreadNotificationsCount',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
                       ),
-                      constraints: const BoxConstraints(
-                        minWidth: 16,
-                        minHeight: 16,
-                      ),
-                      child: Text(
-                        '$_unreadNotificationsCount',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
-          // Botão para alternar sidebar
-          IconButton(
-            onPressed: () {
-              setState(() {
-                _sidebarVisible = !_sidebarVisible;
-              });
-            },
-            icon: Icon(_sidebarVisible ? Icons.menu_open : Icons.menu),
-            tooltip: _sidebarVisible ? 'Ocultar menu' : 'Mostrar menu',
-          ),
-          IconButton(
-            onPressed: () => _navigateToPropertyForm(),
-            icon: const Icon(Icons.add),
-          ),
-        ],
-      ),
-      body: Row(
-        children: [
-          // Sidebar fixa de navegação
-          FixedSidebar(
-            type: SidebarType.navigation,
-            userType: DrawerUserType.realtor,
-            userName: 'Carlos Oliveira',
-            userEmail: 'carlos@imobiliaria.com',
-            userCreci: 'CRECI-SP 12345',
-            currentRoute: '/realtor',
-            isVisible: _sidebarVisible,
-            onToggleVisibility: () {
-              setState(() {
-                _sidebarVisible = !_sidebarVisible;
-              });
-            },
-          ),
-          
-          // Conteúdo principal
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _buildContent(),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _navigateToPropertyForm(),
-        backgroundColor: AppColors.primary,
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
+        ),
+        IconButton(
+          onPressed: () => _navigateToPropertyForm(),
+          icon: const Icon(Icons.add),
+        ),
+      ],
+      child: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _buildContent(),
     );
   }
 
@@ -289,31 +255,38 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.business_outlined,
-              size: 80,
+              size: context.responsiveFontSize(mobile: 60, tablet: 80, desktop: 100),
               color: AppColors.textHint,
             ),
-            const SizedBox(height: AppSpacing.lg),
+            SizedBox(height: context.responsiveSpacing(mobile: 16, tablet: 24, desktop: 32)),
             Text(
               'Nenhum imóvel cadastrado',
-              style: AppTypography.h6.copyWith(color: AppColors.textSecondary),
+              style: AppTypography.h6.copyWith(
+                color: AppColors.textSecondary,
+                fontSize: context.responsiveFontSize(mobile: 16, tablet: 18, desktop: 20),
+              ),
             ),
-            const SizedBox(height: AppSpacing.sm),
+            SizedBox(height: context.responsiveSpacing(mobile: 8, tablet: 12, desktop: 16)),
             Text(
               'Comece cadastrando seu primeiro imóvel',
               style: AppTypography.bodyMedium.copyWith(
                 color: AppColors.textHint,
+                fontSize: context.responsiveFontSize(mobile: 14, tablet: 16, desktop: 18),
               ),
             ),
-            const SizedBox(height: AppSpacing.xl),
-            ElevatedButton.icon(
+            SizedBox(height: context.responsiveSpacing(mobile: 24, tablet: 32, desktop: 40)),
+            ResponsiveButton(
               onPressed: () => _navigateToPropertyForm(),
-              icon: const Icon(Icons.add),
-              label: const Text('Cadastrar Imóvel'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
+              isFullWidth: context.isMobile,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.add),
+                  const SizedBox(width: 8),
+                  const Text('Cadastrar Imóvel'),
+                ],
               ),
             ),
           ],
@@ -342,37 +315,24 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
 
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Row(
+      padding: context.responsivePadding,
+      child: ResponsiveGrid(
         children: [
-          Expanded(
-            child: _buildStatCard('Ativos', activeCount, AppColors.success),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: _buildStatCard('Vendidos', soldCount, AppColors.accent),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: _buildStatCard(
-              'Arquivados',
-              archivedCount,
-              AppColors.textHint,
-            ),
-          ),
+          _buildStatCard('Ativos', activeCount, AppColors.success),
+          _buildStatCard('Vendidos', soldCount, AppColors.accent),
+          _buildStatCard('Arquivados', archivedCount, AppColors.textHint),
         ],
+        mobileColumns: 1,
+        tabletColumns: 3,
+        desktopColumns: 3,
+        spacing: context.responsiveSpacing(mobile: 12, tablet: 16, desktop: 16),
+        runSpacing: context.responsiveSpacing(mobile: 12, tablet: 16, desktop: 16),
       ),
     );
   }
 
   Widget _buildStatCard(String label, int count, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
+    return ResponsiveCard(
       child: Column(
         children: [
           Text(
@@ -380,10 +340,17 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
             style: AppTypography.h4.copyWith(
               color: color,
               fontWeight: FontWeight.bold,
+              fontSize: context.responsiveFontSize(mobile: 20, tablet: 24, desktop: 28),
             ),
           ),
-          const SizedBox(height: 4),
-          Text(label, style: AppTypography.labelMedium.copyWith(color: color)),
+          SizedBox(height: context.responsiveSpacing(mobile: 4, tablet: 6, desktop: 8)),
+          Text(
+            label, 
+            style: AppTypography.labelMedium.copyWith(
+              color: color,
+              fontSize: context.responsiveFontSize(mobile: 12, tablet: 14, desktop: 16),
+            ),
+          ),
         ],
       ),
     );
@@ -391,7 +358,7 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
 
   Widget _buildPropertiesList() {
     return ListView.builder(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: context.responsivePadding,
       itemCount: _properties.length,
       itemBuilder: (context, index) {
         final property = _properties[index];
