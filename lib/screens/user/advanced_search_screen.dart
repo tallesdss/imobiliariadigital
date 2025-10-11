@@ -78,6 +78,8 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
   void _performSearch() async {
     if (!_formKey.currentState!.validate()) return;
 
+    if (!mounted) return;
+    
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -113,12 +115,12 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
 
       final results = await SearchService.searchProperties(query);
       
-      setState(() {
-        _isLoading = false;
-      });
-
-      // Navegar para tela de resultados
       if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        // Navegar para tela de resultados
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -130,14 +132,18 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
         );
       }
     } catch (e) {
-      setState(() {
-        _errorMessage = e.toString();
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString();
+          _isLoading = false;
+        });
+      }
     }
   }
 
   void _clearFilters() {
+    if (!mounted) return;
+    
     setState(() {
       _searchController.clear();
       _minPriceController.clear();
@@ -279,6 +285,7 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
               runSpacing: 8,
               children: [
                 _buildQuickFilterChip('Apartamento', () {
+                  if (!mounted) return;
                   setState(() {
                     if (_selectedPropertyTypes.contains(PropertyType.apartment)) {
                       _selectedPropertyTypes.remove(PropertyType.apartment);
@@ -288,6 +295,7 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
                   });
                 }, _selectedPropertyTypes.contains(PropertyType.apartment)),
                 _buildQuickFilterChip('Casa', () {
+                  if (!mounted) return;
                   setState(() {
                     if (_selectedPropertyTypes.contains(PropertyType.house)) {
                       _selectedPropertyTypes.remove(PropertyType.house);
@@ -297,21 +305,25 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
                   });
                 }, _selectedPropertyTypes.contains(PropertyType.house)),
                 _buildQuickFilterChip('Até R\$ 300k', () {
+                  if (!mounted) return;
                   setState(() {
                     _maxPriceController.text = '300000';
                   });
                 }, _maxPriceController.text == '300000'),
                 _buildQuickFilterChip('2+ Quartos', () {
+                  if (!mounted) return;
                   setState(() {
                     _minBedrooms = 2;
                   });
                 }, _minBedrooms == 2),
                 _buildQuickFilterChip('Com Garagem', () {
+                  if (!mounted) return;
                   setState(() {
                     _minParkingSpaces = 1;
                   });
                 }, _minParkingSpaces == 1),
                 _buildQuickFilterChip('Para Alugar', () {
+                  if (!mounted) return;
                   setState(() {
                     _selectedTransactionType = _selectedTransactionType == PropertyTransactionType.rent 
                         ? null 
@@ -391,6 +403,7 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
               label: Text(_getPropertyTypeLabel(type)),
               selected: isSelected,
               onSelected: (selected) {
+                if (!mounted) return;
                 setState(() {
                   if (selected) {
                     _selectedPropertyTypes.add(type);
@@ -489,7 +502,10 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
                     child: Text('${index + 1}'),
                   )),
                 ],
-                onChanged: (value) => setState(() => _minBedrooms = value),
+                onChanged: (value) {
+                  if (!mounted) return;
+                  setState(() => _minBedrooms = value);
+                },
               ),
             ),
             const SizedBox(width: 16),
@@ -507,7 +523,10 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
                     child: Text('${index + 1}'),
                   )),
                 ],
-                onChanged: (value) => setState(() => _maxBedrooms = value),
+                onChanged: (value) {
+                  if (!mounted) return;
+                  setState(() => _maxBedrooms = value);
+                },
               ),
             ),
           ],
@@ -529,7 +548,10 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
                     child: Text('${index + 1}'),
                   )),
                 ],
-                onChanged: (value) => setState(() => _minBathrooms = value),
+                onChanged: (value) {
+                  if (!mounted) return;
+                  setState(() => _minBathrooms = value);
+                },
               ),
             ),
             const SizedBox(width: 16),
@@ -547,7 +569,10 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
                     child: Text('$index'),
                   )),
                 ],
-                onChanged: (value) => setState(() => _minParkingSpaces = value),
+                onChanged: (value) {
+                  if (!mounted) return;
+                  setState(() => _minParkingSpaces = value);
+                },
               ),
             ),
           ],
@@ -583,7 +608,10 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
               child: Text('Temporada'),
             ),
           ],
-          onChanged: (value) => setState(() => _selectedTransactionType = value),
+          onChanged: (value) {
+            if (!mounted) return;
+            setState(() => _selectedTransactionType = value);
+          },
         ),
       ],
     );
@@ -602,22 +630,34 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
             FilterChip(
               label: const Text('Aceita Proposta'),
               selected: _acceptProposal,
-              onSelected: (selected) => setState(() => _acceptProposal = selected),
+              onSelected: (selected) {
+                if (!mounted) return;
+                setState(() => _acceptProposal = selected);
+              },
             ),
             FilterChip(
               label: const Text('Tem Financiamento'),
               selected: _hasFinancing,
-              onSelected: (selected) => setState(() => _hasFinancing = selected),
+              onSelected: (selected) {
+                if (!mounted) return;
+                setState(() => _hasFinancing = selected);
+              },
             ),
             FilterChip(
               label: const Text('Em Destaque'),
               selected: _isFeatured,
-              onSelected: (selected) => setState(() => _isFeatured = selected),
+              onSelected: (selected) {
+                if (!mounted) return;
+                setState(() => _isFeatured = selected);
+              },
             ),
             FilterChip(
               label: const Text('Lançamento'),
               selected: _isLaunch,
-              onSelected: (selected) => setState(() => _isLaunch = selected),
+              onSelected: (selected) {
+                if (!mounted) return;
+                setState(() => _isLaunch = selected);
+              },
             ),
           ],
         ),
@@ -645,7 +685,10 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
                   DropdownMenuItem(value: 'date', child: Text('Data')),
                   DropdownMenuItem(value: 'area', child: Text('Área')),
                 ],
-                onChanged: (value) => setState(() => _sortBy = value!),
+                onChanged: (value) {
+                  if (!mounted) return;
+                  setState(() => _sortBy = value!);
+                },
               ),
             ),
             const SizedBox(width: 16),
@@ -659,7 +702,10 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
                   DropdownMenuItem(value: false, child: Text('Decrescente')),
                   DropdownMenuItem(value: true, child: Text('Crescente')),
                 ],
-                onChanged: (value) => setState(() => _sortAscending = value!),
+                onChanged: (value) {
+                  if (!mounted) return;
+                  setState(() => _sortAscending = value!);
+                },
               ),
             ),
           ],

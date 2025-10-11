@@ -5,9 +5,7 @@ import '../../theme/app_spacing.dart';
 import '../../theme/app_breakpoints.dart';
 import '../../services/mock_data_service.dart';
 import '../../services/notification_service.dart';
-import '../../services/filter_service.dart';
 import '../../models/property_model.dart';
-import '../../models/filter_model.dart';
 import '../../widgets/common/fixed_sidebar.dart';
 import '../../widgets/common/custom_drawer.dart';
 import '../../widgets/common/status_badge.dart';
@@ -28,7 +26,6 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
   bool _isLoading = true;
   final String _realtorId = 'realtor1'; // Mock - usuário logado
   int _unreadNotificationsCount = 0;
-  RealtorPropertyFilters _filters = const RealtorPropertyFilters();
   bool _sidebarVisible = true;
 
   @override
@@ -46,35 +43,9 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
     Future.delayed(const Duration(milliseconds: 500), () {
       setState(() {
         _properties = MockDataService.getPropertiesByRealtor(_realtorId);
-        _applyFilters();
+        _filteredProperties = _properties;
         _isLoading = false;
       });
-    });
-  }
-
-  void _applyFilters() {
-    _filteredProperties = FilterService.applyRealtorFilters(_properties, _filters);
-  }
-
-  void _onFiltersChanged(PropertyFilters filters) {
-    // Converter PropertyFilters para RealtorPropertyFilters
-    setState(() {
-      _filters = RealtorPropertyFilters(
-        propertyTypes: filters.propertyTypes,
-        cities: filters.cities,
-        neighborhoods: filters.neighborhoods,
-        minPrice: filters.minPrice,
-        maxPrice: filters.maxPrice,
-        transactionType: filters.transactionType,
-      );
-      _applyFilters();
-    });
-  }
-
-  void _onClearFilters() {
-    setState(() {
-      _filters = const RealtorPropertyFilters();
-      _applyFilters();
     });
   }
 
@@ -223,27 +194,20 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
       appBar: _buildAppBar(),
       body: Row(
         children: [
-          // Sidebar fixa de filtros
+          // Sidebar fixa de navegação
           FixedSidebar(
-            type: SidebarType.filters,
+            type: SidebarType.navigation,
             currentRoute: '/realtor',
-            filters: PropertyFilters(
-              propertyTypes: _filters.propertyTypes,
-              cities: _filters.cities,
-              neighborhoods: _filters.neighborhoods,
-              minPrice: _filters.minPrice,
-              maxPrice: _filters.maxPrice,
-              transactionType: _filters.transactionType,
-            ),
-            onFiltersChanged: _onFiltersChanged,
-            onClearFilters: _onClearFilters,
+            userType: DrawerUserType.realtor,
+            userName: 'Carlos Oliveira',
+            userEmail: 'carlos@imobiliaria.com',
+            userCreci: 'CRECI-SP 12345',
             isVisible: _sidebarVisible,
             onToggleVisibility: () {
               setState(() {
                 _sidebarVisible = !_sidebarVisible;
               });
             },
-            userType: DrawerUserType.realtor,
           ),
           
           // Conteúdo principal
@@ -284,36 +248,8 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
             });
           },
           icon: Icon(_sidebarVisible ? Icons.menu_open : Icons.menu),
-          tooltip: _sidebarVisible ? 'Ocultar filtros' : 'Mostrar filtros',
+          tooltip: _sidebarVisible ? 'Ocultar menu' : 'Mostrar menu',
         ),
-        // Indicador de filtros ativos
-        if (_filters.hasActiveFilters)
-          Container(
-            margin: const EdgeInsets.only(right: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.accent,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.filter_list,
-                  color: AppColors.textOnPrimary,
-                  size: 16,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  'Filtros Ativos',
-                  style: AppTypography.labelSmall.copyWith(
-                    color: AppColors.textOnPrimary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
         // Botão de notificações
         IconButton(
           onPressed: () {
