@@ -100,8 +100,16 @@ class SupabaseService {
     String tableName,
     String id,
   ) async {
-    final result = await client.from(tableName).select().eq('id', id).single();
-    return result;
+    try {
+      final result = await client.from(tableName).select().eq('id', id).single();
+      return result;
+    } catch (e) {
+      // Se não encontrar o registro, retorna null em vez de lançar exceção
+      if (e.toString().contains('PGRST116')) {
+        return null; // Registro não encontrado
+      }
+      rethrow; // Re-lança outros erros
+    }
   }
 
   /// Escuta mudanças em tempo real em uma tabela

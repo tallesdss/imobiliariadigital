@@ -20,11 +20,28 @@ class AuthService extends ChangeNotifier {
 
   Future<void> initialize() async {
     _setLoading(true);
+    _clearError();
+    
     try {
+      if (kDebugMode) {
+        print('AuthService: Inicializando...');
+        print('AuthService: Supabase autenticado: ${SupabaseService.isAuthenticated}');
+      }
+      
       if (SupabaseService.isAuthenticated) {
         _currentUser = await _getUserFromSupabase();
+        if (kDebugMode) {
+          print('AuthService: Usuário carregado: ${_currentUser?.name}');
+        }
+      } else {
+        if (kDebugMode) {
+          print('AuthService: Usuário não autenticado');
+        }
       }
     } catch (e) {
+      if (kDebugMode) {
+        print('AuthService: Erro na inicialização: $e');
+      }
       _setError('Erro ao carregar dados do usuário: $e');
     } finally {
       _setLoading(false);
@@ -237,14 +254,34 @@ class AuthService extends ChangeNotifier {
   Future<app_user.User?> _getUserFromSupabase() async {
     try {
       final userId = SupabaseService.currentUserId;
-      if (userId == null) return null;
+      if (userId == null) {
+        if (kDebugMode) {
+          print('AuthService: Usuário não autenticado no Supabase');
+        }
+        return null;
+      }
+
+      if (kDebugMode) {
+        print('AuthService: Buscando dados do usuário com ID: $userId');
+      }
 
       final userData = await SupabaseService.getDataById('users', userId);
       if (userData != null) {
+        if (kDebugMode) {
+          print('AuthService: Dados do usuário encontrados: $userData');
+        }
         return app_user.User.fromJson(userData);
+      } else {
+        if (kDebugMode) {
+          print('AuthService: Nenhum dado encontrado na tabela users para o ID: $userId');
+        }
+        return null;
       }
-      return null;
     } catch (e) {
+      if (kDebugMode) {
+        print('AuthService: Erro ao buscar dados do usuário: $e');
+      }
+      _setError('Erro ao carregar dados do usuário: $e');
       return null;
     }
   }

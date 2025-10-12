@@ -39,6 +39,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
   }
 
+  Future<void> _refreshUserData() async {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    await authService.initialize();
+    if (mounted) {
+      _loadUserData();
+    }
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -112,15 +120,84 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         builder: (context, authService, child) {
           final user = authService.currentUser;
           
-          if (user == null) {
+          if (authService.isLoading) {
             return const Center(
               child: CircularProgressIndicator(),
             );
           }
+          
+          if (authService.error != null) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: 64,
+                    color: AppColors.error,
+                  ),
+                  AppSpacing.verticalMD,
+                  Text(
+                    'Erro ao carregar perfil',
+                    style: AppTypography.h3,
+                  ),
+                  AppSpacing.verticalSM,
+                  Text(
+                    authService.error!,
+                    style: AppTypography.bodyMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                  AppSpacing.verticalMD,
+                  CustomButton(
+                    text: 'Tentar Novamente',
+                    onPressed: () {
+                      authService.initialize();
+                    },
+                  ),
+                ],
+              ),
+            );
+          }
+          
+          if (user == null) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.person_off,
+                    size: 64,
+                    color: AppColors.textHint,
+                  ),
+                  AppSpacing.verticalMD,
+                  Text(
+                    'Usuário não encontrado',
+                    style: AppTypography.h3,
+                  ),
+                  AppSpacing.verticalSM,
+                  Text(
+                    'Não foi possível carregar os dados do seu perfil.',
+                    style: AppTypography.bodyMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                  AppSpacing.verticalMD,
+                  CustomButton(
+                    text: 'Fazer Login',
+                    onPressed: () {
+                      context.go('/login');
+                    },
+                  ),
+                ],
+              ),
+            );
+          }
 
-          return SingleChildScrollView(
-            padding: AppSpacing.paddingLG,
-            child: Column(
+          return RefreshIndicator(
+            onRefresh: _refreshUserData,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: AppSpacing.paddingLG,
+              child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // Profile Photo
@@ -332,6 +409,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   ),
                 ),
               ],
+            ),
             ),
           );
         },

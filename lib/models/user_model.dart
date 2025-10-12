@@ -64,8 +64,8 @@ class User {
       phone: json['phone'],
       photo: json['photo'],
       type: UserType.values.firstWhere((e) => e.name == json['type']),
-      createdAt: DateTime.parse(json['createdAt']),
-      isActive: json['isActive'] ?? true,
+      createdAt: DateTime.parse(json['created_at'] ?? json['createdAt'] ?? DateTime.now().toIso8601String()),
+      isActive: json['isActive'] ?? json['is_active'] ?? true,
     );
   }
 }
