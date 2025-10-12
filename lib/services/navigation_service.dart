@@ -12,6 +12,8 @@ import '../screens/user/alerts_screen.dart';
 import '../screens/user/user_chat_screen.dart';
 import '../screens/user/user_profile_screen.dart';
 import '../screens/user/notifications_screen.dart';
+import '../screens/user/search_results_screen.dart';
+import '../screens/user/advanced_search_screen.dart';
 import '../screens/realtor/realtor_home_screen.dart';
 import '../screens/realtor/property_form_screen.dart';
 import '../screens/realtor/realtor_profile_screen.dart';
@@ -80,9 +82,12 @@ class NavigationService {
           GoRoute(
             path: 'property/:propertyId',
             name: 'property-detail',
-            builder: (context, state) => PropertyDetailScreen(
-              property: null, // Será carregado baseado no propertyId
-            ),
+            builder: (context, state) {
+              final propertyId = state.pathParameters['propertyId']!;
+              return PropertyDetailScreen(
+                propertyId: propertyId,
+              );
+            },
           ),
           GoRoute(
             path: 'favorites',
@@ -108,6 +113,25 @@ class NavigationService {
             path: 'notifications',
             name: 'user-notifications',
             builder: (context, state) => const NotificationsScreen(),
+          ),
+          GoRoute(
+            path: 'search-results',
+            name: 'search-results',
+            builder: (context, state) {
+              final extra = state.extra as Map<String, dynamic>?;
+              if (extra != null) {
+                return SearchResultsScreen(
+                  searchQuery: extra['searchQuery'],
+                  results: extra['results'],
+                );
+              }
+              return const NotificationsScreen(); // Fallback
+            },
+          ),
+          GoRoute(
+            path: 'advanced-search',
+            name: 'advanced-search',
+            builder: (context, state) => const AdvancedSearchScreen(),
           ),
         ],
       ),

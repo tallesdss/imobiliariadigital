@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/app_colors.dart';
@@ -310,6 +311,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   }
 
   void _navigateToPropertyDetail(String propertyId) {
+    if (kDebugMode) {
+      debugPrint('Navegando para detalhes do imóvel: $propertyId');
+    }
     context.go('/user/property/$propertyId');
   }
 
@@ -406,6 +410,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
   void _navigateToComparison() {
     // TODO: Implementar rota para comparação de propriedades
+    // Por enquanto, usar Navigator.push até implementar a rota no GoRouter
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -629,6 +634,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           padding: EdgeInsets.all(isTablet ? 20 : 16),
           color: Colors.white,
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               // Barra de pesquisa com botão de filtros
               Row(
@@ -639,62 +645,62 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                         propertyService.setSearchQuery(value);
                         _updateCarouselVisibility();
                       },
-                  decoration: InputDecoration(
-                    hintText: 'Buscar imóvel...',
-                    prefixIcon: const Icon(Icons.search),
-                    suffixIcon: propertyService.searchQuery.isNotEmpty
-                        ? IconButton(
-                            onPressed: () {
-                              propertyService.setSearchQuery('');
-                              _updateCarouselVisibility();
-                            },
-                            icon: const Icon(Icons.clear),
-                          )
-                        : null,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: AppColors.border),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: AppColors.border),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: AppColors.primary),
-                    ),
-                    filled: true,
-                    fillColor: AppColors.background,
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: isTablet ? 16 : 12,
-                      vertical: isTablet ? 16 : 12,
+                      decoration: InputDecoration(
+                        hintText: 'Buscar imóvel...',
+                        prefixIcon: const Icon(Icons.search),
+                        suffixIcon: propertyService.searchQuery.isNotEmpty
+                            ? IconButton(
+                                onPressed: () {
+                                  propertyService.setSearchQuery('');
+                                  _updateCarouselVisibility();
+                                },
+                                icon: const Icon(Icons.clear),
+                              )
+                            : null,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: AppColors.border),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: AppColors.border),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: AppColors.primary),
+                        ),
+                        filled: true,
+                        fillColor: AppColors.background,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: isTablet ? 16 : 12,
+                          vertical: isTablet ? 16 : 12,
+                        ),
+                      ),
                     ),
                   ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              // Filtros de tipo
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildFilterChip('Todos', null),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Casas', PropertyType.house),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Apartamentos', PropertyType.apartment),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Comercial', PropertyType.commercial),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Terrenos', PropertyType.land),
+                  ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          // Filtros de tipo
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _buildFilterChip('Todos', null),
-                const SizedBox(width: 8),
-                _buildFilterChip('Casas', PropertyType.house),
-                const SizedBox(width: 8),
-                _buildFilterChip('Apartamentos', PropertyType.apartment),
-                const SizedBox(width: 8),
-                _buildFilterChip('Comercial', PropertyType.commercial),
-                const SizedBox(width: 8),
-                _buildFilterChip('Terrenos', PropertyType.land),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+        );
       },
     );
   }

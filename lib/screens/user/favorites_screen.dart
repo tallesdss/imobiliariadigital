@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../services/favorite_service.dart';
 import '../../models/property_model.dart';
 import '../../widgets/cards/property_card.dart';
-import 'property_detail_screen.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -91,15 +91,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   }
 
   void _navigateToPropertyDetail(String propertyId) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PropertyDetailScreen(property: null),
-      ),
-    ).then((_) {
-      // Recarregar favoritos quando voltar da tela de detalhes
-      _loadFavorites();
-    });
+    context.go('/user/property/$propertyId');
   }
 
   @override

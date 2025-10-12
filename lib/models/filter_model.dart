@@ -24,6 +24,11 @@ class UserPropertyFilters {
   final int? maxParkingSpaces;
   final double? minArea;
   final double? maxArea;
+  final bool furnished;
+  final bool petFriendly;
+  final bool hasSecurity;
+  final bool hasSwimmingPool;
+  final bool hasGym;
   final List<String> savedFilters;
 
   const UserPropertyFilters({
@@ -47,6 +52,11 @@ class UserPropertyFilters {
     this.maxParkingSpaces,
     this.minArea,
     this.maxArea,
+    this.furnished = false,
+    this.petFriendly = false,
+    this.hasSecurity = false,
+    this.hasSwimmingPool = false,
+    this.hasGym = false,
     this.savedFilters = const [],
   });
 
@@ -71,6 +81,11 @@ class UserPropertyFilters {
     int? maxParkingSpaces,
     double? minArea,
     double? maxArea,
+    bool? furnished,
+    bool? petFriendly,
+    bool? hasSecurity,
+    bool? hasSwimmingPool,
+    bool? hasGym,
     List<String>? savedFilters,
   }) {
     return UserPropertyFilters(
@@ -94,6 +109,11 @@ class UserPropertyFilters {
       maxParkingSpaces: maxParkingSpaces ?? this.maxParkingSpaces,
       minArea: minArea ?? this.minArea,
       maxArea: maxArea ?? this.maxArea,
+      furnished: furnished ?? this.furnished,
+      petFriendly: petFriendly ?? this.petFriendly,
+      hasSecurity: hasSecurity ?? this.hasSecurity,
+      hasSwimmingPool: hasSwimmingPool ?? this.hasSwimmingPool,
+      hasGym: hasGym ?? this.hasGym,
       savedFilters: savedFilters ?? this.savedFilters,
     );
   }
@@ -118,7 +138,12 @@ class UserPropertyFilters {
         minParkingSpaces != null ||
         maxParkingSpaces != null ||
         minArea != null ||
-        maxArea != null;
+        maxArea != null ||
+        furnished ||
+        petFriendly ||
+        hasSecurity ||
+        hasSwimmingPool ||
+        hasGym;
   }
 
   UserPropertyFilters clear() {
@@ -358,6 +383,11 @@ class PropertyFilters {
   final int? maxParkingSpaces;
   final double? minArea;
   final double? maxArea;
+  final bool furnished;
+  final bool petFriendly;
+  final bool hasSecurity;
+  final bool hasSwimmingPool;
+  final bool hasGym;
   final List<String> savedFilters;
 
   const PropertyFilters({
@@ -381,6 +411,11 @@ class PropertyFilters {
     this.maxParkingSpaces,
     this.minArea,
     this.maxArea,
+    this.furnished = false,
+    this.petFriendly = false,
+    this.hasSecurity = false,
+    this.hasSwimmingPool = false,
+    this.hasGym = false,
     this.savedFilters = const [],
   });
 
@@ -405,6 +440,11 @@ class PropertyFilters {
     int? maxParkingSpaces,
     double? minArea,
     double? maxArea,
+    bool? furnished,
+    bool? petFriendly,
+    bool? hasSecurity,
+    bool? hasSwimmingPool,
+    bool? hasGym,
     List<String>? savedFilters,
   }) {
     return PropertyFilters(
@@ -428,6 +468,11 @@ class PropertyFilters {
       maxParkingSpaces: maxParkingSpaces ?? this.maxParkingSpaces,
       minArea: minArea ?? this.minArea,
       maxArea: maxArea ?? this.maxArea,
+      furnished: furnished ?? this.furnished,
+      petFriendly: petFriendly ?? this.petFriendly,
+      hasSecurity: hasSecurity ?? this.hasSecurity,
+      hasSwimmingPool: hasSwimmingPool ?? this.hasSwimmingPool,
+      hasGym: hasGym ?? this.hasGym,
       savedFilters: savedFilters ?? this.savedFilters,
     );
   }
@@ -452,7 +497,12 @@ class PropertyFilters {
         minParkingSpaces != null ||
         maxParkingSpaces != null ||
         minArea != null ||
-        maxArea != null;
+        maxArea != null ||
+        furnished ||
+        petFriendly ||
+        hasSecurity ||
+        hasSwimmingPool ||
+        hasGym;
   }
 
   PropertyFilters clear() {

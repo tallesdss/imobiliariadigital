@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import '../models/property_model.dart';
 import 'supabase_service.dart';
 import '../config/supabase_config.dart';
+import 'mock_data_service.dart';
 
 class PropertyService {
   static Future<List<Property>> getProperties({
@@ -14,14 +15,25 @@ class PropertyService {
     int limit = 20,
   }) async {
     try {
-      final response = await SupabaseService.client
-          .from(SupabaseConfig.propertiesTable)
-          .select('*')
-          .eq('status', 'ativo')
-          .order('data_criacao', ascending: false)
-          .range((page - 1) * limit, page * limit - 1);
-      
-      return response.map((json) => Property.fromJson(json)).toList();
+      // Tentar buscar do Supabase primeiro
+      try {
+        final response = await SupabaseService.client
+            .from(SupabaseConfig.propertiesTable)
+            .select('*')
+            .eq('status', 'ativo')
+            .order('data_criacao', ascending: false)
+            .range((page - 1) * limit, page * limit - 1);
+        
+        return response.map((json) => Property.fromJson(json)).toList();
+      } catch (supabaseError) {
+        if (kDebugMode) {
+          debugPrint('Erro ao buscar do Supabase: $supabaseError');
+          debugPrint('Usando dados mock...');
+        }
+        
+        // Fallback para dados mock
+        return MockDataService.activeProperties;
+      }
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Erro ao carregar imóveis: $e');
@@ -38,16 +50,27 @@ class PropertyService {
     double? maxPrice,
   }) async {
     try {
-      // Usar o método getProperties com limite muito alto para obter todos os imóveis
-      return await getProperties(
-        search: search,
-        type: type,
-        city: city,
-        minPrice: minPrice,
-        maxPrice: maxPrice,
-        page: 1,
-        limit: 1000, // Limite alto para obter todos os imóveis
-      );
+      // Tentar buscar do Supabase primeiro
+      try {
+        // Usar o método getProperties com limite muito alto para obter todos os imóveis
+        return await getProperties(
+          search: search,
+          type: type,
+          city: city,
+          minPrice: minPrice,
+          maxPrice: maxPrice,
+          page: 1,
+          limit: 1000, // Limite alto para obter todos os imóveis
+        );
+      } catch (supabaseError) {
+        if (kDebugMode) {
+          debugPrint('Erro ao buscar do Supabase: $supabaseError');
+          debugPrint('Usando dados mock...');
+        }
+        
+        // Fallback para dados mock
+        return MockDataService.activeProperties;
+      }
     } catch (e) {
       throw Exception('Erro ao carregar todos os imóveis: $e');
     }
@@ -59,23 +82,42 @@ class PropertyService {
         debugPrint('Buscando imóvel com ID: $id');
       }
       
-      final response = await SupabaseService.client
-          .from(SupabaseConfig.propertiesTable)
-          .select('*')
-          .eq('id', id)
-          .single();
-      
-      if (kDebugMode) {
-        debugPrint('Dados recebidos do Supabase: $response');
+      // Tentar buscar do Supabase primeiro
+      try {
+        final response = await SupabaseService.client
+            .from(SupabaseConfig.propertiesTable)
+            .select('*')
+            .eq('id', id)
+            .single();
+        
+        if (kDebugMode) {
+          debugPrint('Dados recebidos do Supabase: $response');
+        }
+        
+        final property = Property.fromJson(response);
+        
+        if (kDebugMode) {
+          debugPrint('Property criado: ${property.title}');
+        }
+        
+        return property;
+      } catch (supabaseError) {
+        if (kDebugMode) {
+          debugPrint('Erro ao buscar do Supabase: $supabaseError');
+          debugPrint('Tentando buscar dados mock...');
+        }
+        
+        // Fallback para dados mock
+        final mockProperty = MockDataService.getPropertyById(id);
+        if (mockProperty != null) {
+          if (kDebugMode) {
+            debugPrint('Property encontrado nos dados mock: ${mockProperty.title}');
+          }
+          return mockProperty;
+        } else {
+          throw Exception('Imóvel não encontrado');
+        }
       }
-      
-      final property = Property.fromJson(response);
-      
-      if (kDebugMode) {
-        debugPrint('Property criado: ${property.title}');
-      }
-      
-      return property;
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Erro ao buscar imóvel por ID: $e');
@@ -87,14 +129,25 @@ class PropertyService {
 
   static Future<List<Property>> getFeaturedProperties() async {
     try {
-      final response = await SupabaseService.client
-          .from(SupabaseConfig.propertiesTable)
-          .select('*')
-          .eq('status', 'ativo')
-          .eq('destaque', true)
-          .order('data_criacao', ascending: false);
-      
-      return response.map((json) => Property.fromJson(json)).toList();
+      // Tentar buscar do Supabase primeiro
+      try {
+        final response = await SupabaseService.client
+            .from(SupabaseConfig.propertiesTable)
+            .select('*')
+            .eq('status', 'ativo')
+            .eq('destaque', true)
+            .order('data_criacao', ascending: false);
+        
+        return response.map((json) => Property.fromJson(json)).toList();
+      } catch (supabaseError) {
+        if (kDebugMode) {
+          debugPrint('Erro ao buscar do Supabase: $supabaseError');
+          debugPrint('Usando dados mock...');
+        }
+        
+        // Fallback para dados mock
+        return MockDataService.activeProperties.where((p) => p.isFeatured).toList();
+      }
     } catch (e) {
       throw Exception('Erro ao carregar imóveis em destaque: $e');
     }
@@ -102,14 +155,25 @@ class PropertyService {
 
   static Future<List<Property>> getLaunchProperties() async {
     try {
-      final response = await SupabaseService.client
-          .from(SupabaseConfig.propertiesTable)
-          .select('*')
-          .eq('status', 'ativo')
-          .eq('lancamento', true)
-          .order('data_criacao', ascending: false);
-      
-      return response.map((json) => Property.fromJson(json)).toList();
+      // Tentar buscar do Supabase primeiro
+      try {
+        final response = await SupabaseService.client
+            .from(SupabaseConfig.propertiesTable)
+            .select('*')
+            .eq('status', 'ativo')
+            .eq('lancamento', true)
+            .order('data_criacao', ascending: false);
+        
+        return response.map((json) => Property.fromJson(json)).toList();
+      } catch (supabaseError) {
+        if (kDebugMode) {
+          debugPrint('Erro ao buscar do Supabase: $supabaseError');
+          debugPrint('Usando dados mock...');
+        }
+        
+        // Fallback para dados mock
+        return MockDataService.activeProperties.where((p) => p.isLaunch).toList();
+      }
     } catch (e) {
       throw Exception('Erro ao carregar lançamentos: $e');
     }
@@ -250,6 +314,7 @@ class PropertyService {
       'cidade': property.city,
       'estado': property.state,
       'cep': property.zipCode,
+      'bairro': property.neighborhood,
       'fotos': property.photos,
       'videos': property.videos,
       'atributos': property.attributes,

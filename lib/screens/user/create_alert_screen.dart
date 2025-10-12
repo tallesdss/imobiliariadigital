@@ -297,7 +297,9 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
               title: Text(_getAlertTypeName(type)),
               subtitle: Text(_getAlertTypeDescription(type)),
               value: type,
+              // ignore: deprecated_member_use
               groupValue: _selectedType,
+              // ignore: deprecated_member_use
               onChanged: (value) {
                 setState(() {
                   _selectedType = value!;

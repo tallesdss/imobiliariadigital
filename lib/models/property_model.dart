@@ -141,9 +141,17 @@ class Property {
   int get bedrooms => attributes['bedrooms'] ?? 0;
   int get bathrooms => attributes['bathrooms'] ?? 0;
   double get area => (attributes['area'] ?? 0).toDouble();
+  int get parkingSpaces => attributes['parkingSpaces'] ?? 0;
+  double get condominium => (attributes['condominium'] ?? 0).toDouble();
+  double get iptu => (attributes['iptu'] ?? 0).toDouble();
   bool get hasGarage => attributes['hasGarage'] ?? false;
   bool get acceptsProposal => attributes['acceptsProposal'] ?? false;
   bool get hasFinancing => attributes['hasFinancing'] ?? false;
+  bool get furnished => attributes['furnished'] ?? false;
+  bool get petFriendly => attributes['petFriendly'] ?? false;
+  bool get hasSecurity => attributes['hasSecurity'] ?? false;
+  bool get hasSwimmingPool => attributes['hasSwimmingPool'] ?? false;
+  bool get hasGym => attributes['hasGym'] ?? false;
 
   Map<String, dynamic> toJson() {
     return {

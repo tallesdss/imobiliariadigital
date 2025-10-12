@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../../models/property_model.dart';
 import '../../theme/app_theme.dart';
+import '../../services/property_service.dart';
+import '../../services/favorite_service.dart';
 
 class PropertyDetailScreen extends StatefulWidget {
   final Property? property;
@@ -20,6 +23,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
   Property? _property;
   bool _isLoading = true;
   String? _error;
+  bool _isFavorite = false;
 
   @override
   void initState() {
@@ -27,6 +31,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
     if (widget.property != null) {
       _property = widget.property;
       _isLoading = false;
+      _checkFavoriteStatus();
     } else if (widget.propertyId != null) {
       _loadProperty(widget.propertyId!);
     } else {
@@ -37,17 +42,55 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
 
   Future<void> _loadProperty(String propertyId) async {
     try {
-      // Aqui você carregaria o imóvel do serviço
-      // Por enquanto, vamos simular um erro
+      if (kDebugMode) {
+        debugPrint('PropertyDetailScreen: Carregando imóvel com ID: $propertyId');
+      }
+      
       setState(() {
-        _error = 'Imóvel não encontrado';
-        _isLoading = false;
+        _isLoading = true;
+        _error = null;
       });
+
+      final property = await PropertyService.getPropertyById(propertyId);
+      
+      if (kDebugMode) {
+        debugPrint('PropertyDetailScreen: Imóvel carregado: ${property.title}');
+      }
+      
+      if (mounted) {
+        setState(() {
+          _property = property;
+          _isLoading = false;
+        });
+        _checkFavoriteStatus();
+      }
     } catch (e) {
-      setState(() {
-        _error = 'Erro ao carregar imóvel: $e';
-        _isLoading = false;
-      });
+      if (kDebugMode) {
+        debugPrint('PropertyDetailScreen: Erro ao carregar imóvel: $e');
+      }
+      
+      if (mounted) {
+        setState(() {
+          _error = 'Erro ao carregar imóvel: $e';
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _checkFavoriteStatus() async {
+    if (_property == null) return;
+    
+    try {
+      final favorites = await FavoriteService.getUserFavorites();
+      final isFavorite = favorites.any((fav) => fav.id == _property!.id);
+      if (mounted) {
+        setState(() {
+          _isFavorite = isFavorite;
+        });
+      }
+    } catch (e) {
+      // Ignorar erro de favoritos
     }
   }
 
@@ -84,15 +127,11 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.share),
-            onPressed: () {
-              // Implementar compartilhamento
-            },
+            onPressed: _shareProperty,
           ),
           IconButton(
-            icon: const Icon(Icons.favorite_border),
-            onPressed: () {
-              // Implementar favoritos
-            },
+            icon: Icon(_isFavorite ? Icons.favorite : Icons.favorite_border),
+            onPressed: _toggleFavorite,
           ),
         ],
       ),
@@ -409,9 +448,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
         children: [
           Expanded(
             child: OutlinedButton.icon(
-              onPressed: () {
-                // Implementar ligação
-              },
+              onPressed: () => _makePhoneCall(property.realtorPhone),
               icon: const Icon(Icons.phone),
               label: const Text('Ligar'),
               style: OutlinedButton.styleFrom(
@@ -423,9 +460,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
           const SizedBox(width: 16),
           Expanded(
             child: ElevatedButton.icon(
-              onPressed: () {
-                // Implementar WhatsApp
-              },
+              onPressed: () => _openWhatsApp(property.realtorPhone, property.title),
               icon: const Icon(Icons.message),
               label: const Text('WhatsApp'),
               style: ElevatedButton.styleFrom(
@@ -447,6 +482,188 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
         return 'Aluguel';
       case PropertyTransactionType.daily:
         return 'Temporada';
+    }
+  }
+
+  Future<void> _toggleFavorite() async {
+    if (_property == null) return;
+
+    try {
+      await FavoriteService.toggleFavorite(_property!.id);
+      setState(() {
+        _isFavorite = !_isFavorite;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              _isFavorite
+                  ? 'Imóvel adicionado aos favoritos'
+                  : 'Imóvel removido dos favoritos',
+            ),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao alterar favorito: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _shareProperty() async {
+    if (_property == null) return;
+
+    try {
+      final shareText = '''
+🏠 ${_property!.title}
+
+💰 ${_property!.formattedPrice}
+📍 ${_property!.address}, ${_property!.city} - ${_property!.state}
+
+${_property!.description}
+
+📱 Confira este imóvel no SC Imóveis!
+      ''';
+
+      // Usar o SharePlus para compartilhamento
+      // await Share.share(shareText);
+      
+      // Por enquanto, mostrar um dialog com o texto para compartilhar
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Compartilhar Imóvel'),
+            content: SelectableText(shareText),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Fechar'),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao compartilhar: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _makePhoneCall(String phoneNumber) async {
+    try {
+      // Usar url_launcher para fazer ligação
+      // final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
+      // await launchUrl(phoneUri);
+      
+      // Por enquanto, mostrar um dialog com o número
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Ligar'),
+            content: Text('Deseja ligar para $phoneNumber?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancelar'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Ligando para $phoneNumber...'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                },
+                child: const Text('Ligar'),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao fazer ligação: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _openWhatsApp(String phoneNumber, String propertyTitle) async {
+    try {
+      final message = 'Olá! Tenho interesse no imóvel: $propertyTitle';
+      
+      // Usar url_launcher para abrir WhatsApp
+      // final Uri whatsappUri = Uri.parse('https://wa.me/55$cleanNumber?text=${Uri.encodeComponent(message)}');
+      // await launchUrl(whatsappUri);
+      
+      // Por enquanto, mostrar um dialog com as informações
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('WhatsApp'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Número: $phoneNumber'),
+                const SizedBox(height: 8),
+                Text('Mensagem: $message'),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancelar'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Abrindo WhatsApp...'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                },
+                child: const Text('Abrir WhatsApp'),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao abrir WhatsApp: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 }

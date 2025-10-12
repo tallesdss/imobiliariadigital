@@ -25,6 +25,11 @@ class SearchQuery {
   final bool? hasFinancing;
   final bool? isFeatured;
   final bool? isLaunch;
+  final bool? furnished;
+  final bool? petFriendly;
+  final bool? hasSecurity;
+  final bool? hasSwimmingPool;
+  final bool? hasGym;
   final DateTime? startDate;
   final DateTime? endDate;
   final String? sortBy;
@@ -57,6 +62,11 @@ class SearchQuery {
     this.hasFinancing,
     this.isFeatured,
     this.isLaunch,
+    this.furnished,
+    this.petFriendly,
+    this.hasSecurity,
+    this.hasSwimmingPool,
+    this.hasGym,
     this.startDate,
     this.endDate,
     this.sortBy,
@@ -90,6 +100,11 @@ class SearchQuery {
     bool? hasFinancing,
     bool? isFeatured,
     bool? isLaunch,
+    bool? furnished,
+    bool? petFriendly,
+    bool? hasSecurity,
+    bool? hasSwimmingPool,
+    bool? hasGym,
     DateTime? startDate,
     DateTime? endDate,
     String? sortBy,
@@ -122,6 +137,11 @@ class SearchQuery {
       hasFinancing: hasFinancing ?? this.hasFinancing,
       isFeatured: isFeatured ?? this.isFeatured,
       isLaunch: isLaunch ?? this.isLaunch,
+      furnished: furnished ?? this.furnished,
+      petFriendly: petFriendly ?? this.petFriendly,
+      hasSecurity: hasSecurity ?? this.hasSecurity,
+      hasSwimmingPool: hasSwimmingPool ?? this.hasSwimmingPool,
+      hasGym: hasGym ?? this.hasGym,
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,
       sortBy: sortBy ?? this.sortBy,
@@ -157,6 +177,11 @@ class SearchQuery {
       'hasFinancing': hasFinancing,
       'isFeatured': isFeatured,
       'isLaunch': isLaunch,
+      'furnished': furnished,
+      'petFriendly': petFriendly,
+      'hasSecurity': hasSecurity,
+      'hasSwimmingPool': hasSwimmingPool,
+      'hasGym': hasGym,
       'startDate': startDate?.toIso8601String(),
       'endDate': endDate?.toIso8601String(),
       'sortBy': sortBy,
@@ -206,6 +231,11 @@ class SearchQuery {
       hasFinancing: json['hasFinancing'],
       isFeatured: json['isFeatured'],
       isLaunch: json['isLaunch'],
+      furnished: json['furnished'],
+      petFriendly: json['petFriendly'],
+      hasSecurity: json['hasSecurity'],
+      hasSwimmingPool: json['hasSwimmingPool'],
+      hasGym: json['hasGym'],
       startDate: json['startDate'] != null
           ? DateTime.parse(json['startDate'])
           : null,
@@ -245,6 +275,11 @@ class SearchQuery {
         other.hasFinancing == hasFinancing &&
         other.isFeatured == isFeatured &&
         other.isLaunch == isLaunch &&
+        other.furnished == furnished &&
+        other.petFriendly == petFriendly &&
+        other.hasSecurity == hasSecurity &&
+        other.hasSwimmingPool == hasSwimmingPool &&
+        other.hasGym == hasGym &&
         other.startDate == startDate &&
         other.endDate == endDate &&
         other.sortBy == sortBy &&
@@ -280,6 +315,11 @@ class SearchQuery {
       hasFinancing,
       isFeatured,
       isLaunch,
+      furnished,
+      petFriendly,
+      hasSecurity,
+      hasSwimmingPool,
+      hasGym,
       startDate,
       endDate,
       sortBy,

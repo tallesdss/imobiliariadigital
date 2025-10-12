@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../models/property_model.dart';
 import '../../models/search_model.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/cards/property_card.dart';
-import 'property_detail_screen.dart';
 
 class SearchResultsScreen extends StatefulWidget {
   final SearchQuery searchQuery;
@@ -78,12 +78,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
   }
 
   void _navigateToProperty(Property property) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PropertyDetailScreen(property: property),
-      ),
-    );
+    context.go('/user/property/${property.id}');
   }
 
   @override

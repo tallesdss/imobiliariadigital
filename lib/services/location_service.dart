@@ -335,7 +335,7 @@ class LocationService {
   ) {
     // Em uma implementação real, isso viria da API de rotas
     // Por enquanto, retornamos uma polyline simples
-    return 'mock_polyline_$startLat\_$startLon\_$endLat\_$endLon';
+    return 'mock_polyline_${startLat}_${startLon}_${endLat}_$endLon';
   }
 
   /// Obtém informações de trânsito

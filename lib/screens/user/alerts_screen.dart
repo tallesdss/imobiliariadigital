@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../models/alert_model.dart' as alert_models;
 import '../../services/notification_service.dart';
 import '../../widgets/common/loading_widget.dart';
@@ -413,7 +414,9 @@ class _AlertsScreenState extends State<AlertsScreen>
               ),
         onTap: () {
           // Navegar para detalhes do imóvel
-          // NavigationService.navigateToPropertyDetail(history.propertyId);
+          if (history.propertyId.isNotEmpty) {
+            context.go('/user/property/${history.propertyId}');
+          }
         },
       ),
     );

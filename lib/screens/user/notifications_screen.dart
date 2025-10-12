@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../services/notification_service.dart';
 import '../../models/alert_model.dart' as alert_models;
-import 'property_detail_screen.dart';
-import 'user_chat_screen.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -184,15 +183,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       case alert_models.AlertType.priceDrop:
       case alert_models.AlertType.newProperty:
         if (notification.propertyId.isNotEmpty) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PropertyDetailScreen(
-                property: null,
-                propertyId: notification.propertyId,
-              ),
-            ),
-          );
+          context.go('/user/property/${notification.propertyId}');
         } else {
           // Mostrar detalhes da notificação se não houver propertyId
           _showNotificationDetails(notification);
@@ -200,12 +191,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         break;
       case alert_models.AlertType.custom:
         // Navegar para a tela de chat geral
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const UserChatScreen(),
-          ),
-        );
+        context.go('/user/chat');
         break;
     }
   }

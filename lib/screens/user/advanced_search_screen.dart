@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../models/property_model.dart';
 import '../../models/search_model.dart';
 import '../../services/search_service.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/common/loading_widget.dart';
 import '../../widgets/common/error_widget.dart';
-import 'search_results_screen.dart';
 import 'voice_search_screen.dart';
 import 'image_search_screen.dart';
 import 'map_search_screen.dart';
@@ -34,9 +34,9 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
   String? _errorMessage;
   
   // Filtros
-  List<PropertyType> _selectedPropertyTypes = [];
-  List<String> _selectedCities = [];
-  List<String> _selectedNeighborhoods = [];
+  final List<PropertyType> _selectedPropertyTypes = [];
+  final List<String> _selectedCities = [];
+  final List<String> _selectedNeighborhoods = [];
   PropertyTransactionType? _selectedTransactionType;
   int? _minBedrooms;
   int? _maxBedrooms;
@@ -50,6 +50,11 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
   bool _hasFinancing = false;
   bool _isFeatured = false;
   bool _isLaunch = false;
+  bool _furnished = false;
+  bool _petFriendly = false;
+  bool _hasSecurity = false;
+  bool _hasSwimmingPool = false;
+  bool _hasGym = false;
   String _sortBy = 'relevance';
   bool _sortAscending = false;
 
@@ -109,6 +114,11 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
         hasFinancing: _hasFinancing,
         isFeatured: _isFeatured,
         isLaunch: _isLaunch,
+        furnished: _furnished,
+        petFriendly: _petFriendly,
+        hasSecurity: _hasSecurity,
+        hasSwimmingPool: _hasSwimmingPool,
+        hasGym: _hasGym,
         sortBy: _sortBy,
         sortAscending: _sortAscending,
       );
@@ -121,15 +131,10 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
         });
 
         // Navegar para tela de resultados
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => SearchResultsScreen(
-              searchQuery: query,
-              results: results,
-            ),
-          ),
-        );
+        context.push('/user/search-results', extra: {
+          'searchQuery': query,
+          'results': results,
+        });
       }
     } catch (e) {
       if (mounted) {
@@ -166,6 +171,11 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
       _hasFinancing = false;
       _isFeatured = false;
       _isLaunch = false;
+      _furnished = false;
+      _petFriendly = false;
+      _hasSecurity = false;
+      _hasSwimmingPool = false;
+      _hasGym = false;
       _sortBy = 'relevance';
       _sortAscending = false;
     });
@@ -657,6 +667,46 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
               onSelected: (selected) {
                 if (!mounted) return;
                 setState(() => _isLaunch = selected);
+              },
+            ),
+            FilterChip(
+              label: const Text('Mobiliado'),
+              selected: _furnished,
+              onSelected: (selected) {
+                if (!mounted) return;
+                setState(() => _furnished = selected);
+              },
+            ),
+            FilterChip(
+              label: const Text('Aceita Pets'),
+              selected: _petFriendly,
+              onSelected: (selected) {
+                if (!mounted) return;
+                setState(() => _petFriendly = selected);
+              },
+            ),
+            FilterChip(
+              label: const Text('Segurança 24h'),
+              selected: _hasSecurity,
+              onSelected: (selected) {
+                if (!mounted) return;
+                setState(() => _hasSecurity = selected);
+              },
+            ),
+            FilterChip(
+              label: const Text('Piscina'),
+              selected: _hasSwimmingPool,
+              onSelected: (selected) {
+                if (!mounted) return;
+                setState(() => _hasSwimmingPool = selected);
+              },
+            ),
+            FilterChip(
+              label: const Text('Academia'),
+              selected: _hasGym,
+              onSelected: (selected) {
+                if (!mounted) return;
+                setState(() => _hasGym = selected);
               },
             ),
           ],
