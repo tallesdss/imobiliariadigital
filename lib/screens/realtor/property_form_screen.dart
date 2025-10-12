@@ -32,6 +32,8 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
 
   PropertyType _selectedType = PropertyType.apartment;
   PropertyStatus _selectedStatus = PropertyStatus.active;
+  PropertyCategory? _selectedCategory;
+  List<PropertyTag> _selectedTags = [];
   bool _isFeatured = false;
   bool _isLaunch = false;
   List<String> _photos = [];
@@ -57,6 +59,8 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
     _zipCodeController.text = property.zipCode;
     _selectedType = property.type;
     _selectedStatus = property.status;
+    _selectedCategory = property.category;
+    _selectedTags = List.from(property.tags);
     _isFeatured = property.isFeatured;
     _isLaunch = property.isLaunch;
     _photos = List.from(property.photos);
@@ -98,6 +102,8 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
               _buildLocationSection(),
               const SizedBox(height: AppSpacing.xl),
               _buildAttributesSection(),
+              const SizedBox(height: AppSpacing.xl),
+              _buildCategoriesAndTagsSection(),
               const SizedBox(height: AppSpacing.xl),
               _buildMediaSection(),
               const SizedBox(height: AppSpacing.xl),
@@ -274,6 +280,182 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildCategoriesAndTagsSection() {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Categorias e Tags', style: AppTypography.h6),
+          const SizedBox(height: AppSpacing.lg),
+          
+          // Categoria
+          DropdownButtonFormField<PropertyCategory>(
+            initialValue: _selectedCategory,
+            decoration: const InputDecoration(
+              labelText: 'Categoria',
+              border: OutlineInputBorder(),
+              helperText: 'Selecione a categoria do imóvel',
+            ),
+            items: PropertyCategory.values.map((category) {
+              return DropdownMenuItem(
+                value: category,
+                child: Text(_getCategoryDisplayName(category)),
+              );
+            }).toList(),
+            onChanged: (value) {
+              setState(() {
+                _selectedCategory = value;
+              });
+            },
+          ),
+          
+          const SizedBox(height: AppSpacing.lg),
+          
+          // Tags
+          Text(
+            'Tags',
+            style: AppTypography.bodyLarge.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'Selecione as tags que se aplicam ao imóvel:',
+            style: AppTypography.bodyMedium.copyWith(
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          
+          // Tags organizadas por categoria
+          _buildTagCategory('Destaque', [
+            PropertyTag.featured,
+            PropertyTag.launch,
+            PropertyTag.newProperty,
+            PropertyTag.hotDeal,
+            PropertyTag.exclusive,
+          ]),
+          
+          _buildTagCategory('Características', [
+            PropertyTag.furnished,
+            PropertyTag.unfurnished,
+            PropertyTag.petFriendly,
+            PropertyTag.hasPool,
+            PropertyTag.hasGym,
+            PropertyTag.hasSecurity,
+            PropertyTag.hasGarage,
+            PropertyTag.hasGarden,
+            PropertyTag.hasBalcony,
+            PropertyTag.hasElevator,
+          ]),
+          
+          _buildTagCategory('Localização', [
+            PropertyTag.nearMetro,
+            PropertyTag.nearSchool,
+            PropertyTag.nearHospital,
+            PropertyTag.nearShopping,
+            PropertyTag.beachfront,
+            PropertyTag.downtown,
+            PropertyTag.quietArea,
+          ]),
+          
+          _buildTagCategory('Financiamento', [
+            PropertyTag.acceptsProposal,
+            PropertyTag.hasFinancing,
+            PropertyTag.cashOnly,
+            PropertyTag.rentToOwn,
+          ]),
+          
+          _buildTagCategory('Urgência', [
+            PropertyTag.urgent,
+            PropertyTag.priceReduced,
+            PropertyTag.motivatedSeller,
+          ]),
+          
+          _buildTagCategory('Especiais', [
+            PropertyTag.heritage,
+            PropertyTag.ecoFriendly,
+            PropertyTag.smartHome,
+            PropertyTag.renovated,
+            PropertyTag.needsRenovation,
+          ]),
+          
+          // Tags selecionadas
+          if (_selectedTags.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.lg),
+            Text(
+              'Tags Selecionadas (${_selectedTags.length})',
+              style: AppTypography.bodyLarge.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
+              children: _selectedTags.map((tag) {
+                return Chip(
+                  label: Text(_getTagDisplayName(tag)),
+                  onDeleted: () {
+                    setState(() {
+                      _selectedTags.remove(tag);
+                    });
+                  },
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                  deleteIconColor: AppColors.primary,
+                );
+              }).toList(),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTagCategory(String categoryName, List<PropertyTag> tags) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: AppSpacing.md),
+        Text(
+          categoryName,
+          style: AppTypography.bodyMedium.copyWith(
+            fontWeight: FontWeight.w600,
+            color: AppColors.primary,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Wrap(
+          spacing: AppSpacing.sm,
+          runSpacing: AppSpacing.sm,
+          children: tags.map((tag) {
+            final isSelected = _selectedTags.contains(tag);
+            return FilterChip(
+              label: Text(_getTagDisplayName(tag)),
+              selected: isSelected,
+              onSelected: (selected) {
+                setState(() {
+                  if (selected) {
+                    _selectedTags.add(tag);
+                  } else {
+                    _selectedTags.remove(tag);
+                  }
+                });
+              },
+              selectedColor: AppColors.primary.withValues(alpha: 0.2),
+              checkmarkColor: AppColors.primary,
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 
@@ -478,6 +660,8 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
       price: double.tryParse(_priceController.text) ?? 0,
       type: _selectedType,
       status: _selectedStatus,
+      category: _selectedCategory,
+      tags: _selectedTags,
       address: _addressController.text.trim(),
       city: _cityController.text.trim(),
       state: _stateController.text.trim(),
@@ -507,6 +691,111 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
 
     if (mounted) {
       Navigator.pop(context);
+    }
+  }
+
+  String _getCategoryDisplayName(PropertyCategory category) {
+    switch (category) {
+      case PropertyCategory.residential:
+        return 'Residencial';
+      case PropertyCategory.commercial:
+        return 'Comercial';
+      case PropertyCategory.industrial:
+        return 'Industrial';
+      case PropertyCategory.rural:
+        return 'Rural';
+      case PropertyCategory.luxury:
+        return 'Luxo';
+      case PropertyCategory.investment:
+        return 'Investimento';
+      case PropertyCategory.vacation:
+        return 'Férias';
+      case PropertyCategory.student:
+        return 'Estudante';
+    }
+  }
+
+  String _getTagDisplayName(PropertyTag tag) {
+    switch (tag) {
+      // Tags de destaque
+      case PropertyTag.featured:
+        return 'Destaque';
+      case PropertyTag.launch:
+        return 'Lançamento';
+      case PropertyTag.newProperty:
+        return 'Novo';
+      case PropertyTag.hotDeal:
+        return 'Oferta Quente';
+      case PropertyTag.exclusive:
+        return 'Exclusivo';
+      
+      // Tags de características
+      case PropertyTag.furnished:
+        return 'Mobiliado';
+      case PropertyTag.unfurnished:
+        return 'Não Mobiliado';
+      case PropertyTag.petFriendly:
+        return 'Pet Friendly';
+      case PropertyTag.hasPool:
+        return 'Com Piscina';
+      case PropertyTag.hasGym:
+        return 'Com Academia';
+      case PropertyTag.hasSecurity:
+        return 'Com Segurança';
+      case PropertyTag.hasGarage:
+        return 'Com Garagem';
+      case PropertyTag.hasGarden:
+        return 'Com Jardim';
+      case PropertyTag.hasBalcony:
+        return 'Com Varanda';
+      case PropertyTag.hasElevator:
+        return 'Com Elevador';
+      
+      // Tags de localização
+      case PropertyTag.nearMetro:
+        return 'Próximo ao Metrô';
+      case PropertyTag.nearSchool:
+        return 'Próximo à Escola';
+      case PropertyTag.nearHospital:
+        return 'Próximo ao Hospital';
+      case PropertyTag.nearShopping:
+        return 'Próximo ao Shopping';
+      case PropertyTag.beachfront:
+        return 'Frente para o Mar';
+      case PropertyTag.downtown:
+        return 'Centro';
+      case PropertyTag.quietArea:
+        return 'Área Tranquila';
+      
+      // Tags de financiamento
+      case PropertyTag.acceptsProposal:
+        return 'Aceita Proposta';
+      case PropertyTag.hasFinancing:
+        return 'Tem Financiamento';
+      case PropertyTag.cashOnly:
+        return 'Apenas à Vista';
+      case PropertyTag.rentToOwn:
+        return 'Renda para Compra';
+      
+      // Tags de urgência
+      case PropertyTag.urgent:
+        return 'Urgente';
+      case PropertyTag.priceReduced:
+        return 'Preço Reduzido';
+      case PropertyTag.motivatedSeller:
+        return 'Vendedor Motivado';
+      
+      // Tags especiais
+      case PropertyTag.heritage:
+        return 'Patrimônio';
+      case PropertyTag.ecoFriendly:
+        return 'Eco-Friendly';
+      case PropertyTag.smartHome:
+        return 'Casa Inteligente';
+      case PropertyTag.renovated:
+        return 'Reformado';
+      case PropertyTag.needsRenovation:
+        return 'Precisa Reforma';
     }
   }
 

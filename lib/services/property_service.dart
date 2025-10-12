@@ -310,6 +310,8 @@ class PropertyService {
       'tipo_imovel': _getTypeString(property.type),
       'status': _getStatusString(property.status),
       'tipo_transacao': property.transactionType != null ? _getTransactionTypeString(property.transactionType!) : null,
+      'categoria': property.category != null ? _getCategoryString(property.category!) : null,
+      'tags': property.tags.map((tag) => _getTagString(tag)).toList(),
       'endereco': property.address,
       'cidade': property.city,
       'estado': property.state,
@@ -363,6 +365,111 @@ class PropertyService {
         return 'aluguel';
       case PropertyTransactionType.daily:
         return 'temporada';
+    }
+  }
+
+  static String _getCategoryString(PropertyCategory category) {
+    switch (category) {
+      case PropertyCategory.residential:
+        return 'residencial';
+      case PropertyCategory.commercial:
+        return 'comercial';
+      case PropertyCategory.industrial:
+        return 'industrial';
+      case PropertyCategory.rural:
+        return 'rural';
+      case PropertyCategory.luxury:
+        return 'luxo';
+      case PropertyCategory.investment:
+        return 'investimento';
+      case PropertyCategory.vacation:
+        return 'ferias';
+      case PropertyCategory.student:
+        return 'estudante';
+    }
+  }
+
+  static String _getTagString(PropertyTag tag) {
+    switch (tag) {
+      // Tags de destaque
+      case PropertyTag.featured:
+        return 'destaque';
+      case PropertyTag.launch:
+        return 'lancamento';
+      case PropertyTag.newProperty:
+        return 'novo';
+      case PropertyTag.hotDeal:
+        return 'oferta_quente';
+      case PropertyTag.exclusive:
+        return 'exclusivo';
+      
+      // Tags de características
+      case PropertyTag.furnished:
+        return 'mobiliado';
+      case PropertyTag.unfurnished:
+        return 'nao_mobiliado';
+      case PropertyTag.petFriendly:
+        return 'pet_friendly';
+      case PropertyTag.hasPool:
+        return 'com_piscina';
+      case PropertyTag.hasGym:
+        return 'com_academia';
+      case PropertyTag.hasSecurity:
+        return 'com_seguranca';
+      case PropertyTag.hasGarage:
+        return 'com_garagem';
+      case PropertyTag.hasGarden:
+        return 'com_jardim';
+      case PropertyTag.hasBalcony:
+        return 'com_varanda';
+      case PropertyTag.hasElevator:
+        return 'com_elevador';
+      
+      // Tags de localização
+      case PropertyTag.nearMetro:
+        return 'proximo_metro';
+      case PropertyTag.nearSchool:
+        return 'proximo_escola';
+      case PropertyTag.nearHospital:
+        return 'proximo_hospital';
+      case PropertyTag.nearShopping:
+        return 'proximo_shopping';
+      case PropertyTag.beachfront:
+        return 'frente_mar';
+      case PropertyTag.downtown:
+        return 'centro';
+      case PropertyTag.quietArea:
+        return 'area_tranquila';
+      
+      // Tags de financiamento
+      case PropertyTag.acceptsProposal:
+        return 'aceita_proposta';
+      case PropertyTag.hasFinancing:
+        return 'tem_financiamento';
+      case PropertyTag.cashOnly:
+        return 'apenas_vista';
+      case PropertyTag.rentToOwn:
+        return 'renda_compra';
+      
+      // Tags de urgência
+      case PropertyTag.urgent:
+        return 'urgente';
+      case PropertyTag.priceReduced:
+        return 'preco_reduzido';
+      case PropertyTag.motivatedSeller:
+        return 'vendedor_motivado';
+      
+      // Tags especiais
+      case PropertyTag.heritage:
+        return 'patrimonio';
+      case PropertyTag.ecoFriendly:
+        return 'eco_friendly';
+      case PropertyTag.smartHome:
+        return 'casa_inteligente';
+      case PropertyTag.renovated:
+        return 'reformado';
+      case PropertyTag.needsRenovation:
+        return 'precisa_reforma';
     }
   }
 }

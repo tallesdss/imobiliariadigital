@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import '../../models/alert_model.dart' as alert_models;
-import '../../services/notification_service.dart';
+import 'package:provider/provider.dart';
+import '../../models/favorite_model.dart';
+import '../../services/alert_service.dart';
+import '../../services/auth_service.dart';
 import '../../widgets/common/loading_widget.dart';
 import '../../widgets/common/error_widget.dart';
-import 'create_alert_screen.dart';
 import 'alert_settings_screen.dart';
 
 /// Tela de gerenciamento de alertas do usuário
@@ -17,11 +17,10 @@ class AlertsScreen extends StatefulWidget {
 
 class _AlertsScreenState extends State<AlertsScreen>
     with SingleTickerProviderStateMixin {
-  final NotificationService _notificationService = NotificationService();
   late TabController _tabController;
   
-  List<alert_models.PropertyAlert> _alerts = [];
-  List<alert_models.AlertHistory> _history = [];
+  List<PropertyAlert> _alerts = [];
+  List<Map<String, dynamic>> _history = []; // TODO: Implementar modelo de histórico
   Map<String, dynamic> _stats = {};
   bool _isLoading = true;
   String? _error;
@@ -47,19 +46,30 @@ class _AlertsScreenState extends State<AlertsScreen>
     });
 
     try {
-      // Simular userId - em produção viria do AuthService
-      const userId = 'current_user_id';
+      final authService = Provider.of<AuthService>(context, listen: false);
+      final user = authService.currentUser;
       
-      final results = await Future.wait([
-        _notificationService.getUserAlerts(userId),
-        _notificationService.getAlertHistory(userId),
-        _notificationService.getAlertStats(userId),
-      ]);
-
+      if (user == null) {
+        setState(() {
+          _error = 'Usuário não autenticado';
+          _isLoading = false;
+        });
+        return;
+      }
+      
+      // Carregar alertas usando AlertService
+      final alerts = await AlertService.getUserAlerts();
+      
       setState(() {
-        _alerts = results[0] as List<alert_models.PropertyAlert>;
-        _history = results[1] as List<alert_models.AlertHistory>;
-        _stats = results[2] as Map<String, dynamic>;
+        _alerts = alerts;
+        _history = []; // TODO: Implementar histórico de alertas
+        _stats = {
+          'totalAlerts': alerts.length,
+          'activeAlerts': alerts.where((a) => a.isActive).length,
+          'totalTriggers': 0, // TODO: Implementar contagem de disparos
+          'unreadAlerts': 0, // TODO: Implementar notificações não lidas
+          'alertsByType': _groupAlertsByType(alerts),
+        };
         _isLoading = false;
       });
     } catch (e) {
@@ -72,71 +82,49 @@ class _AlertsScreenState extends State<AlertsScreen>
 
   /// Cria um novo alerta
   Future<void> _createAlert() async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const CreateAlertScreen(),
-      ),
-    );
-
-    if (result == true) {
-      _loadData();
-    }
+    // TODO: Implementar tela de criação de alertas
+    _showSnackBar('Funcionalidade de criação em desenvolvimento');
   }
 
   /// Edita um alerta existente
-  Future<void> _editAlert(alert_models.PropertyAlert alert) async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => CreateAlertScreen(alert: alert),
-      ),
-    );
-
-    if (result == true) {
-      _loadData();
-    }
+  Future<void> _editAlert(PropertyAlert alert) async {
+    // TODO: Implementar tela de edição de alertas
+    _showSnackBar('Funcionalidade de edição em desenvolvimento');
   }
 
   /// Remove um alerta
-  Future<void> _deleteAlert(alert_models.PropertyAlert alert) async {
+  Future<void> _deleteAlert(PropertyAlert alert) async {
     final confirmed = await _showDeleteConfirmation(alert);
     if (confirmed == true) {
-      final success = await _notificationService.deleteAlert(alert.id);
-      if (success) {
+      try {
+        await AlertService.deleteAlert(alert.id);
         _loadData();
         _showSnackBar('Alerta removido com sucesso');
-      } else {
-        _showSnackBar('Erro ao remover alerta');
+      } catch (e) {
+        _showSnackBar('Erro ao remover alerta: $e');
       }
     }
   }
 
   /// Alterna status ativo/inativo do alerta
-  Future<void> _toggleAlertStatus(alert_models.PropertyAlert alert) async {
-    final updatedAlert = alert.copyWith(isActive: !alert.isActive);
-    final success = await _notificationService.updateAlert(updatedAlert);
-    
-    if (success) {
+  Future<void> _toggleAlertStatus(PropertyAlert alert) async {
+    try {
+      await AlertService.updateAlert(
+        alert.id,
+        isActive: !alert.isActive,
+      );
       _loadData();
       _showSnackBar(
         alert.isActive ? 'Alerta pausado' : 'Alerta ativado',
       );
-    } else {
-      _showSnackBar('Erro ao atualizar alerta');
+    } catch (e) {
+      _showSnackBar('Erro ao atualizar alerta: $e');
     }
   }
 
-  /// Marca alerta como lido
-  Future<void> _markAsRead(alert_models.AlertHistory history) async {
-    final success = await _notificationService.markAlertAsRead(history.id);
-    if (success) {
-      _loadData();
-    }
-  }
 
   /// Mostra confirmação de exclusão
-  Future<bool?> _showDeleteConfirmation(alert_models.PropertyAlert alert) {
+  Future<bool?> _showDeleteConfirmation(PropertyAlert alert) {
     return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -169,16 +157,14 @@ class _AlertsScreenState extends State<AlertsScreen>
   }
 
   /// Obtém nome do tipo de alerta
-  String _getAlertTypeName(alert_models.AlertType type) {
+  String _getAlertTypeName(AlertType type) {
     switch (type) {
-      case alert_models.AlertType.priceDrop:
+      case AlertType.priceReduction:
         return 'Redução de Preço';
-      case alert_models.AlertType.statusChange:
-        return 'Mudança de Status';
-      case alert_models.AlertType.newProperty:
-        return 'Novo Imóvel';
-      case alert_models.AlertType.custom:
-        return 'Personalizado';
+      case AlertType.sold:
+        return 'Imóvel Vendido';
+      case AlertType.newSimilar:
+        return 'Imóvel Similar';
     }
   }
 
@@ -187,10 +173,6 @@ class _AlertsScreenState extends State<AlertsScreen>
     return '${date.day}/${date.month}/${date.year}';
   }
 
-  /// Formata data e hora
-  String _formatDateTime(DateTime date) {
-    return '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -316,7 +298,7 @@ class _AlertsScreenState extends State<AlertsScreen>
   }
 
   /// Constrói card de alerta
-  Widget _buildAlertCard(alert_models.PropertyAlert alert) {
+  Widget _buildAlertCard(PropertyAlert alert) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
@@ -332,10 +314,9 @@ class _AlertsScreenState extends State<AlertsScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Criado em: ${_formatDate(alert.createdAt)}'),
-            if (alert.triggerCount > 0)
-              Text('Disparado ${alert.triggerCount} vezes'),
-            if (alert.lastTriggered != null)
-              Text('Último disparo: ${_formatDateTime(alert.lastTriggered!)}'),
+            Text('Imóvel: ${alert.propertyTitle}'),
+            if (alert.targetPrice != null)
+              Text('Preço alvo: R\$ ${alert.targetPrice!.toStringAsFixed(2)}'),
           ],
         ),
         trailing: PopupMenuButton<String>(
@@ -387,36 +368,22 @@ class _AlertsScreenState extends State<AlertsScreen>
   }
 
   /// Constrói card de histórico
-  Widget _buildHistoryCard(alert_models.AlertHistory history) {
+  Widget _buildHistoryCard(Map<String, dynamic> history) {
+    // TODO: Implementar quando histórico estiver disponível
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: history.wasRead ? Colors.grey : Colors.blue,
-          child: Icon(
-            _getAlertTypeIcon(history.type),
+          backgroundColor: Colors.grey,
+          child: const Icon(
+            Icons.history,
             color: Colors.white,
           ),
         ),
-        title: Text(
-          history.message,
-          style: TextStyle(
-            fontWeight: history.wasRead ? FontWeight.normal : FontWeight.bold,
-          ),
-        ),
-        subtitle: Text(_formatDateTime(history.triggeredAt)),
-        trailing: history.wasRead
-            ? null
-            : IconButton(
-                onPressed: () => _markAsRead(history),
-                icon: const Icon(Icons.mark_email_read),
-                tooltip: 'Marcar como lido',
-              ),
+        title: const Text('Histórico não disponível'),
+        subtitle: const Text('Funcionalidade em desenvolvimento'),
         onTap: () {
-          // Navegar para detalhes do imóvel
-          if (history.propertyId.isNotEmpty) {
-            context.go('/user/property/${history.propertyId}');
-          }
+          // TODO: Implementar navegação quando histórico estiver disponível
         },
       ),
     );
@@ -591,30 +558,26 @@ class _AlertsScreenState extends State<AlertsScreen>
   }
 
   /// Obtém ícone do tipo de alerta
-  IconData _getAlertTypeIcon(alert_models.AlertType type) {
+  IconData _getAlertTypeIcon(AlertType type) {
     switch (type) {
-      case alert_models.AlertType.priceDrop:
+      case AlertType.priceReduction:
         return Icons.trending_down;
-      case alert_models.AlertType.statusChange:
-        return Icons.swap_horiz;
-      case alert_models.AlertType.newProperty:
+      case AlertType.sold:
+        return Icons.check_circle;
+      case AlertType.newSimilar:
         return Icons.home_work;
-      case alert_models.AlertType.custom:
-        return Icons.tune;
     }
   }
 
   /// Obtém nome do tipo de alerta a partir da string
   String _getAlertTypeNameFromString(String type) {
     switch (type) {
-      case 'priceDrop':
+      case 'priceReduction':
         return 'Redução de Preço';
-      case 'statusChange':
-        return 'Mudança de Status';
-      case 'newProperty':
-        return 'Novo Imóvel';
-      case 'custom':
-        return 'Personalizado';
+      case 'sold':
+        return 'Imóvel Vendido';
+      case 'newSimilar':
+        return 'Imóvel Similar';
       default:
         return type;
     }
@@ -623,16 +586,24 @@ class _AlertsScreenState extends State<AlertsScreen>
   /// Obtém cor do tipo de alerta
   Color _getAlertTypeColor(String type) {
     switch (type) {
-      case 'priceDrop':
+      case 'priceReduction':
         return Colors.red[100]!;
-      case 'statusChange':
+      case 'sold':
         return Colors.blue[100]!;
-      case 'newProperty':
+      case 'newSimilar':
         return Colors.green[100]!;
-      case 'custom':
-        return Colors.purple[100]!;
       default:
         return Colors.grey[100]!;
     }
+  }
+
+  /// Agrupa alertas por tipo
+  Map<String, int> _groupAlertsByType(List<PropertyAlert> alerts) {
+    final Map<String, int> grouped = {};
+    for (final alert in alerts) {
+      final type = alert.type.name;
+      grouped[type] = (grouped[type] ?? 0) + 1;
+    }
+    return grouped;
   }
 }
