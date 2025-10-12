@@ -781,8 +781,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     return Consumer<PropertyStateService>(
       builder: (context, propertyService, child) {
         final screenWidth = MediaQuery.of(context).size.width;
-        final isTablet = screenWidth > 600;
-        final isDesktop = screenWidth > 1024;
+        final isMobile = screenWidth < 600;
+        final isTablet = screenWidth >= 600 && screenWidth < 1024;
         
         // Usar allProperties quando não há filtros ativos para mostrar todos os imóveis
         final propertiesToShow = (propertyService.searchQuery.isEmpty && 
@@ -825,59 +825,59 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           );
         }
 
-    if (isTablet && !_showCarousels) {
-      // Layout em grade para tablets quando não há carrosséis
-      return GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        padding: EdgeInsets.symmetric(
-          horizontal: isTablet ? 24 : AppSpacing.lg,
-          vertical: AppSpacing.md,
-        ),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: isDesktop ? 3 : 2,
-          childAspectRatio: 0.8,
-          crossAxisSpacing: AppSpacing.md,
-          mainAxisSpacing: AppSpacing.md,
-        ),
-        itemCount: propertiesToShow.length,
-        itemBuilder: (context, index) {
-          final property = propertiesToShow[index];
-          return PropertyCard(
-            property: property,
-            isFavorite: _favoritePropertyIds.contains(property.id),
-            onTap: () => _navigateToPropertyDetail(property.id),
-            onFavorite: () => _toggleFavorite(property.id),
-            onCompare: () => _toggleCompare(property.id),
-          );
-        },
-      );
-    }
-
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      padding: EdgeInsets.symmetric(
-        horizontal: isTablet ? 24 : AppSpacing.lg,
-        vertical: AppSpacing.md,
-      ),
-      itemCount: propertiesToShow.length,
-      separatorBuilder: (context, index) => SizedBox(
-        height: isTablet ? 20 : AppSpacing.md,
-      ),
-      itemBuilder: (context, index) {
-        final property = propertiesToShow[index];
-        return PropertyCard(
-          property: property,
-          isFavorite: _favoritePropertyIds.contains(property.id),
-          onTap: () => _navigateToPropertyDetail(property.id),
-          onFavorite: () => _toggleFavorite(property.id),
-          onCompare: () => _toggleCompare(property.id),
+        // Sempre usar grade responsiva para melhor experiência
+        return GridView.builder(
+          padding: EdgeInsets.symmetric(
+            horizontal: isMobile ? AppSpacing.md : isTablet ? 24 : 32,
+            vertical: AppSpacing.md,
+          ),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: _getCrossAxisCount(screenWidth),
+            childAspectRatio: _getChildAspectRatio(screenWidth),
+            crossAxisSpacing: isMobile ? AppSpacing.sm : AppSpacing.md,
+            mainAxisSpacing: isMobile ? AppSpacing.sm : AppSpacing.md,
+          ),
+          itemCount: propertiesToShow.length,
+          itemBuilder: (context, index) {
+            final property = propertiesToShow[index];
+            return PropertyCard(
+              property: property,
+              isFavorite: _favoritePropertyIds.contains(property.id),
+              onTap: () => _navigateToPropertyDetail(property.id),
+              onFavorite: () => _toggleFavorite(property.id),
+              onCompare: () => _toggleCompare(property.id),
+              isCompact: isMobile, // Usar versão compacta em mobile
+            );
+          },
         );
       },
     );
-      },
-    );
+  }
+
+  int _getCrossAxisCount(double screenWidth) {
+    if (screenWidth < 600) {
+      return 1; // Mobile: 1 coluna
+    } else if (screenWidth < 900) {
+      return 2; // Tablet pequeno: 2 colunas
+    } else if (screenWidth < 1200) {
+      return 3; // Tablet grande: 3 colunas
+    } else if (screenWidth < 1600) {
+      return 4; // Desktop pequeno: 4 colunas
+    } else {
+      return 5; // Desktop grande: 5 colunas
+    }
+  }
+
+  double _getChildAspectRatio(double screenWidth) {
+    if (screenWidth < 600) {
+      return 1.2; // Mobile: formato mais retangular
+    } else if (screenWidth < 900) {
+      return 0.85; // Tablet pequeno: formato mais quadrado
+    } else if (screenWidth < 1200) {
+      return 0.8; // Tablet grande: formato quadrado
+    } else {
+      return 0.75; // Desktop: formato mais vertical
+    }
   }
 }
 
