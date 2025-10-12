@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../../models/property_model.dart';
 import '../../theme/app_theme.dart';
 
@@ -27,15 +28,23 @@ class PropertyCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
+      clipBehavior: Clip.antiAlias, // Evitar overflow
       child: InkWell(
-        onTap: onTap,
+        onTap: () {
+          if (kDebugMode) {
+            debugPrint('PropertyCard: onTap chamado para imóvel ${property.id}');
+          }
+          onTap?.call();
+        },
         borderRadius: BorderRadius.circular(12),
         splashColor: AppTheme.primaryColor.withValues(alpha: 0.1),
         highlightColor: AppTheme.primaryColor.withValues(alpha: 0.05),
         child: SizedBox(
           height: isCompact ? 320 : 400,
+          width: double.infinity, // Garantir largura definida
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min, // Evitar overflow
             children: [
               // Imagem do imóvel
               Expanded(
@@ -53,18 +62,30 @@ class PropertyCard extends StatelessWidget {
                             ? Image.network(
                                 property.photos.first,
                                 fit: BoxFit.cover,
+                                width: double.infinity,
+                                height: double.infinity,
                                 errorBuilder: (context, error, stackTrace) {
-                                  return const Icon(
-                                    Icons.home,
-                                    size: 40,
-                                    color: Colors.grey,
+                                  return const Center(
+                                    child: Icon(
+                                      Icons.home,
+                                      size: 40,
+                                      color: Colors.grey,
+                                    ),
+                                  );
+                                },
+                                loadingBuilder: (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return const Center(
+                                    child: CircularProgressIndicator(),
                                   );
                                 },
                               )
-                            : const Icon(
-                                Icons.home,
-                                size: 40,
-                                color: Colors.grey,
+                            : const Center(
+                                child: Icon(
+                                  Icons.home,
+                                  size: 40,
+                                  color: Colors.grey,
+                                ),
                               ),
                       ),
                     ),
@@ -153,6 +174,7 @@ class PropertyCard extends StatelessWidget {
                   padding: const EdgeInsets.all(12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min, // Evitar overflow
                     children: [
                       // Título
                       Text(
@@ -177,33 +199,31 @@ class PropertyCard extends StatelessWidget {
                       const SizedBox(height: 8),
                       
                       // Características
-                      Row(
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 4,
                         children: [
                           _buildFeature(
                             Icons.bed,
                             '${property.attributes['bedrooms'] ?? 0}',
                           ),
-                          const SizedBox(width: 12),
                           _buildFeature(
                             Icons.bathtub,
                             '${property.attributes['bathrooms'] ?? 0}',
                           ),
-                          const SizedBox(width: 12),
                           _buildFeature(
                             Icons.square_foot,
                             '${property.attributes['area'] ?? 0}m²',
                           ),
                           if (property.attributes['parkingSpaces'] != null && 
-                              property.attributes['parkingSpaces'] != 0) ...[
-                            const SizedBox(width: 12),
+                              property.attributes['parkingSpaces'] != 0)
                             _buildFeature(
                               Icons.local_parking,
                               '${property.attributes['parkingSpaces']}',
                             ),
-                          ],
                         ],
                       ),
-                      const Spacer(),
+                      const SizedBox(height: 8),
                       
                       // Preço
                       Row(
@@ -216,6 +236,8 @@ class PropertyCard extends StatelessWidget {
                                 color: AppTheme.primaryColor,
                                 fontWeight: FontWeight.bold,
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           if (property.transactionType != null)

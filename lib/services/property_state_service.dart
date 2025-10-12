@@ -35,7 +35,7 @@ class PropertyStateService extends ChangeNotifier {
   bool get hasMoreData => _hasMoreData;
 
   Future<void> initialize() async {
-    _setLoading(true);
+    _isLoading = true;
     try {
       await Future.wait([
         _loadFeaturedProperties(),
@@ -44,9 +44,11 @@ class PropertyStateService extends ChangeNotifier {
         _loadStats(),
       ]);
     } catch (e) {
-      _setError('Erro ao inicializar dados: $e');
+      _error = 'Erro ao inicializar dados: $e';
     } finally {
-      _setLoading(false);
+      _isLoading = false;
+      // Notificar apenas no final da inicialização
+      notifyListeners();
     }
   }
 
@@ -150,6 +152,11 @@ class PropertyStateService extends ChangeNotifier {
 
   void _applyFilters() {
     _filteredProperties = _allProperties.where((property) {
+      // Aplicar filtro por tipo de propriedade
+      if (_selectedType != null && property.type != _selectedType) {
+        return false;
+      }
+      
       // Aplicar filtros avançados
       return _matchesAdvancedFilters(property);
     }).toList();
@@ -255,23 +262,24 @@ class PropertyStateService extends ChangeNotifier {
     }
   }
 
-  void _setLoading(bool loading) {
-    _isLoading = loading;
-    notifyListeners();
-  }
-
   void _setLoadingMore(bool loading) {
-    _isLoadingMore = loading;
-    notifyListeners();
+    if (_isLoadingMore != loading) {
+      _isLoadingMore = loading;
+      notifyListeners();
+    }
   }
 
   void _setError(String error) {
-    _error = error;
-    notifyListeners();
+    if (_error != error) {
+      _error = error;
+      notifyListeners();
+    }
   }
 
   void _clearError() {
-    _error = null;
-    notifyListeners();
+    if (_error != null) {
+      _error = null;
+      notifyListeners();
+    }
   }
 }

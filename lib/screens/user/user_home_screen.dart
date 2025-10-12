@@ -13,6 +13,7 @@ import '../../models/filter_model.dart';
 import '../../widgets/cards/property_card.dart';
 import '../../widgets/common/fixed_sidebar.dart';
 import 'property_comparison_screen.dart';
+import 'property_detail_screen.dart';
 
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});
@@ -32,10 +33,15 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   @override
   void initState() {
     super.initState();
-    _initializeData();
+    // Usar WidgetsBinding para executar após o build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeData();
+    });
   }
 
   Future<void> _initializeData() async {
+    if (!mounted) return;
+    
     final propertyService = Provider.of<PropertyStateService>(context, listen: false);
     await propertyService.initialize();
     await propertyService.loadProperties(refresh: true);
@@ -187,7 +193,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 ],
               ),
             ),
-            _buildPropertiesGrid(),
+            // Usar shrinkWrap para o GridView dentro do SingleChildScrollView
+            _buildPropertiesGrid(shrinkWrap: true),
             const SizedBox(height: AppSpacing.xl),
           ],
         ),
@@ -312,9 +319,56 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
   void _navigateToPropertyDetail(String propertyId) {
     if (kDebugMode) {
-      debugPrint('Navegando para detalhes do imóvel: $propertyId');
+      debugPrint('=== NAVEGAÇÃO INICIADA ===');
+      debugPrint('Property ID: $propertyId');
+      debugPrint('Rota completa: /user/property/$propertyId');
+      debugPrint('Context: ${context.runtimeType}');
     }
-    context.go('/user/property/$propertyId');
+    
+    // Verificar se o router está disponível
+    final router = GoRouter.of(context);
+    if (kDebugMode) {
+      debugPrint('Router encontrado: ${router.runtimeType}');
+      debugPrint('Localização atual: ${router.routerDelegate.currentConfiguration.uri}');
+    }
+    
+    try {
+      // Tentar primeiro com context.push (navegação empilhada)
+      context.push('/user/property/$propertyId');
+      if (kDebugMode) {
+        debugPrint('✅ Navegação GoRouter (push) executada com sucesso');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('❌ Erro na navegação GoRouter: $e');
+        debugPrint('Tentando fallback com Navigator.push...');
+      }
+      
+      // Fallback: tentar com Navigator.push
+      try {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PropertyDetailScreen(propertyId: propertyId),
+          ),
+        );
+        if (kDebugMode) {
+          debugPrint('✅ Fallback Navigator.push executado com sucesso');
+        }
+      } catch (fallbackError) {
+        if (kDebugMode) {
+          debugPrint('❌ Erro no fallback Navigator.push: $fallbackError');
+        }
+        
+        // Mostrar erro para o usuário
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao abrir detalhes do imóvel: $fallbackError'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _showUserMenu() {
@@ -777,7 +831,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
-  Widget _buildPropertiesGrid() {
+  Widget _buildPropertiesGrid({bool shrinkWrap = false}) {
     return Consumer<PropertyStateService>(
       builder: (context, propertyService, child) {
         final screenWidth = MediaQuery.of(context).size.width;
@@ -827,6 +881,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
         // Sempre usar grade responsiva para melhor experiência
         return GridView.builder(
+          shrinkWrap: shrinkWrap,
+          physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
           padding: EdgeInsets.symmetric(
             horizontal: isMobile ? AppSpacing.md : isTablet ? 24 : 32,
             vertical: AppSpacing.md,
