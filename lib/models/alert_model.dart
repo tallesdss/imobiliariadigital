@@ -112,6 +112,9 @@ enum AlertType {
   statusChange, // Mudança de status (vendido, alugado)
   newProperty, // Novo imóvel que atende critérios
   custom, // Alerta personalizado
+  priceReduction, // Redução de preço (compatibilidade)
+  sold, // Imóvel vendido
+  newSimilar, // Imóvel similar
 }
 
 /// Critérios para alertas
@@ -423,11 +426,14 @@ class AlertHistory {
   String get typeDisplayName {
     switch (type) {
       case AlertType.priceDrop:
+      case AlertType.priceReduction:
         return 'Redução de Preço';
       case AlertType.statusChange:
-        return 'Mudança de Status';
+      case AlertType.sold:
+        return 'Imóvel Vendido';
       case AlertType.newProperty:
-        return 'Novo Imóvel';
+      case AlertType.newSimilar:
+        return 'Imóvel Similar';
       case AlertType.custom:
         return 'Alerta Personalizado';
     }

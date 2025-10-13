@@ -436,10 +436,13 @@ class NotificationService {
 
     switch (type) {
       case alert_models.AlertType.priceDrop:
+      case alert_models.AlertType.priceReduction:
         return '💰 Preço baixou! $title em $neighborhood, $city - R\$ $price';
       case alert_models.AlertType.statusChange:
+      case alert_models.AlertType.sold:
         return '📋 Status alterado! $title em $neighborhood, $city - R\$ $price';
       case alert_models.AlertType.newProperty:
+      case alert_models.AlertType.newSimilar:
         return '🆕 Novo imóvel! $title em $neighborhood, $city - R\$ $price';
       case alert_models.AlertType.custom:
         return '🔔 Alerta personalizado! $title em $neighborhood, $city - R\$ $price';

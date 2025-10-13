@@ -180,8 +180,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     // Navegar baseado no tipo de notificação
     switch (notification.type) {
       case alert_models.AlertType.statusChange:
+      case alert_models.AlertType.sold:
       case alert_models.AlertType.priceDrop:
+      case alert_models.AlertType.priceReduction:
       case alert_models.AlertType.newProperty:
+      case alert_models.AlertType.newSimilar:
         if (notification.propertyId.isNotEmpty) {
           context.go('/user/property/${notification.propertyId}');
         } else {
@@ -245,12 +248,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   IconData _getNotificationIcon(alert_models.AlertType type) {
     switch (type) {
       case alert_models.AlertType.statusChange:
+      case alert_models.AlertType.sold:
         return Icons.home;
       case alert_models.AlertType.custom:
         return Icons.message;
       case alert_models.AlertType.priceDrop:
+      case alert_models.AlertType.priceReduction:
         return Icons.trending_down;
       case alert_models.AlertType.newProperty:
+      case alert_models.AlertType.newSimilar:
         return Icons.add_home;
     }
   }
@@ -258,10 +264,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Color _getPriorityColor(alert_models.AlertType type) {
     switch (type) {
       case alert_models.AlertType.priceDrop:
+      case alert_models.AlertType.priceReduction:
         return Colors.red;
       case alert_models.AlertType.newProperty:
+      case alert_models.AlertType.newSimilar:
         return Colors.green;
       case alert_models.AlertType.statusChange:
+      case alert_models.AlertType.sold:
         return Colors.orange;
       case alert_models.AlertType.custom:
         return Colors.blue;

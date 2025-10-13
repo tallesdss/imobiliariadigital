@@ -215,11 +215,14 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
   String _getAlertTypeName(alert_models.AlertType type) {
     switch (type) {
       case alert_models.AlertType.priceDrop:
+      case alert_models.AlertType.priceReduction:
         return 'Redução de Preço';
       case alert_models.AlertType.statusChange:
-        return 'Mudança de Status';
+      case alert_models.AlertType.sold:
+        return 'Imóvel Vendido';
       case alert_models.AlertType.newProperty:
-        return 'Novo Imóvel';
+      case alert_models.AlertType.newSimilar:
+        return 'Imóvel Similar';
       case alert_models.AlertType.custom:
         return 'Personalizado';
     }
@@ -686,10 +689,13 @@ class _CreateAlertScreenState extends State<CreateAlertScreen> {
   String _getAlertTypeDescription(alert_models.AlertType type) {
     switch (type) {
       case alert_models.AlertType.priceDrop:
+      case alert_models.AlertType.priceReduction:
         return 'Notificar quando o preço de um imóvel baixar';
       case alert_models.AlertType.statusChange:
+      case alert_models.AlertType.sold:
         return 'Notificar quando o status de um imóvel mudar';
       case alert_models.AlertType.newProperty:
+      case alert_models.AlertType.newSimilar:
         return 'Notificar sobre novos imóveis que atendem seus critérios';
       case alert_models.AlertType.custom:
         return 'Alerta personalizado com critérios específicos';

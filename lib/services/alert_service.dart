@@ -183,4 +183,125 @@ class AlertService {
       throw Exception('Erro inesperado: $e');
     }
   }
+
+  /// Cria alerta para redução de preço
+  static Future<PropertyAlert> createPriceDropAlert({
+    required String propertyId,
+    required String propertyTitle,
+    required double targetPrice,
+  }) async {
+    return createAlert(
+      propertyId: propertyId,
+      propertyTitle: propertyTitle,
+      type: AlertType.priceReduction,
+      targetPrice: targetPrice,
+    );
+  }
+
+  /// Cria alerta para imóvel vendido
+  static Future<PropertyAlert> createSoldAlert({
+    required String propertyId,
+    required String propertyTitle,
+  }) async {
+    return createAlert(
+      propertyId: propertyId,
+      propertyTitle: propertyTitle,
+      type: AlertType.sold,
+    );
+  }
+
+  /// Cria alerta para imóvel similar
+  static Future<PropertyAlert> createSimilarPropertyAlert({
+    required String propertyId,
+    required String propertyTitle,
+    double? targetPrice,
+  }) async {
+    return createAlert(
+      propertyId: propertyId,
+      propertyTitle: propertyTitle,
+      type: AlertType.newSimilar,
+      targetPrice: targetPrice,
+    );
+  }
+
+  /// Verifica se há redução de preço em um imóvel
+  static Future<bool> checkPriceDrop({
+    required String propertyId,
+    required double currentPrice,
+    required double previousPrice,
+  }) async {
+    try {
+      final response = await ApiService.dio.post('/alerts/check-price-drop', data: {
+        'propertyId': propertyId,
+        'currentPrice': currentPrice,
+        'previousPrice': previousPrice,
+      });
+      
+      if (response.statusCode == 200) {
+        return response.data['hasPriceDrop'] ?? false;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Verifica se um imóvel foi vendido
+  static Future<bool> checkPropertySold({
+    required String propertyId,
+    required String currentStatus,
+  }) async {
+    try {
+      final response = await ApiService.dio.post('/alerts/check-sold', data: {
+        'propertyId': propertyId,
+        'currentStatus': currentStatus,
+      });
+      
+      if (response.statusCode == 200) {
+        return response.data['isSold'] ?? false;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Busca imóveis similares com mesmo preço
+  static Future<List<Map<String, dynamic>>> findSimilarProperties({
+    required String propertyId,
+    required double price,
+    required String propertyType,
+    required String city,
+    double priceTolerance = 0.1, // 10% de tolerância
+  }) async {
+    try {
+      final response = await ApiService.dio.post('/alerts/find-similar', data: {
+        'propertyId': propertyId,
+        'price': price,
+        'propertyType': propertyType,
+        'city': city,
+        'priceTolerance': priceTolerance,
+      });
+      
+      if (response.statusCode == 200) {
+        return List<Map<String, dynamic>>.from(response.data['similarProperties'] ?? []);
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /// Processa alertas automaticamente
+  static Future<void> processAlerts() async {
+    try {
+      final response = await ApiService.dio.post('/alerts/process');
+      
+      if (response.statusCode == 200) {
+        // Alertas processados com sucesso
+      }
+    } catch (e) {
+      // Erro ao processar alertas: $e
+    }
+  }
 }

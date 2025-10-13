@@ -84,8 +84,75 @@ class _AlertsScreenState extends State<AlertsScreen>
 
   /// Cria um novo alerta
   Future<void> _createAlert() async {
-    // TODO: Implementar tela de criação de alertas
-    _showSnackBar('Funcionalidade de criação em desenvolvimento');
+    _showCreateAlertDialog();
+  }
+
+  /// Mostra diálogo para criar alerta
+  void _showCreateAlertDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => CreateAlertDialog(
+        onAlertCreated: (alert) {
+          _loadData();
+          _showSnackBar('Alerta criado com sucesso!');
+        },
+      ),
+    );
+  }
+
+  /// Cria alerta de redução de preço
+  Future<void> _createPriceDropAlert({
+    required String propertyId,
+    required String propertyTitle,
+    required double targetPrice,
+  }) async {
+    try {
+      await AlertService.createPriceDropAlert(
+        propertyId: propertyId,
+        propertyTitle: propertyTitle,
+        targetPrice: targetPrice,
+      );
+      _loadData();
+      _showSnackBar('Alerta de redução de preço criado!');
+    } catch (e) {
+      _showSnackBar('Erro ao criar alerta: $e');
+    }
+  }
+
+  /// Cria alerta de imóvel vendido
+  Future<void> _createSoldAlert({
+    required String propertyId,
+    required String propertyTitle,
+  }) async {
+    try {
+      await AlertService.createSoldAlert(
+        propertyId: propertyId,
+        propertyTitle: propertyTitle,
+      );
+      _loadData();
+      _showSnackBar('Alerta de imóvel vendido criado!');
+    } catch (e) {
+      _showSnackBar('Erro ao criar alerta: $e');
+    }
+  }
+
+  /// Cria alerta de imóvel similar
+  Future<void> _createSimilarPropertyAlert({
+    required String propertyId,
+    required String propertyTitle,
+    double? targetPrice,
+  }) async {
+    try {
+      await AlertService.createSimilarPropertyAlert(
+        propertyId: propertyId,
+        propertyTitle: propertyTitle,
+        targetPrice: targetPrice,
+      );
+      _loadData();
+      _showSnackBar('Alerta de imóvel similar criado!');
+    } catch (e) {
+      _showSnackBar('Erro ao criar alerta: $e');
+    }
   }
 
   /// Edita um alerta existente
@@ -184,11 +251,14 @@ class _AlertsScreenState extends State<AlertsScreen>
   String _getAlertTypeName(AlertType type) {
     switch (type) {
       case AlertType.priceDrop:
+      case AlertType.priceReduction:
         return 'Redução de Preço';
       case AlertType.statusChange:
-        return 'Mudança de Status';
+      case AlertType.sold:
+        return 'Imóvel Vendido';
       case AlertType.newProperty:
-        return 'Novo Imóvel';
+      case AlertType.newSimilar:
+        return 'Imóvel Similar';
       case AlertType.custom:
         return 'Alerta Personalizado';
     }
@@ -663,11 +733,14 @@ class _AlertsScreenState extends State<AlertsScreen>
   IconData _getAlertTypeIcon(AlertType type) {
     switch (type) {
       case AlertType.priceDrop:
+      case AlertType.priceReduction:
         return Icons.trending_down;
       case AlertType.statusChange:
-        return Icons.check_circle;
+      case AlertType.sold:
+        return Icons.verified;
       case AlertType.newProperty:
-        return Icons.home_work;
+      case AlertType.newSimilar:
+        return Icons.search;
       case AlertType.custom:
         return Icons.notifications;
     }
@@ -677,11 +750,14 @@ class _AlertsScreenState extends State<AlertsScreen>
   String _getAlertTypeNameFromString(String type) {
     switch (type) {
       case 'priceDrop':
+      case 'priceReduction':
         return 'Redução de Preço';
       case 'statusChange':
-        return 'Mudança de Status';
+      case 'sold':
+        return 'Imóvel Vendido';
       case 'newProperty':
-        return 'Novo Imóvel';
+      case 'newSimilar':
+        return 'Imóvel Similar';
       case 'custom':
         return 'Alerta Personalizado';
       default:
@@ -693,10 +769,13 @@ class _AlertsScreenState extends State<AlertsScreen>
   Color _getAlertTypeColor(String type) {
     switch (type) {
       case 'priceDrop':
+      case 'priceReduction':
         return Colors.red[100]!;
       case 'statusChange':
+      case 'sold':
         return Colors.blue[100]!;
       case 'newProperty':
+      case 'newSimilar':
         return Colors.green[100]!;
       case 'custom':
         return Colors.orange[100]!;
@@ -713,5 +792,198 @@ class _AlertsScreenState extends State<AlertsScreen>
       grouped[type] = (grouped[type] ?? 0) + 1;
     }
     return grouped;
+  }
+}
+
+/// Diálogo para criar alertas
+class CreateAlertDialog extends StatefulWidget {
+  final Function(PropertyAlert) onAlertCreated;
+
+  const CreateAlertDialog({
+    super.key,
+    required this.onAlertCreated,
+  });
+
+  @override
+  State<CreateAlertDialog> createState() => _CreateAlertDialogState();
+}
+
+class _CreateAlertDialogState extends State<CreateAlertDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _targetPriceController = TextEditingController();
+  final _propertyTitleController = TextEditingController();
+  final _propertyIdController = TextEditingController();
+  
+  AlertType _selectedType = AlertType.priceReduction;
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Criar Alerta'),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Tipo de Alerta
+              Text(
+                'Tipo de Alerta',
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<AlertType>(
+                initialValue: _selectedType,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
+                items: [
+                  AlertType.priceReduction,
+                  AlertType.sold,
+                  AlertType.newSimilar,
+                ].map((type) {
+                  return DropdownMenuItem(
+                    value: type,
+                    child: Text(_getAlertDisplayName(type)),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedType = value!;
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+
+              // ID do Imóvel
+              Text(
+                'ID do Imóvel',
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _propertyIdController,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  hintText: 'Ex: prop123',
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Digite o ID do imóvel';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+
+              // Título do Imóvel
+              Text(
+                'Título do Imóvel',
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _propertyTitleController,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  hintText: 'Ex: Apartamento 3 quartos',
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Digite o título do imóvel';
+                  }
+                  return null;
+                },
+              ),
+
+              // Preço Alvo (apenas para redução de preço)
+              if (_selectedType == AlertType.priceReduction) ...[
+                const SizedBox(height: 16),
+                Text(
+                  'Preço Alvo (R\$)',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _targetPriceController,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    hintText: 'Ex: 800000',
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Digite o preço alvo';
+                    }
+                    if (double.tryParse(value) == null) {
+                      return 'Digite um valor válido';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
+        ElevatedButton(
+          onPressed: _createAlert,
+          child: const Text('Criar Alerta'),
+        ),
+      ],
+    );
+  }
+
+  String _getAlertDisplayName(AlertType type) {
+    switch (type) {
+      case AlertType.priceReduction:
+        return 'Redução de Preço';
+      case AlertType.sold:
+        return 'Imóvel Vendido';
+      case AlertType.newSimilar:
+        return 'Imóvel Similar';
+      default:
+        return type.name;
+    }
+  }
+
+  void _createAlert() {
+    if (_formKey.currentState!.validate()) {
+      final alert = PropertyAlert(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        userId: 'current_user', // TODO: Obter do AuthService
+        propertyId: _propertyIdController.text,
+        propertyTitle: _propertyTitleController.text,
+        type: _selectedType,
+        targetPrice: _selectedType == AlertType.priceReduction
+            ? double.tryParse(_targetPriceController.text)
+            : null,
+        createdAt: DateTime.now(),
+        criteria: AlertCriteria(),
+        notificationSettings: NotificationSettings(),
+      );
+
+      widget.onAlertCreated(alert);
+      Navigator.pop(context);
+    }
+  }
+
+  @override
+  void dispose() {
+    _targetPriceController.dispose();
+    _propertyTitleController.dispose();
+    _propertyIdController.dispose();
+    super.dispose();
   }
 }
