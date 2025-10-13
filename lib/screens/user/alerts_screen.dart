@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../models/favorite_model.dart';
+import '../../models/alert_model.dart';
 import '../../services/alert_service.dart';
 import '../../services/auth_service.dart';
 import '../../widgets/common/loading_widget.dart';
@@ -20,7 +20,7 @@ class _AlertsScreenState extends State<AlertsScreen>
   late TabController _tabController;
   
   List<PropertyAlert> _alerts = [];
-  List<Map<String, dynamic>> _history = []; // TODO: Implementar modelo de histórico
+  List<AlertHistory> _history = [];
   Map<String, dynamic> _stats = {};
   bool _isLoading = true;
   String? _error;
@@ -57,17 +57,19 @@ class _AlertsScreenState extends State<AlertsScreen>
         return;
       }
       
-      // Carregar alertas usando AlertService
+      // Carregar alertas e histórico usando AlertService
       final alerts = await AlertService.getUserAlerts();
+      final history = await AlertService.getAlertHistory();
+      final stats = await AlertService.getAlertStats();
       
       setState(() {
         _alerts = alerts;
-        _history = []; // TODO: Implementar histórico de alertas
+        _history = history;
         _stats = {
           'totalAlerts': alerts.length,
           'activeAlerts': alerts.where((a) => a.isActive).length,
-          'totalTriggers': 0, // TODO: Implementar contagem de disparos
-          'unreadAlerts': 0, // TODO: Implementar notificações não lidas
+          'totalTriggers': stats['totalTriggers'] ?? history.length,
+          'unreadAlerts': stats['unreadAlerts'] ?? history.where((h) => !h.wasRead).length,
           'alertsByType': _groupAlertsByType(alerts),
         };
         _isLoading = false;
@@ -122,6 +124,28 @@ class _AlertsScreenState extends State<AlertsScreen>
     }
   }
 
+  /// Marca um item do histórico como lido
+  Future<void> _markHistoryAsRead(AlertHistory history) async {
+    try {
+      await AlertService.markHistoryAsRead(history.id);
+      _loadData();
+      _showSnackBar('Marcado como lido');
+    } catch (e) {
+      _showSnackBar('Erro ao marcar como lido: $e');
+    }
+  }
+
+  /// Marca todos os itens do histórico como lidos
+  Future<void> _markAllHistoryAsRead() async {
+    try {
+      await AlertService.markAllHistoryAsRead();
+      _loadData();
+      _showSnackBar('Todos marcados como lidos');
+    } catch (e) {
+      _showSnackBar('Erro ao marcar todos como lidos: $e');
+    }
+  }
+
 
   /// Mostra confirmação de exclusão
   Future<bool?> _showDeleteConfirmation(PropertyAlert alert) {
@@ -159,12 +183,14 @@ class _AlertsScreenState extends State<AlertsScreen>
   /// Obtém nome do tipo de alerta
   String _getAlertTypeName(AlertType type) {
     switch (type) {
-      case AlertType.priceReduction:
+      case AlertType.priceDrop:
         return 'Redução de Preço';
-      case AlertType.sold:
-        return 'Imóvel Vendido';
-      case AlertType.newSimilar:
-        return 'Imóvel Similar';
+      case AlertType.statusChange:
+        return 'Mudança de Status';
+      case AlertType.newProperty:
+        return 'Novo Imóvel';
+      case AlertType.custom:
+        return 'Alerta Personalizado';
     }
   }
 
@@ -271,14 +297,37 @@ class _AlertsScreenState extends State<AlertsScreen>
   Widget _buildHistoryTab() {
     return RefreshIndicator(
       onRefresh: _loadData,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: _history.length,
-        itemBuilder: (context, index) {
-          final history = _history[index];
-          return _buildHistoryCard(history);
-        },
-      ),
+      child: _history.isEmpty
+          ? _buildEmptyHistoryState()
+          : Column(
+              children: [
+                if (_history.any((h) => !h.wasRead)) ...[
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    child: ElevatedButton.icon(
+                      onPressed: _markAllHistoryAsRead,
+                      icon: const Icon(Icons.mark_email_read),
+                      label: const Text('Marcar Todos como Lidos'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _history.length,
+                    itemBuilder: (context, index) {
+                      final history = _history[index];
+                      return _buildHistoryCard(history);
+                    },
+                  ),
+                ),
+              ],
+            ),
     );
   }
 
@@ -368,22 +417,43 @@ class _AlertsScreenState extends State<AlertsScreen>
   }
 
   /// Constrói card de histórico
-  Widget _buildHistoryCard(Map<String, dynamic> history) {
-    // TODO: Implementar quando histórico estiver disponível
+  Widget _buildHistoryCard(AlertHistory history) {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: Colors.grey,
-          child: const Icon(
-            Icons.history,
+          backgroundColor: history.wasRead ? Colors.grey : _getAlertTypeColor(history.type.name),
+          child: Icon(
+            _getAlertTypeIcon(history.type),
             color: Colors.white,
           ),
         ),
-        title: const Text('Histórico não disponível'),
-        subtitle: const Text('Funcionalidade em desenvolvimento'),
+        title: Text(
+          history.message,
+          style: TextStyle(
+            fontWeight: history.wasRead ? FontWeight.normal : FontWeight.bold,
+          ),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Tipo: ${history.typeDisplayName}'),
+            Text('Há ${history.timeAgo}'),
+            if (history.metadata != null && history.metadata!['propertyTitle'] != null)
+              Text('Imóvel: ${history.metadata!['propertyTitle']}'),
+          ],
+        ),
+        trailing: history.wasRead
+            ? null
+            : IconButton(
+                onPressed: () => _markHistoryAsRead(history),
+                icon: const Icon(Icons.mark_email_read),
+                tooltip: 'Marcar como lido',
+              ),
         onTap: () {
-          // TODO: Implementar navegação quando histórico estiver disponível
+          if (!history.wasRead) {
+            _markHistoryAsRead(history);
+          }
         },
       ),
     );
@@ -557,27 +627,63 @@ class _AlertsScreenState extends State<AlertsScreen>
     );
   }
 
+  /// Constrói estado vazio do histórico
+  Widget _buildEmptyHistoryState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.history,
+            size: 64,
+            color: Colors.grey[400],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Nenhum histórico de alertas',
+            style: TextStyle(
+              fontSize: 18,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Quando seus alertas forem disparados,\naparecerão aqui',
+            style: TextStyle(
+              color: Colors.grey[500],
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
   /// Obtém ícone do tipo de alerta
   IconData _getAlertTypeIcon(AlertType type) {
     switch (type) {
-      case AlertType.priceReduction:
+      case AlertType.priceDrop:
         return Icons.trending_down;
-      case AlertType.sold:
+      case AlertType.statusChange:
         return Icons.check_circle;
-      case AlertType.newSimilar:
+      case AlertType.newProperty:
         return Icons.home_work;
+      case AlertType.custom:
+        return Icons.notifications;
     }
   }
 
   /// Obtém nome do tipo de alerta a partir da string
   String _getAlertTypeNameFromString(String type) {
     switch (type) {
-      case 'priceReduction':
+      case 'priceDrop':
         return 'Redução de Preço';
-      case 'sold':
-        return 'Imóvel Vendido';
-      case 'newSimilar':
-        return 'Imóvel Similar';
+      case 'statusChange':
+        return 'Mudança de Status';
+      case 'newProperty':
+        return 'Novo Imóvel';
+      case 'custom':
+        return 'Alerta Personalizado';
       default:
         return type;
     }
@@ -586,12 +692,14 @@ class _AlertsScreenState extends State<AlertsScreen>
   /// Obtém cor do tipo de alerta
   Color _getAlertTypeColor(String type) {
     switch (type) {
-      case 'priceReduction':
+      case 'priceDrop':
         return Colors.red[100]!;
-      case 'sold':
+      case 'statusChange':
         return Colors.blue[100]!;
-      case 'newSimilar':
+      case 'newProperty':
         return Colors.green[100]!;
+      case 'custom':
+        return Colors.orange[100]!;
       default:
         return Colors.grey[100]!;
     }

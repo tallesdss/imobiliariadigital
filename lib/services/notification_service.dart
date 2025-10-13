@@ -245,6 +245,9 @@ class NotificationService {
         id: alertId,
         userId: userId,
         propertyId: propertyId,
+        propertyTitle: criteria.keywords?.isNotEmpty == true 
+            ? criteria.keywords!.join(', ')
+            : 'Alerta de Imóvel',
         type: type,
         criteria: criteria,
         createdAt: DateTime.now(),

@@ -5,6 +5,7 @@ class PropertyAlert {
   final String id;
   final String userId;
   final String? propertyId; // null para alertas gerais
+  final String propertyTitle; // Título do imóvel
   final AlertType type;
   final AlertCriteria criteria;
   final bool isActive;
@@ -12,11 +13,13 @@ class PropertyAlert {
   final DateTime? lastTriggered;
   final int triggerCount;
   final NotificationSettings notificationSettings;
+  final double? targetPrice; // Preço alvo para alertas de redução
 
   PropertyAlert({
     required this.id,
     required this.userId,
     this.propertyId,
+    required this.propertyTitle,
     required this.type,
     required this.criteria,
     this.isActive = true,
@@ -24,6 +27,7 @@ class PropertyAlert {
     this.lastTriggered,
     this.triggerCount = 0,
     required this.notificationSettings,
+    this.targetPrice,
   });
 
   factory PropertyAlert.fromMap(Map<String, dynamic> map) {
@@ -31,6 +35,7 @@ class PropertyAlert {
       id: map['id'] ?? '',
       userId: map['userId'] ?? '',
       propertyId: map['propertyId'],
+      propertyTitle: map['propertyTitle'] ?? '',
       type: AlertType.values.firstWhere(
         (e) => e.name == map['type'],
         orElse: () => AlertType.priceDrop,
@@ -43,7 +48,12 @@ class PropertyAlert {
       notificationSettings: NotificationSettings.fromMap(
         map['notificationSettings'] ?? {},
       ),
+      targetPrice: map['targetPrice']?.toDouble(),
     );
+  }
+
+  factory PropertyAlert.fromJson(Map<String, dynamic> json) {
+    return PropertyAlert.fromMap(json);
   }
 
   Map<String, dynamic> toMap() {
@@ -51,6 +61,7 @@ class PropertyAlert {
       'id': id,
       'userId': userId,
       'propertyId': propertyId,
+      'propertyTitle': propertyTitle,
       'type': type.name,
       'criteria': criteria.toMap(),
       'isActive': isActive,
@@ -60,6 +71,7 @@ class PropertyAlert {
           : null,
       'triggerCount': triggerCount,
       'notificationSettings': notificationSettings.toMap(),
+      'targetPrice': targetPrice,
     };
   }
 
@@ -67,6 +79,7 @@ class PropertyAlert {
     String? id,
     String? userId,
     String? propertyId,
+    String? propertyTitle,
     AlertType? type,
     AlertCriteria? criteria,
     bool? isActive,
@@ -74,11 +87,13 @@ class PropertyAlert {
     DateTime? lastTriggered,
     int? triggerCount,
     NotificationSettings? notificationSettings,
+    double? targetPrice,
   }) {
     return PropertyAlert(
       id: id ?? this.id,
       userId: userId ?? this.userId,
       propertyId: propertyId ?? this.propertyId,
+      propertyTitle: propertyTitle ?? this.propertyTitle,
       type: type ?? this.type,
       criteria: criteria ?? this.criteria,
       isActive: isActive ?? this.isActive,
@@ -86,6 +101,7 @@ class PropertyAlert {
       lastTriggered: lastTriggered ?? this.lastTriggered,
       triggerCount: triggerCount ?? this.triggerCount,
       notificationSettings: notificationSettings ?? this.notificationSettings,
+      targetPrice: targetPrice ?? this.targetPrice,
     );
   }
 }
