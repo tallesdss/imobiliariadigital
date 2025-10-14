@@ -85,8 +85,8 @@
   - [x] Listagem de todos os imóveis cadastrados (por corretores ou ADM).
   - [x] Filtros por status (Ativo / Arquivado / Vendido).
   - [x] Ações: Editar, Arquivar, Excluir, Ativar.
-- [ ] **Cadastro de Imóvel (ADM)**
-  - [ ] Igual ao do corretor (formulário + upload mock).
+- [x] **Cadastro de Imóvel (ADM)**
+  - [x] Igual ao do corretor (formulário + upload mock).
 - [x] **Gestão de Corretores**
   - [x] Listagem de corretores cadastrados.
   - [x] Ações: 
@@ -110,24 +110,24 @@
 ---
 
 ## Etapa 6 — Permissões & Regras
-- **Usuário (Comprador)**
-  - Ver imóveis ativos.
-  - Favoritar / criar alertas.
-  - Mandar mensagem para corretor ou ADM.
-- **Corretor**
-  - Criar, editar, arquivar, excluir imóveis próprios.
-  - Gerenciar perfil (dados pessoais).
-  - Responder mensagens de usuários.
-- **Administrador**
-  - Criar, editar, arquivar, excluir qualquer imóvel.
-  - Adicionar / editar / excluir corretores.
-  - Acompanhar desempenho de corretores (dashboard).
-  - Responder mensagens de usuários ou corretores.
+- [x] **Usuário (Comprador)**
+  - [x] Ver imóveis ativos.
+  - [x] Favoritar / criar alertas.
+  - [x] Mandar mensagem para corretor ou ADM.
+- [x] **Corretor**
+  - [x] Criar, editar, arquivar, excluir imóveis próprios.
+  - [x] Gerenciar perfil (dados pessoais).
+  - [x] Responder mensagens de usuários.
+- [x] **Administrador**
+  - [x] Criar, editar, arquivar, excluir qualquer imóvel.
+  - [x] Adicionar / editar / excluir corretores.
+  - [x] Acompanhar desempenho de corretores (dashboard).
+  - [x] Responder mensagens de usuários ou corretores.
 
 ### Regras de visibilidade
-- Imóvel arquivado = invisível para usuários.
-- Imóvel vendido = aparece como "Vendido" (histórico).
-- Cada imóvel mostra **contato do corretor** (dono) e **contato do administrador**.
+- [x] Imóvel arquivado = invisível para usuários.
+- [x] Imóvel vendido = aparece como "Vendido" (histórico).
+- [x] Cada imóvel mostra **contato do corretor** (dono) e **contato do administrador**.
 
 ---
 
@@ -227,3 +227,57 @@
 
 - [ ] **Barra Lateral com filtros** — Telas de Corretor
 - [ ] **Barra Lateral com filtros** — Telas de Admnistrador
+
+---
+
+## Etapa 13 — Tarefas Pendentes
+
+### 🔧 Funcionalidades Pendentes
+
+#### Para Corretores
+- [ ] **Relatórios de Desempenho** — Tela com gráficos e métricas individuais:
+  - [ ] Total de imóveis cadastrados pelo corretor
+  - [ ] Imóveis vendidos vs. ativos vs. arquivados
+  - [ ] Gráfico de vendas por mês/trimestre
+  - [ ] Taxa de conversão (visualizações vs. contatos)
+  - [ ] Ranking do corretor entre todos os corretores
+  - [ ] Histórico de atividades (cadastros, edições, arquivamentos)
+- [ ] **Central de Ajuda** — Tela com suporte e documentação:
+  - [ ] FAQ (Perguntas Frequentes)
+  - [ ] Tutoriais em vídeo
+  - [ ] Guia de boas práticas
+  - [ ] Contato com suporte técnico
+  - [ ] Documentação da plataforma
+
+#### Responsividade
+- [ ] **Responsividade - Telas de Corretor** — Adaptação para diferentes tamanhos de tela:
+  - [ ] Home do Corretor (lista de imóveis)
+  - [ ] Cadastro/Edição de Imóvel
+  - [ ] Perfil do Corretor
+  - [ ] Chat do Corretor
+  - [ ] Relatórios de Desempenho
+- [ ] **Responsividade - Telas de Administrador** — Adaptação para diferentes tamanhos de tela:
+  - [ ] Dashboard Administrativo
+  - [ ] Gestão de Imóveis
+  - [ ] Gestão de Corretores
+  - [ ] Cadastro de Imóvel (ADM)
+  - [ ] Mensagens (ADM)
+  - [ ] Relatórios Gerais
+  - [ ] Configurações do Sistema
+
+
+### 📋 Resumo das Tarefas Pendentes
+
+**Total de itens pendentes: 19**
+
+1. **Relatórios de Desempenho** (6 subitens)
+2. **Central de Ajuda** (5 subitens)
+3. **Responsividade - Telas de Corretor** (5 subitens)
+4. **Responsividade - Telas de Administrador** (7 subitens)
+
+**Prioridade sugerida:**
+1. **Responsividade** (alta prioridade) - 12 subitens
+   - Telas de Corretor (5 subitens)
+   - Telas de Administrador (7 subitens)
+2. **Relatórios de Desempenho** (média prioridade) - 6 subitens
+3. **Central de Ajuda** (baixa prioridade) - 5 subitens
