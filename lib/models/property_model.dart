@@ -329,6 +329,10 @@ class Property {
   bool get hasSecurity => attributes['hasSecurity'] ?? false;
   bool get hasSwimmingPool => attributes['hasSwimmingPool'] ?? false;
   bool get hasGym => attributes['hasGym'] ?? false;
+  
+  // Getters para métricas de performance
+  int get views => attributes['views'] ?? 0;
+  int get leads => attributes['leads'] ?? 0;
 
   Map<String, dynamic> toJson() {
     return {

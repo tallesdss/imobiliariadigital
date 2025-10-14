@@ -34,10 +34,10 @@ class FilterService {
         return false;
       }
 
-      // Filtro de bairro (assumindo que o bairro está no endereço)
+      // Filtro de bairro
       if (filters.neighborhoods.isNotEmpty) {
         final hasMatchingNeighborhood = filters.neighborhoods.any(
-          (neighborhood) => property.address.toLowerCase().contains(neighborhood.toLowerCase())
+          (neighborhood) => property.neighborhood?.toLowerCase() == neighborhood.toLowerCase()
         );
         if (!hasMatchingNeighborhood) {
           return false;
@@ -123,15 +123,78 @@ class FilterService {
       }
 
       if (filters.acceptProposal) {
-        final acceptsProposal = attributes['accepts_proposal'] as bool? ?? false;
+        final acceptsProposal = attributes['acceptsProposal'] as bool? ?? false;
         if (!acceptsProposal) {
           return false;
         }
       }
 
       if (filters.hasFinancing) {
-        final hasFinancing = attributes['has_financing'] as bool? ?? false;
+        final hasFinancing = attributes['hasFinancing'] as bool? ?? false;
         if (!hasFinancing) {
+          return false;
+        }
+      }
+
+      // Filtros de características especiais
+      if (filters.furnished) {
+        final furnished = attributes['furnished'] as bool? ?? false;
+        if (!furnished) {
+          return false;
+        }
+      }
+
+      if (filters.petFriendly) {
+        final petFriendly = attributes['petFriendly'] as bool? ?? false;
+        if (!petFriendly) {
+          return false;
+        }
+      }
+
+      if (filters.hasSecurity) {
+        final hasSecurity = attributes['hasSecurity'] as bool? ?? false;
+        if (!hasSecurity) {
+          return false;
+        }
+      }
+
+      if (filters.hasSwimmingPool) {
+        final hasSwimmingPool = attributes['hasSwimmingPool'] as bool? ?? false;
+        if (!hasSwimmingPool) {
+          return false;
+        }
+      }
+
+      if (filters.hasGym) {
+        final hasGym = attributes['hasGym'] as bool? ?? false;
+        if (!hasGym) {
+          return false;
+        }
+      }
+
+      // Filtro de faixas de preço
+      if (filters.priceRanges.isNotEmpty) {
+        bool matchesPriceRange = false;
+        for (String priceRange in filters.priceRanges) {
+          switch (priceRange) {
+            case 'ate_100k':
+              if (property.price <= 100000) matchesPriceRange = true;
+              break;
+            case '100k_300k':
+              if (property.price >= 100000 && property.price <= 300000) matchesPriceRange = true;
+              break;
+            case '300k_500k':
+              if (property.price >= 300000 && property.price <= 500000) matchesPriceRange = true;
+              break;
+            case '500k_1m':
+              if (property.price >= 500000 && property.price <= 1000000) matchesPriceRange = true;
+              break;
+            case 'acima_1m':
+              if (property.price >= 1000000) matchesPriceRange = true;
+              break;
+          }
+        }
+        if (!matchesPriceRange) {
           return false;
         }
       }
@@ -340,7 +403,7 @@ class FilterService {
     // Filtro de bairro
     if (filters.neighborhoods.isNotEmpty) {
       final hasMatchingNeighborhood = filters.neighborhoods.any(
-        (neighborhood) => property.address.toLowerCase().contains(neighborhood.toLowerCase())
+        (neighborhood) => property.neighborhood?.toLowerCase() == neighborhood.toLowerCase()
       );
       if (!hasMatchingNeighborhood) {
         return false;

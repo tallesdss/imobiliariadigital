@@ -1217,19 +1217,23 @@ class _FilterSidebarContentState extends State<FilterSidebarContent> {
           children: [
             _buildQuickFilterChip('Até R\$ 200k', () {
               _currentFilters = _currentFilters.copyWith(maxPrice: 200000);
+              _updateFilters();
             }),
             _buildQuickFilterChip('Apartamentos', () {
               _currentFilters = _currentFilters.copyWith(
                 propertyTypes: [PropertyType.apartment],
               );
+              _updateFilters();
             }),
             _buildQuickFilterChip('Para alugar', () {
               _currentFilters = _currentFilters.copyWith(
                 transactionType: TransactionType.rent,
               );
+              _updateFilters();
             }),
             _buildQuickFilterChip('Com garagem', () {
               _currentFilters = _currentFilters.copyWith(minParkingSpaces: 1);
+              _updateFilters();
             }),
           ],
         ),

@@ -514,18 +514,20 @@ class PriceRange {
   final String label;
   final double? minPrice;
   final double? maxPrice;
+  final String key;
 
   const PriceRange({
     required this.label,
     this.minPrice,
     this.maxPrice,
+    required this.key,
   });
 
   static const List<PriceRange> predefinedRanges = [
-    PriceRange(label: 'Até R\$ 100.000', maxPrice: 100000),
-    PriceRange(label: 'R\$ 100.000 – R\$ 300.000', minPrice: 100000, maxPrice: 300000),
-    PriceRange(label: 'R\$ 300.000 – R\$ 500.000', minPrice: 300000, maxPrice: 500000),
-    PriceRange(label: 'R\$ 500.000 – R\$ 1.000.000', minPrice: 500000, maxPrice: 1000000),
-    PriceRange(label: 'Acima de R\$ 1.000.000', minPrice: 1000000),
+    PriceRange(label: 'Até R\$ 100.000', maxPrice: 100000, key: 'ate_100k'),
+    PriceRange(label: 'R\$ 100.000 – R\$ 300.000', minPrice: 100000, maxPrice: 300000, key: '100k_300k'),
+    PriceRange(label: 'R\$ 300.000 – R\$ 500.000', minPrice: 300000, maxPrice: 500000, key: '300k_500k'),
+    PriceRange(label: 'R\$ 500.000 – R\$ 1.000.000', minPrice: 500000, maxPrice: 1000000, key: '500k_1m'),
+    PriceRange(label: 'Acima de R\$ 1.000.000', minPrice: 1000000, key: 'acima_1m'),
   ];
 }
