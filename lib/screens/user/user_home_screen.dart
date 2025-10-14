@@ -102,6 +102,80 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     });
   }
 
+  void _showFiltersDrawer(BuildContext context) {
+    final propertyService = Provider.of<PropertyStateService>(context, listen: false);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.9,
+        decoration: const BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: Column(
+          children: [
+            // Header do drawer
+            Container(
+              height: 60,
+              decoration: const BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(
+                      Icons.close,
+                      color: AppColors.textOnPrimary,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      'Filtros',
+                      style: AppTypography.h6.copyWith(
+                        color: AppColors.textOnPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  if (propertyService.filters.hasActiveFilters)
+                    IconButton(
+                      onPressed: () {
+                        _onClearFilters();
+                        Navigator.of(context).pop();
+                      },
+                      icon: const Icon(
+                        Icons.clear,
+                        color: AppColors.textOnPrimary,
+                        size: 20,
+                      ),
+                      tooltip: 'Limpar filtros',
+                    ),
+                ],
+              ),
+            ),
+            // Conteúdo dos filtros
+            Expanded(
+              child: Consumer<PropertyStateService>(
+                builder: (context, propertyService, child) {
+                  return FilterSidebarContent(
+                    filters: propertyService.filters,
+                    onFiltersChanged: _onFiltersChanged,
+                    onClearFilters: _onClearFilters,
+                    userType: null,
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
 
   Future<void> _toggleFavorite(String propertyId) async {
     try {
@@ -499,79 +573,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     _updateCarouselVisibility();
   }
 
-  void _showFiltersDrawer(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.9,
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          children: [
-            // Handle do drawer
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                color: AppColors.border,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            // Header
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: const BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: AppColors.border, width: 1),
-                ),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.filter_list, color: AppColors.primary),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Filtros',
-                    style: AppTypography.h6.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Spacer(),
-                  Consumer<PropertyStateService>(
-                    builder: (context, propertyService, child) {
-                      if (propertyService.filters.hasActiveFilters) {
-                        return TextButton(
-                          onPressed: _onClearFilters,
-                          child: const Text('Limpar'),
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
-                  ),
-                ],
-              ),
-            ),
-            // Conteúdo dos filtros
-            Expanded(
-              child: Consumer<PropertyStateService>(
-                builder: (context, propertyService, child) {
-                  return FilterSidebarContent(
-                    filters: propertyService.filters,
-                    onFiltersChanged: _onFiltersChanged,
-                    onClearFilters: _onClearFilters,
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
 
 

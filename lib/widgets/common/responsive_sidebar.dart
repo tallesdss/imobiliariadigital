@@ -44,28 +44,15 @@ class ResponsiveSidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Em mobile, usar drawer
+    // Em mobile, não mostrar sidebar lateral
     if (context.isMobile) {
-      return _buildMobileDrawer(context);
+      return const SizedBox.shrink();
     }
     
     // Em desktop/tablet, usar sidebar fixa
     return _buildDesktopSidebar(context);
   }
 
-  Widget _buildMobileDrawer(BuildContext context) {
-    return Drawer(
-      width: MediaQuery.of(context).size.width * 0.85,
-      child: Column(
-        children: [
-          _buildDrawerHeader(context),
-          Expanded(
-            child: _buildContent(context),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildDesktopSidebar(BuildContext context) {
     return AnimatedContainer(
@@ -151,47 +138,6 @@ class ResponsiveSidebar extends StatelessWidget {
     );
   }
 
-  Widget _buildDrawerHeader(BuildContext context) {
-    return Container(
-      height: 60,
-      decoration: const BoxDecoration(
-        color: AppColors.primary,
-        border: Border(
-          bottom: BorderSide(color: AppColors.border, width: 1),
-        ),
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(
-              Icons.close,
-              color: AppColors.textOnPrimary,
-            ),
-          ),
-          Expanded(
-            child: Text(
-              _getHeaderTitle(),
-              style: AppTypography.h6.copyWith(
-                color: AppColors.textOnPrimary,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          if (type == SidebarType.filters && filters?.hasActiveFilters == true)
-            IconButton(
-              onPressed: onClearFilters,
-              icon: const Icon(
-                Icons.clear,
-                color: AppColors.textOnPrimary,
-                size: 20,
-              ),
-              tooltip: 'Limpar filtros',
-            ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildHeader(BuildContext context) {
     return Container(

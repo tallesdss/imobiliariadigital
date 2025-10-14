@@ -3,6 +3,7 @@ import '../../models/chat_model.dart';
 import '../../services/chat_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
+import '../../widgets/common/responsive_sidebar.dart';
 import '../../widgets/common/fixed_sidebar.dart';
 import '../../widgets/common/custom_drawer.dart';
 
@@ -129,8 +130,8 @@ class _AdminChatScreenState extends State<AdminChatScreen> with TickerProviderSt
       ),
       body: Row(
         children: [
-          // Sidebar fixa de navegação
-          FixedSidebar(
+          // Sidebar responsiva de navegação
+          ResponsiveSidebar(
             type: SidebarType.navigation,
             userType: DrawerUserType.admin,
             userName: 'Administrador',

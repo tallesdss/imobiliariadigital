@@ -4,6 +4,7 @@ import '../../services/mock_data_service.dart';
 import '../../services/notification_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
+import '../../widgets/common/responsive_sidebar.dart';
 import '../../widgets/common/fixed_sidebar.dart';
 import '../../widgets/common/custom_drawer.dart';
 import '../user/notifications_screen.dart';
@@ -150,8 +151,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       ),
       body: Row(
         children: [
-          // Sidebar fixa de navegação
-          FixedSidebar(
+          // Sidebar responsiva de navegação
+          ResponsiveSidebar(
             type: SidebarType.navigation,
             currentRoute: '/admin',
             userType: DrawerUserType.admin,

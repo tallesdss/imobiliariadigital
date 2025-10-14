@@ -4,7 +4,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_spacing.dart';
 
-enum DrawerUserType { realtor, admin }
+enum DrawerUserType { user, realtor, admin }
 
 class CustomDrawer extends StatelessWidget {
   final DrawerUserType userType;
