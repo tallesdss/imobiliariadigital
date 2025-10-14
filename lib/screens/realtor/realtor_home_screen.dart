@@ -6,10 +6,11 @@ import '../../theme/app_breakpoints.dart';
 import '../../services/mock_data_service.dart';
 import '../../services/notification_service.dart';
 import '../../models/property_model.dart';
+import '../../widgets/common/responsive_sidebar.dart';
 import '../../widgets/common/fixed_sidebar.dart';
 import '../../widgets/common/custom_drawer.dart';
 import '../../widgets/common/status_badge.dart';
-import '../../widgets/common/responsive_layout.dart';
+import '../../widgets/common/responsive_layout.dart' as layout;
 import 'property_form_screen.dart';
 import '../user/notifications_screen.dart';
 
@@ -62,6 +63,69 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
     } catch (e) {
       // Ignorar erros de notificações na inicialização
     }
+  }
+
+  void _showMenuDrawer(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.9,
+        decoration: const BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            // Handle do drawer
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                color: AppColors.border,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            // Header
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: const BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(color: AppColors.border, width: 1),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.menu, color: AppColors.primary),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Menu',
+                    style: AppTypography.h6.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Conteúdo do menu
+            Expanded(
+              child: ResponsiveSidebar(
+                type: SidebarType.navigation,
+                currentRoute: '/realtor',
+                userType: DrawerUserType.realtor,
+                userName: 'Carlos Oliveira',
+                userEmail: 'carlos@imobiliaria.com',
+                userCreci: 'CRECI-SP 12345',
+                isVisible: true,
+                onToggleVisibility: () => Navigator.of(context).pop(),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _navigateToPropertyForm({Property? property}) {
@@ -194,8 +258,8 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
       appBar: _buildAppBar(),
       body: Row(
         children: [
-          // Sidebar fixa de navegação
-          FixedSidebar(
+          // Sidebar responsiva de navegação
+          ResponsiveSidebar(
             type: SidebarType.navigation,
             currentRoute: '/realtor',
             userType: DrawerUserType.realtor,
@@ -240,12 +304,18 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
       foregroundColor: AppColors.textOnPrimary,
       elevation: 0,
       actions: [
-        // Botão para alternar sidebar
+        // Botão para alternar sidebar/menu
         IconButton(
           onPressed: () {
-            setState(() {
-              _sidebarVisible = !_sidebarVisible;
-            });
+            if (context.isMobile) {
+              // Em mobile, abrir drawer
+              _showMenuDrawer(context);
+            } else {
+              // Em desktop, alternar sidebar
+              setState(() {
+                _sidebarVisible = !_sidebarVisible;
+              });
+            }
           },
           icon: Icon(_sidebarVisible ? Icons.menu_open : Icons.menu),
           tooltip: _sidebarVisible ? 'Ocultar menu' : 'Mostrar menu',
@@ -327,7 +397,7 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
               ),
             ),
             SizedBox(height: context.responsiveSpacing(mobile: 24, tablet: 32, desktop: 40)),
-            ResponsiveButton(
+                layout.ResponsiveButton(
               onPressed: () => _navigateToPropertyForm(),
               isFullWidth: context.isMobile,
               child: Row(
@@ -366,7 +436,7 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
     return Container(
       color: Colors.white,
       padding: context.responsivePadding,
-      child: ResponsiveGrid(
+      child: layout.ResponsiveGrid(
         mobileColumns: 1,
         tabletColumns: 3,
         desktopColumns: 3,
@@ -382,7 +452,7 @@ class _RealtorHomeScreenState extends State<RealtorHomeScreen> {
   }
 
   Widget _buildStatCard(String label, int count, Color color) {
-    return ResponsiveCard(
+    return layout.ResponsiveCard(
       child: Column(
         children: [
           Text(

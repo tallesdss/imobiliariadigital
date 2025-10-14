@@ -44,7 +44,7 @@ class PropertyCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min, // Evitar overflow
           children: [
             // Imagem do imóvel
-            Container(
+            SizedBox(
               height: isCompact ? 180 : 220,
               width: double.infinity,
               child: Stack(
