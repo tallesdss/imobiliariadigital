@@ -210,9 +210,9 @@ class AuthService extends ChangeNotifier {
       if (userId == null) return false;
 
       final updateData = <String, dynamic>{};
-      if (name != null) updateData['name'] = name;
-      if (phone != null) updateData['phone'] = phone;
-      if (photo != null) updateData['photo'] = photo;
+      if (name != null) updateData['nome'] = name; // Usar 'nome' em vez de 'name'
+      if (phone != null) updateData['telefone'] = phone; // Usar 'telefone' em vez de 'phone'
+      if (photo != null) updateData['foto'] = photo; // Usar 'foto' em vez de 'photo'
 
       await SupabaseService.updateData('users', userId, updateData);
       _currentUser = await _getUserFromSupabase();
@@ -344,10 +344,11 @@ class AuthService extends ChangeNotifier {
       final userData = {
         'id': supabaseUser.id,
         'email': supabaseUser.email,
-        'name': name,
-        'phone': phone,
-        'photo': photoUrl,
-        'type': 'buyer', // Tipo padrão
+        'nome': name, // Usar 'nome' em vez de 'name'
+        'telefone': phone, // Usar 'telefone' em vez de 'phone'
+        'foto': photoUrl, // Usar 'foto' em vez de 'photo'
+        'tipo_usuario': 'comprador', // Usar 'tipo_usuario' em vez de 'type'
+        'data_criacao': DateTime.now().toIso8601String(),
         'created_at': DateTime.now().toIso8601String(),
         'updated_at': DateTime.now().toIso8601String(),
       };

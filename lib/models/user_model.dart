@@ -57,15 +57,37 @@ class User {
   }
 
   factory User.fromJson(Map<String, dynamic> json) {
+    // Mapear os campos do banco para os campos do modelo
+    String name = json['nome'] ?? json['name'] ?? '';
+    String? phone = json['telefone'] ?? json['phone'];
+    String? photo = json['foto'] ?? json['photo'];
+    String typeString = json['tipo_usuario'] ?? json['type'] ?? 'comprador';
+    
+    // Converter tipo_usuario do banco para UserType
+    UserType type;
+    switch (typeString) {
+      case 'comprador':
+        type = UserType.buyer;
+        break;
+      case 'corretor':
+        type = UserType.realtor;
+        break;
+      case 'administrador':
+        type = UserType.admin;
+        break;
+      default:
+        type = UserType.buyer;
+    }
+    
     return User(
       id: json['id'],
-      name: json['name'],
+      name: name,
       email: json['email'],
-      phone: json['phone'],
-      photo: json['photo'],
-      type: UserType.values.firstWhere((e) => e.name == json['type']),
-      createdAt: DateTime.parse(json['created_at'] ?? json['createdAt'] ?? DateTime.now().toIso8601String()),
-      isActive: json['isActive'] ?? json['is_active'] ?? true,
+      phone: phone,
+      photo: photo,
+      type: type,
+      createdAt: DateTime.parse(json['data_criacao'] ?? json['created_at'] ?? json['createdAt'] ?? DateTime.now().toIso8601String()),
+      isActive: json['ativo'] ?? json['isActive'] ?? json['is_active'] ?? true,
     );
   }
 }
