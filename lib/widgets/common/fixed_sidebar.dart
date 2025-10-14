@@ -722,8 +722,6 @@ class _FilterSidebarContentState extends State<FilterSidebarContent> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildQuickFilters(),
-                const SizedBox(height: AppSpacing.xl),
                 _buildPriceFilters(),
                 const SizedBox(height: AppSpacing.xl),
                 _buildLocationFilters(),
@@ -1199,68 +1197,6 @@ class _FilterSidebarContentState extends State<FilterSidebarContent> {
     );
   }
 
-  Widget _buildQuickFilters() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '⚡ Filtros Rápidos',
-          style: AppTypography.h6.copyWith(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: AppSpacing.md),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            _buildQuickFilterChip('Até R\$ 200k', () {
-              _currentFilters = _currentFilters.copyWith(maxPrice: 200000);
-              _updateFilters();
-            }),
-            _buildQuickFilterChip('Apartamentos', () {
-              _currentFilters = _currentFilters.copyWith(
-                propertyTypes: [PropertyType.apartment],
-              );
-              _updateFilters();
-            }),
-            _buildQuickFilterChip('Para alugar', () {
-              _currentFilters = _currentFilters.copyWith(
-                transactionType: TransactionType.rent,
-              );
-              _updateFilters();
-            }),
-            _buildQuickFilterChip('Com garagem', () {
-              _currentFilters = _currentFilters.copyWith(minParkingSpaces: 1);
-              _updateFilters();
-            }),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQuickFilterChip(String label, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: AppColors.primary.withValues(alpha: 0.1),
-          border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Text(
-          label,
-          style: AppTypography.labelSmall.copyWith(
-            color: AppColors.primary,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildLocationFilters() {
     return Column(
