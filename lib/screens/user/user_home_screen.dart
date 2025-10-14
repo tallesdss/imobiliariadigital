@@ -1003,7 +1003,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
   double _getMaxCrossAxisExtent(double screenWidth) {
     if (screenWidth < 600) {
-      return screenWidth - 32; // Mobile: largura total menos padding
+      return 320; // Mobile: largura fixa para evitar cards muito largos
     } else if (screenWidth < 900) {
       return 400; // Tablet pequeno: máximo 400px por card
     } else if (screenWidth < 1200) {
@@ -1017,7 +1017,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
   double _getChildAspectRatio(double screenWidth) {
     if (screenWidth < 600) {
-      return 0.75; // Mobile: formato mais vertical para acomodar conteúdo
+      return 0.8; // Mobile: proporção mais equilibrada para cards
     } else if (screenWidth < 900) {
       return 0.7; // Tablet pequeno: formato mais vertical
     } else if (screenWidth < 1200) {

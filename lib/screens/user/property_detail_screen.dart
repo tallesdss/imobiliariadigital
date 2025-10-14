@@ -135,64 +135,136 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Galeria de imagens
-            _buildImageGallery(property),
-            
-            // Informações principais
-            _buildMainInfo(property),
-            
-            // Características
-            _buildCharacteristics(property),
-            
-            // Localização
-            _buildLocation(property),
-            
-            // Contato
-            _buildContact(property),
-          ],
-        ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide = constraints.maxWidth >= 900; // desktop/tablet largo
+          if (!isWide) {
+            // Layout mobile: coluna única
+            return SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildImageGallery(property),
+                  _buildMainInfo(property),
+                  _buildPriceCard(property),
+                  _buildCharacteristics(property),
+                  _buildLocation(property),
+                  _buildContact(property),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            );
+          }
+
+          // Layout desktop: duas colunas
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Coluna esquerda (conteúdo)
+                  Expanded(
+                    flex: 3,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildImageGallery(property),
+                        _buildMainInfo(property),
+                        _buildCharacteristics(property),
+                        _buildLocation(property),
+                        const SizedBox(height: 24),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(width: 24),
+
+                  // Coluna direita (card de preço/ações)
+                  Expanded(
+                    flex: 2,
+                    child: Column(
+                      children: [
+                        _buildPriceCard(property),
+                        const SizedBox(height: 16),
+                        _buildVerificationCard(),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
       bottomNavigationBar: _buildBottomBar(property),
     );
   }
 
   Widget _buildImageGallery(Property property) {
-    return SizedBox(
-      height: 300,
-      child: property.photos.isNotEmpty
-          ? PageView.builder(
-              itemCount: property.photos.length,
-              itemBuilder: (context, index) {
-                return Image.network(
-                  property.photos[index],
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: Colors.grey[200],
-                      child: const Icon(
-                        Icons.home,
-                        size: 80,
-                        color: Colors.grey,
-                      ),
-                    );
-                  },
-                );
-              },
-            )
-          : Container(
-              color: Colors.grey[200],
-              child: const Center(
-                child: Icon(
-                  Icons.home,
-                  size: 80,
-                  color: Colors.grey,
+    // Galeria com imagem destacada e miniaturas, semelhante ao exemplo
+    final photos = property.photos;
+    if (photos.isEmpty) {
+      return Container(
+        height: 280,
+        color: Colors.grey[200],
+        margin: const EdgeInsets.only(bottom: 16),
+        child: const Center(
+          child: Icon(Icons.home, size: 80, color: Colors.grey),
+        ),
+      );
+    }
+
+    final mainPhoto = photos.first;
+    final thumbs = photos.skip(1).take(5).toList();
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        children: [
+          AspectRatio(
+            aspectRatio: 16 / 9,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                mainPhoto,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  color: Colors.grey[200],
+                  child: const Icon(Icons.home, size: 80, color: Colors.grey),
                 ),
               ),
             ),
+          ),
+          const SizedBox(height: 8),
+          if (thumbs.isNotEmpty)
+            SizedBox(
+              height: 76,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: thumbs.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  final url = thumbs[index];
+                  return ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: AspectRatio(
+                      aspectRatio: 1.4,
+                      child: Image.network(
+                        url,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          color: Colors.grey[200],
+                          child: const Icon(Icons.image, color: Colors.grey),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -223,28 +295,110 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const Spacer(),
+              const SizedBox(width: 12),
               if (property.transactionType != null)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryColor,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Text(
+                Chip(
+                  label: Text(
                     _getTransactionTypeLabel(property.transactionType!),
                     style: AppTheme.bodyMedium?.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  backgroundColor: AppTheme.primaryColor,
                 ),
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPriceCard(Property property) {
+    return Card(
+      elevation: 0,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              property.formattedPrice,
+              style: AppTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 4),
+            if (property.condominium > 0)
+              Text(
+                'Condomínio: R\$ ${property.condominium.toStringAsFixed(0)} / mês',
+                style: AppTheme.bodyMedium,
+              ),
+            if (property.iptu > 0) ...[
+              const SizedBox(height: 4),
+              Text(
+                'IPTU: R\$ ${property.iptu.toStringAsFixed(0)} / mês',
+                style: AppTheme.bodyMedium,
+              ),
+            ],
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => _makePhoneCall(property.realtorPhone),
+                icon: const Icon(Icons.phone),
+                label: const Text('Exibir telefone'),
+              ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () => _openWhatsApp(property.realtorPhone, property.title),
+                icon: const Icon(Icons.chat_bubble_outline),
+                label: const Text('Chat'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVerificationCard() {
+    return Card(
+      elevation: 0,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.purple.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Text('Novo'),
+                ),
+                const Spacer(),
+                IconButton(
+                  onPressed: () {},
+                  icon: const Icon(Icons.close, size: 18),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            const Text('Esta conta passou por um processo de validação de identidade'),
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: () {},
+              child: const Text('Saiba mais'),
+            ),
+          ],
+        ),
       ),
     );
   }
