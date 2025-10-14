@@ -32,9 +32,22 @@ class FavoriteService {
       throw Exception('Erro ao carregar favoritos');
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
-        return []; // Retorna lista vazia se não encontrar favoritos
+        // Retorna lista vazia se não encontrar favoritos
+        _cachedFavorites = [];
+        await _saveFavoritesToCache([]);
+        return [];
+      } else if (e.type == DioExceptionType.connectionTimeout || 
+                 e.type == DioExceptionType.receiveTimeout ||
+                 e.type == DioExceptionType.connectionError) {
+        // Erro de conexão - tentar carregar do cache
+        final cachedFavorites = await _loadFavoritesFromCache();
+        if (cachedFavorites != null) {
+          return cachedFavorites;
+        }
+        // Se não há cache, retorna lista vazia (usuário sem favoritos)
+        return [];
       } else {
-        // Tentar carregar do cache em caso de erro de conexão
+        // Outros erros - tentar cache
         final cachedFavorites = await _loadFavoritesFromCache();
         if (cachedFavorites != null) {
           return cachedFavorites;
@@ -46,6 +59,10 @@ class FavoriteService {
       final cachedFavorites = await _loadFavoritesFromCache();
       if (cachedFavorites != null) {
         return cachedFavorites;
+      }
+      // Se não há cache e é erro de conexão, retorna lista vazia
+      if (e.toString().contains('connection') || e.toString().contains('timeout')) {
+        return [];
       }
       throw Exception('Erro inesperado: $e');
     }

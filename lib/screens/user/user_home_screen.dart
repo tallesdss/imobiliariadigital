@@ -374,89 +374,97 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   void _showUserMenu() {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       builder: (context) => Container(
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.symmetric(vertical: 16),
-              decoration: BoxDecoration(
-                color: AppColors.textHint,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.person, color: AppColors.primary),
-              title: const Text('Meu Perfil'),
-              onTap: () {
-                Navigator.pop(context);
-                context.go('/user/profile');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.favorite, color: AppColors.error),
-              title: const Text('Favoritos'),
-              onTap: () {
-                Navigator.pop(context);
-                context.go('/user/favorites');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.notifications, color: AppColors.accent),
-              title: const Text('Notificações'),
-              onTap: () {
-                Navigator.pop(context);
-                context.go('/user/notifications');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.alarm, color: AppColors.accent),
-              title: const Text('Alertas'),
-              onTap: () {
-                Navigator.pop(context);
-                context.go('/user/alerts');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.chat, color: AppColors.primary),
-              title: const Text('Mensagens'),
-              onTap: () {
-                Navigator.pop(context);
-                context.go('/user/chat');
-              },
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(
-                Icons.settings,
-                color: AppColors.textSecondary,
-              ),
-              title: const Text('Configurações'),
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Configurações em desenvolvimento'),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.8,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    color: AppColors.textHint,
+                    borderRadius: BorderRadius.circular(2),
                   ),
-                );
-              },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.person, color: AppColors.primary),
+                  title: const Text('Meu Perfil'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.go('/user/profile');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.favorite, color: AppColors.error),
+                  title: const Text('Favoritos'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.go('/user/favorites');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.notifications, color: AppColors.accent),
+                  title: const Text('Notificações'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.go('/user/notifications');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.alarm, color: AppColors.accent),
+                  title: const Text('Alertas'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.go('/user/alerts');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.chat, color: AppColors.primary),
+                  title: const Text('Mensagens'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.go('/user/chat');
+                  },
+                ),
+                const Divider(),
+                ListTile(
+                  leading: const Icon(
+                    Icons.settings,
+                    color: AppColors.textSecondary,
+                  ),
+                  title: const Text('Configurações'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Configurações em desenvolvimento'),
+                      ),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.logout, color: AppColors.error),
+                  title: const Text('Sair'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.go('/login');
+                  },
+                ),
+                const SizedBox(height: 16),
+              ],
             ),
-            ListTile(
-              leading: const Icon(Icons.logout, color: AppColors.error),
-              title: const Text('Sair'),
-              onTap: () {
-                Navigator.pop(context);
-                context.go('/login');
-              },
-            ),
-            const SizedBox(height: 16),
-          ],
+          ),
         ),
       ),
     );
@@ -887,8 +895,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             horizontal: isMobile ? AppSpacing.md : isTablet ? 24 : 32,
             vertical: AppSpacing.md,
           ),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: _getCrossAxisCount(screenWidth),
+          gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+            maxCrossAxisExtent: _getMaxCrossAxisExtent(screenWidth),
             childAspectRatio: _getChildAspectRatio(screenWidth),
             crossAxisSpacing: isMobile ? AppSpacing.sm : AppSpacing.md,
             mainAxisSpacing: isMobile ? AppSpacing.sm : AppSpacing.md,
@@ -910,29 +918,29 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
-  int _getCrossAxisCount(double screenWidth) {
+  double _getMaxCrossAxisExtent(double screenWidth) {
     if (screenWidth < 600) {
-      return 1; // Mobile: 1 coluna
+      return screenWidth - 32; // Mobile: largura total menos padding
     } else if (screenWidth < 900) {
-      return 2; // Tablet pequeno: 2 colunas
+      return 400; // Tablet pequeno: máximo 400px por card
     } else if (screenWidth < 1200) {
-      return 3; // Tablet grande: 3 colunas
+      return 350; // Tablet grande: máximo 350px por card
     } else if (screenWidth < 1600) {
-      return 4; // Desktop pequeno: 4 colunas
+      return 300; // Desktop pequeno: máximo 300px por card
     } else {
-      return 5; // Desktop grande: 5 colunas
+      return 280; // Desktop grande: máximo 280px por card
     }
   }
 
   double _getChildAspectRatio(double screenWidth) {
     if (screenWidth < 600) {
-      return 1.2; // Mobile: formato mais retangular
+      return 0.75; // Mobile: formato mais vertical para acomodar conteúdo
     } else if (screenWidth < 900) {
-      return 0.85; // Tablet pequeno: formato mais quadrado
+      return 0.7; // Tablet pequeno: formato mais vertical
     } else if (screenWidth < 1200) {
-      return 0.8; // Tablet grande: formato quadrado
+      return 0.65; // Tablet grande: formato vertical
     } else {
-      return 0.75; // Desktop: formato mais vertical
+      return 0.6; // Desktop: formato mais vertical para melhor visualização
     }
   }
 }

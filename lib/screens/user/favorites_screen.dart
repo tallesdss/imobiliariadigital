@@ -52,10 +52,22 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           _isLoading = false;
         });
         
+        // Se não há favoritos em cache, mostrar estado vazio
+        if (_favoriteProperties.isEmpty) {
+          // Não mostrar erro se não há favoritos - é um estado válido
+          return;
+        }
+        
+        // Mostrar erro apenas se havia favoritos em cache
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Erro ao carregar favoritos: $e'),
             backgroundColor: Colors.red,
+            action: SnackBarAction(
+              label: 'Tentar novamente',
+              textColor: Colors.white,
+              onPressed: _loadFavorites,
+            ),
           ),
         );
       }
@@ -103,6 +115,11 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.textOnPrimary,
         actions: [
+          IconButton(
+            onPressed: _loadFavorites,
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Atualizar favoritos',
+          ),
           if (_favoriteProperties.isNotEmpty)
             TextButton(
               onPressed: () {
@@ -179,20 +196,39 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: isTablet ? 32 : 24),
-              ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                icon: const Icon(Icons.search),
-                label: const Text('Buscar Imóveis'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.textOnPrimary,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isTablet ? 32 : 24,
-                    vertical: isTablet ? 16 : 12,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    icon: const Icon(Icons.search),
+                    label: const Text('Buscar Imóveis'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: AppColors.textOnPrimary,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isTablet ? 24 : 20,
+                        vertical: isTablet ? 16 : 12,
+                      ),
+                    ),
                   ),
-                ),
+                  SizedBox(width: isTablet ? 16 : 12),
+                  OutlinedButton.icon(
+                    onPressed: _loadFavorites,
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Atualizar'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                      side: const BorderSide(color: AppColors.primary),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isTablet ? 24 : 20,
+                        vertical: isTablet ? 16 : 12,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
