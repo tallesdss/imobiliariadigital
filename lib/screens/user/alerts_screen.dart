@@ -100,60 +100,6 @@ class _AlertsScreenState extends State<AlertsScreen>
     );
   }
 
-  /// Cria alerta de redução de preço
-  Future<void> _createPriceDropAlert({
-    required String propertyId,
-    required String propertyTitle,
-    required double targetPrice,
-  }) async {
-    try {
-      await AlertService.createPriceDropAlert(
-        propertyId: propertyId,
-        propertyTitle: propertyTitle,
-        targetPrice: targetPrice,
-      );
-      _loadData();
-      _showSnackBar('Alerta de redução de preço criado!');
-    } catch (e) {
-      _showSnackBar('Erro ao criar alerta: $e');
-    }
-  }
-
-  /// Cria alerta de imóvel vendido
-  Future<void> _createSoldAlert({
-    required String propertyId,
-    required String propertyTitle,
-  }) async {
-    try {
-      await AlertService.createSoldAlert(
-        propertyId: propertyId,
-        propertyTitle: propertyTitle,
-      );
-      _loadData();
-      _showSnackBar('Alerta de imóvel vendido criado!');
-    } catch (e) {
-      _showSnackBar('Erro ao criar alerta: $e');
-    }
-  }
-
-  /// Cria alerta de imóvel similar
-  Future<void> _createSimilarPropertyAlert({
-    required String propertyId,
-    required String propertyTitle,
-    double? targetPrice,
-  }) async {
-    try {
-      await AlertService.createSimilarPropertyAlert(
-        propertyId: propertyId,
-        propertyTitle: propertyTitle,
-        targetPrice: targetPrice,
-      );
-      _loadData();
-      _showSnackBar('Alerta de imóvel similar criado!');
-    } catch (e) {
-      _showSnackBar('Erro ao criar alerta: $e');
-    }
-  }
 
   /// Edita um alerta existente
   Future<void> _editAlert(PropertyAlert alert) async {
