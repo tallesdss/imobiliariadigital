@@ -431,6 +431,9 @@ class FilterService {
         case 'date':
           comparison = a.createdAt.compareTo(b.createdAt);
           break;
+        case 'area':
+          comparison = a.area.compareTo(b.area);
+          break;
         case 'status':
           comparison = a.status.name.compareTo(b.status.name);
           break;

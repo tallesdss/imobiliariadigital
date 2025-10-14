@@ -150,6 +150,14 @@ class PropertyStateService extends ChangeNotifier {
     loadProperties(refresh: true);
   }
 
+  void setSorting(String sortBy, bool ascending) {
+    _filters = _filters.copyWith(
+      sortBy: sortBy,
+      sortAscending: ascending,
+    );
+    _applyFilters();
+  }
+
   void _applyFilters() {
     _filteredProperties = _allProperties.where((property) {
       // Aplicar filtro por tipo de propriedade
@@ -160,6 +168,28 @@ class PropertyStateService extends ChangeNotifier {
       // Aplicar filtros avançados
       return _matchesAdvancedFilters(property);
     }).toList();
+
+    // Aplicar ordenação
+    _filteredProperties.sort((a, b) {
+      int comparison = 0;
+      
+      switch (_filters.sortBy) {
+        case 'price':
+          comparison = a.price.compareTo(b.price);
+          break;
+        case 'date':
+          comparison = a.createdAt.compareTo(b.createdAt);
+          break;
+        case 'area':
+          comparison = a.area.compareTo(b.area);
+          break;
+        default:
+          comparison = a.createdAt.compareTo(b.createdAt);
+      }
+      
+      return _filters.sortAscending ? comparison : -comparison;
+    });
+
     notifyListeners();
   }
 
@@ -193,7 +223,7 @@ class PropertyStateService extends ChangeNotifier {
       for (final rangeLabel in _filters.priceRanges) {
         final range = PriceRange.predefinedRanges.firstWhere(
           (r) => r.label == rangeLabel,
-          orElse: () => const PriceRange(label: ''),
+          orElse: () => const PriceRange(label: '', key: ''),
         );
         
         bool matchesRange = true;

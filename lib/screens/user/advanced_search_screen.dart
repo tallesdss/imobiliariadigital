@@ -225,9 +225,6 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
             _buildSearchField(),
             const SizedBox(height: 16),
             
-            // Filtros rápidos
-            _buildQuickFilters(),
-            const SizedBox(height: 24),
             
             // Filtros detalhados
             _buildDetailedFilters(),
@@ -278,85 +275,6 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen>
     );
   }
 
-  Widget _buildQuickFilters() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Filtros Rápidos',
-              style: AppTheme.headlineSmall,
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                _buildQuickFilterChip('Apartamento', () {
-                  if (!mounted) return;
-                  setState(() {
-                    if (_selectedPropertyTypes.contains(PropertyType.apartment)) {
-                      _selectedPropertyTypes.remove(PropertyType.apartment);
-                    } else {
-                      _selectedPropertyTypes.add(PropertyType.apartment);
-                    }
-                  });
-                }, _selectedPropertyTypes.contains(PropertyType.apartment)),
-                _buildQuickFilterChip('Casa', () {
-                  if (!mounted) return;
-                  setState(() {
-                    if (_selectedPropertyTypes.contains(PropertyType.house)) {
-                      _selectedPropertyTypes.remove(PropertyType.house);
-                    } else {
-                      _selectedPropertyTypes.add(PropertyType.house);
-                    }
-                  });
-                }, _selectedPropertyTypes.contains(PropertyType.house)),
-                _buildQuickFilterChip('Até R\$ 300k', () {
-                  if (!mounted) return;
-                  setState(() {
-                    _maxPriceController.text = '300000';
-                  });
-                }, _maxPriceController.text == '300000'),
-                _buildQuickFilterChip('2+ Quartos', () {
-                  if (!mounted) return;
-                  setState(() {
-                    _minBedrooms = 2;
-                  });
-                }, _minBedrooms == 2),
-                _buildQuickFilterChip('Com Garagem', () {
-                  if (!mounted) return;
-                  setState(() {
-                    _minParkingSpaces = 1;
-                  });
-                }, _minParkingSpaces == 1),
-                _buildQuickFilterChip('Para Alugar', () {
-                  if (!mounted) return;
-                  setState(() {
-                    _selectedTransactionType = _selectedTransactionType == PropertyTransactionType.rent 
-                        ? null 
-                        : PropertyTransactionType.rent;
-                  });
-                }, _selectedTransactionType == PropertyTransactionType.rent),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuickFilterChip(String label, VoidCallback onTap, bool isSelected) {
-    return FilterChip(
-      label: Text(label),
-      selected: isSelected,
-      onSelected: (_) => onTap(),
-      selectedColor: AppTheme.primaryColor.withValues(alpha: 0.2),
-      checkmarkColor: AppTheme.primaryColor,
-    );
-  }
 
   Widget _buildDetailedFilters() {
     return Card(

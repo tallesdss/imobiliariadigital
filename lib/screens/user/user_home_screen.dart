@@ -823,6 +823,83 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                       ),
                     ),
                   ),
+                  const SizedBox(width: 8),
+                  // Botão de ordenação
+                  Consumer<PropertyStateService>(
+                    builder: (context, propertyService, child) {
+                      return PopupMenuButton<String>(
+                        onSelected: (value) {
+                          final parts = value.split('_');
+                          final sortBy = parts[0];
+                          final ascending = parts[1] == 'asc';
+                          propertyService.setSorting(sortBy, ascending);
+                        },
+                        itemBuilder: (context) => [
+                          const PopupMenuItem(
+                            value: 'price_asc',
+                            child: Row(
+                              children: [
+                                Icon(Icons.arrow_upward, size: 16),
+                                SizedBox(width: 8),
+                                Text('Preço: Menor para Maior'),
+                              ],
+                            ),
+                          ),
+                          const PopupMenuItem(
+                            value: 'price_desc',
+                            child: Row(
+                              children: [
+                                Icon(Icons.arrow_downward, size: 16),
+                                SizedBox(width: 8),
+                                Text('Preço: Maior para Menor'),
+                              ],
+                            ),
+                          ),
+                          const PopupMenuItem(
+                            value: 'date_desc',
+                            child: Row(
+                              children: [
+                                Icon(Icons.calendar_today, size: 16),
+                                SizedBox(width: 8),
+                                Text('Mais Recentes'),
+                              ],
+                            ),
+                          ),
+                          const PopupMenuItem(
+                            value: 'area_asc',
+                            child: Row(
+                              children: [
+                                Icon(Icons.square_foot, size: 16),
+                                SizedBox(width: 8),
+                                Text('Área: Menor para Maior'),
+                              ],
+                            ),
+                          ),
+                        ],
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: AppColors.border),
+                            borderRadius: BorderRadius.circular(8),
+                            color: AppColors.background,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.sort, size: 16, color: AppColors.textSecondary),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Ordenar',
+                                style: AppTypography.labelMedium.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ],
               ),
               const SizedBox(height: 12),

@@ -30,6 +30,8 @@ class UserPropertyFilters {
   final bool hasSwimmingPool;
   final bool hasGym;
   final List<String> savedFilters;
+  final String sortBy; // 'price', 'date', 'area'
+  final bool sortAscending;
 
   const UserPropertyFilters({
     this.minPrice,
@@ -58,6 +60,8 @@ class UserPropertyFilters {
     this.hasSwimmingPool = false,
     this.hasGym = false,
     this.savedFilters = const [],
+    this.sortBy = 'date',
+    this.sortAscending = false,
   });
 
   UserPropertyFilters copyWith({
@@ -87,6 +91,8 @@ class UserPropertyFilters {
     bool? hasSwimmingPool,
     bool? hasGym,
     List<String>? savedFilters,
+    String? sortBy,
+    bool? sortAscending,
   }) {
     return UserPropertyFilters(
       minPrice: minPrice ?? this.minPrice,
@@ -143,7 +149,9 @@ class UserPropertyFilters {
         petFriendly ||
         hasSecurity ||
         hasSwimmingPool ||
-        hasGym;
+        hasGym ||
+        sortBy != 'date' ||
+        sortAscending;
   }
 
   UserPropertyFilters clear() {
@@ -389,6 +397,8 @@ class PropertyFilters {
   final bool hasSwimmingPool;
   final bool hasGym;
   final List<String> savedFilters;
+  final String sortBy; // 'price', 'date', 'area'
+  final bool sortAscending;
 
   const PropertyFilters({
     this.minPrice,
@@ -417,6 +427,8 @@ class PropertyFilters {
     this.hasSwimmingPool = false,
     this.hasGym = false,
     this.savedFilters = const [],
+    this.sortBy = 'date',
+    this.sortAscending = false,
   });
 
   PropertyFilters copyWith({
@@ -446,6 +458,8 @@ class PropertyFilters {
     bool? hasSwimmingPool,
     bool? hasGym,
     List<String>? savedFilters,
+    String? sortBy,
+    bool? sortAscending,
   }) {
     return PropertyFilters(
       minPrice: minPrice ?? this.minPrice,
@@ -474,6 +488,8 @@ class PropertyFilters {
       hasSwimmingPool: hasSwimmingPool ?? this.hasSwimmingPool,
       hasGym: hasGym ?? this.hasGym,
       savedFilters: savedFilters ?? this.savedFilters,
+      sortBy: sortBy ?? this.sortBy,
+      sortAscending: sortAscending ?? this.sortAscending,
     );
   }
 
@@ -502,7 +518,9 @@ class PropertyFilters {
         petFriendly ||
         hasSecurity ||
         hasSwimmingPool ||
-        hasGym;
+        hasGym ||
+        sortBy != 'date' ||
+        sortAscending;
   }
 
   PropertyFilters clear() {
