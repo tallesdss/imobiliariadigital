@@ -4,6 +4,7 @@ import '../../models/property_model.dart';
 import '../../theme/app_theme.dart';
 import '../../services/property_service.dart';
 import '../../services/favorite_service.dart';
+import '../../widgets/common/map_button.dart';
 
 class PropertyDetailScreen extends StatefulWidget {
   final Property? property;
@@ -125,6 +126,16 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
         backgroundColor: AppTheme.primaryColor,
         foregroundColor: Colors.white,
         actions: [
+          MapButton(
+            address: property.address,
+            city: property.city,
+            state: property.state,
+            zipCode: property.zipCode,
+            neighborhood: property.neighborhood,
+            isCompact: true,
+            icon: Icons.map,
+            buttonText: 'Abrir no mapa',
+          ),
           IconButton(
             icon: const Icon(Icons.share),
             onPressed: _shareProperty,
@@ -519,6 +530,14 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                       ),
                     ],
                   ),
+                ),
+                const SizedBox(width: 12),
+                MapButton(
+                  address: property.address,
+                  city: property.city,
+                  state: property.state,
+                  zipCode: property.zipCode,
+                  neighborhood: property.neighborhood,
                 ),
               ],
             ),
