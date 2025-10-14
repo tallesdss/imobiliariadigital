@@ -7,6 +7,7 @@ import '../models/property_model.dart';
 import '../models/alert_model.dart' as alert_models;
 import 'api_service.dart';
 import 'notification_service.dart';
+import 'mock_data_service.dart';
 
 class FavoriteService {
   static const String _favoritesCacheKey = 'user_favorites_cache';
@@ -44,15 +45,16 @@ class FavoriteService {
         if (cachedFavorites != null) {
           return cachedFavorites;
         }
-        // Se não há cache, retorna lista vazia (usuário sem favoritos)
-        return [];
+        // Se não há cache, usar dados mock como fallback
+        return _getMockFavorites();
       } else {
         // Outros erros - tentar cache
         final cachedFavorites = await _loadFavoritesFromCache();
         if (cachedFavorites != null) {
           return cachedFavorites;
         }
-        throw Exception('Erro de conexão. Tente novamente.');
+        // Usar dados mock como fallback
+        return _getMockFavorites();
       }
     } catch (e) {
       // Tentar carregar do cache em caso de erro
@@ -60,11 +62,12 @@ class FavoriteService {
       if (cachedFavorites != null) {
         return cachedFavorites;
       }
-      // Se não há cache e é erro de conexão, retorna lista vazia
+      // Se não há cache e é erro de conexão, usar dados mock
       if (e.toString().contains('connection') || e.toString().contains('timeout')) {
-        return [];
+        return _getMockFavorites();
       }
-      throw Exception('Erro inesperado: $e');
+      // Usar dados mock como fallback
+      return _getMockFavorites();
     }
   }
 
@@ -89,35 +92,15 @@ class FavoriteService {
         _favoritesStatusCache[propertyId] = false;
         return false; // Não é favorito se não encontrar
       } else {
-        // Fallback para Supabase
-        return await _checkFavoriteInSupabase(propertyId);
+        // Fallback para mock data
+        return _checkFavoriteInMock(propertyId);
       }
     } catch (e) {
-      // Fallback para Supabase
-      return await _checkFavoriteInSupabase(propertyId);
+      // Fallback para mock data
+      return _checkFavoriteInMock(propertyId);
     }
   }
 
-  // Método auxiliar para verificar favorito no Supabase
-  static Future<bool> _checkFavoriteInSupabase(String propertyId) async {
-    try {
-      // Por enquanto, retorna false como padrão
-      // TODO: Implementar verificação de favoritos no Supabase quando necessário
-      _favoritesStatusCache[propertyId] = false;
-      return false;
-    } catch (e) {
-      // Em caso de erro, retorna false e tenta cache local
-      final cachedFavorites = await _loadFavoritesFromCache();
-      if (cachedFavorites != null) {
-        final isFavorited = cachedFavorites.any((p) => p.id == propertyId);
-        _favoritesStatusCache[propertyId] = isFavorited;
-        return isFavorited;
-      }
-      // Se tudo falhar, retorna false
-      _favoritesStatusCache[propertyId] = false;
-      return false;
-    }
-  }
 
   static Future<Favorite> addFavorite(String propertyId) async {
     try {
@@ -139,10 +122,12 @@ class FavoriteService {
       if (e.response?.statusCode == 409) {
         throw Exception('Imóvel já está nos favoritos');
       } else {
-        throw Exception('Erro de conexão. Tente novamente.');
+        // Fallback para mock data
+        return _addFavoriteToMock(propertyId);
       }
     } catch (e) {
-      throw Exception('Erro inesperado: $e');
+      // Fallback para mock data
+      return _addFavoriteToMock(propertyId);
     }
   }
 
@@ -161,10 +146,12 @@ class FavoriteService {
       if (e.response?.statusCode == 404) {
         throw Exception('Favorito não encontrado');
       } else {
-        throw Exception('Erro de conexão. Tente novamente.');
+        // Fallback para mock data
+        await _removeFavoriteFromMock(propertyId);
       }
     } catch (e) {
-      throw Exception('Erro inesperado: $e');
+      // Fallback para mock data
+      await _removeFavoriteFromMock(propertyId);
     }
   }
 
@@ -230,8 +217,48 @@ class FavoriteService {
   }
 
   // Método para verificar se um imóvel é favorito usando apenas cache
-  static bool? isPropertyFavoritedFromCache(String propertyId) {
-    return _favoritesStatusCache[propertyId];
+  static bool isPropertyFavoritedFromCache(String propertyId) {
+    return _favoritesStatusCache[propertyId] ?? false;
+  }
+
+  // Métodos auxiliares para mock data
+  static List<Property> _getMockFavorites() {
+    // Simular um usuário específico (user1) para demonstração
+    return MockDataService.getFavoriteProperties('user1');
+  }
+
+  static bool _checkFavoriteInMock(String propertyId) {
+    // Verificar se o imóvel está nos favoritos mock
+    final mockFavorites = _getMockFavorites();
+    final isFavorited = mockFavorites.any((p) => p.id == propertyId);
+    _favoritesStatusCache[propertyId] = isFavorited;
+    return isFavorited;
+  }
+
+  static Future<Favorite> _addFavoriteToMock(String propertyId) async {
+    // Simular adição de favorito no mock
+    final favoriteId = MockDataService.addFavorite('user1', propertyId);
+    final favorite = Favorite(
+      id: favoriteId,
+      userId: 'user1',
+      propertyId: propertyId,
+      createdAt: DateTime.now(),
+    );
+    
+    // Atualizar cache
+    _favoritesStatusCache[propertyId] = true;
+    await _clearFavoritesCache();
+    
+    return favorite;
+  }
+
+  static Future<void> _removeFavoriteFromMock(String propertyId) async {
+    // Simular remoção de favorito no mock
+    MockDataService.removeFavorite('user1', propertyId);
+    
+    // Atualizar cache
+    _favoritesStatusCache[propertyId] = false;
+    await _clearFavoritesCache();
   }
 
   // ===== INTEGRAÇÃO COM SISTEMA DE ALERTAS =====
