@@ -29,18 +29,26 @@ class AuthService extends ChangeNotifier {
       }
       
       if (SupabaseService.isAuthenticated) {
+        final userId = SupabaseService.currentUserId;
+        if (kDebugMode) {
+          print('AuthService: ID do usuário autenticado: $userId');
+        }
+        
         _currentUser = await _getUserFromSupabase();
         if (kDebugMode) {
           print('AuthService: Usuário carregado: ${_currentUser?.name}');
+          print('AuthService: Tipo do usuário: ${_currentUser?.type}');
         }
       } else {
         if (kDebugMode) {
-          print('AuthService: Usuário não autenticado');
+          print('AuthService: Usuário não autenticado no Supabase');
         }
+        _currentUser = null;
       }
     } catch (e) {
       if (kDebugMode) {
         print('AuthService: Erro na inicialização: $e');
+        print('AuthService: Stack trace: ${StackTrace.current}');
       }
       _setError('Erro ao carregar dados do usuário: $e');
     } finally {
@@ -270,16 +278,55 @@ class AuthService extends ChangeNotifier {
         if (kDebugMode) {
           print('AuthService: Dados do usuário encontrados: $userData');
         }
-        return app_user.User.fromJson(userData);
+        
+        try {
+          final user = app_user.User.fromJson(userData);
+          if (kDebugMode) {
+            print('AuthService: Usuário criado com sucesso: ${user.name} (${user.type})');
+          }
+          return user;
+        } catch (parseError) {
+          if (kDebugMode) {
+            print('AuthService: Erro ao fazer parse dos dados do usuário: $parseError');
+            print('AuthService: Dados recebidos: $userData');
+          }
+          _setError('Erro ao processar dados do usuário: $parseError');
+          return null;
+        }
       } else {
         if (kDebugMode) {
           print('AuthService: Nenhum dado encontrado na tabela users para o ID: $userId');
+          print('AuthService: Verificando se o usuário existe na tabela auth.users...');
         }
+        
+        // Verificar se o usuário existe na tabela auth.users mas não na tabela users
+        final supabaseUser = SupabaseService.currentUser;
+        if (supabaseUser != null) {
+          if (kDebugMode) {
+            print('AuthService: Usuário existe no auth mas não na tabela users. Criando perfil...');
+          }
+          
+          // Criar perfil do usuário se não existir
+          await _createUserProfile(
+            supabaseUser,
+            supabaseUser.userMetadata?['name'] ?? supabaseUser.email?.split('@')[0] ?? 'Usuário',
+            supabaseUser.userMetadata?['phone'],
+            photoUrl: supabaseUser.userMetadata?['avatar_url'],
+          );
+          
+          // Tentar buscar novamente
+          final newUserData = await SupabaseService.getDataById('users', userId);
+          if (newUserData != null) {
+            return app_user.User.fromJson(newUserData);
+          }
+        }
+        
         return null;
       }
     } catch (e) {
       if (kDebugMode) {
         print('AuthService: Erro ao buscar dados do usuário: $e');
+        print('AuthService: Stack trace: ${StackTrace.current}');
       }
       _setError('Erro ao carregar dados do usuário: $e');
       return null;

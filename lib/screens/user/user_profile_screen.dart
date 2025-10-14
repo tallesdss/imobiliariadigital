@@ -26,7 +26,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    // Aguardar um frame para garantir que o AuthService esteja inicializado
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadUserData();
+    });
   }
 
   void _loadUserData() {
@@ -36,6 +39,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       _nameController.text = user.name;
       _emailController.text = user.email;
       _phoneController.text = user.phone ?? '';
+    } else {
+      // Se não há usuário, tentar recarregar os dados
+      _refreshUserData();
     }
   }
 
@@ -121,8 +127,18 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           final user = authService.currentUser;
           
           if (authService.isLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(),
+                  AppSpacing.verticalMD,
+                  Text(
+                    'Carregando perfil...',
+                    style: AppTypography.bodyMedium,
+                  ),
+                ],
+              ),
             );
           }
           
@@ -176,16 +192,29 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   ),
                   AppSpacing.verticalSM,
                   Text(
-                    'Não foi possível carregar os dados do seu perfil.',
+                    'Não foi possível carregar os dados do seu perfil. Verifique se você está logado corretamente.',
                     style: AppTypography.bodyMedium,
                     textAlign: TextAlign.center,
                   ),
                   AppSpacing.verticalMD,
-                  CustomButton(
-                    text: 'Fazer Login',
-                    onPressed: () {
-                      context.go('/login');
-                    },
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CustomButton(
+                        text: 'Tentar Novamente',
+                        onPressed: () {
+                          _refreshUserData();
+                        },
+                        type: ButtonType.outlined,
+                      ),
+                      AppSpacing.horizontalMD,
+                      CustomButton(
+                        text: 'Fazer Login',
+                        onPressed: () {
+                          context.go('/login');
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),
