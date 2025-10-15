@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../services/favorite_service.dart';
 import '../../models/property_model.dart';
 import '../../widgets/cards/property_card.dart';
+import 'property_detail_screen.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -103,7 +105,48 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   }
 
   void _navigateToPropertyDetail(String propertyId) {
-    context.go('/user/property/$propertyId');
+    if (kDebugMode) {
+      debugPrint('=== NAVEGAÇÃO DE FAVORITOS ===');
+      debugPrint('Property ID: $propertyId');
+      debugPrint('Rota completa: /user/property/$propertyId');
+      debugPrint('Context: ${context.runtimeType}');
+    }
+    
+    try {
+      context.go('/user/property/$propertyId');
+      if (kDebugMode) {
+        debugPrint('✅ Navegação executada com sucesso');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('❌ Erro na navegação: $e');
+      }
+      
+      // Fallback: tentar com Navigator.push
+      try {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PropertyDetailScreen(propertyId: propertyId),
+          ),
+        );
+        if (kDebugMode) {
+          debugPrint('✅ Fallback Navigator.push executado com sucesso');
+        }
+      } catch (fallbackError) {
+        if (kDebugMode) {
+          debugPrint('❌ Erro no fallback Navigator.push: $fallbackError');
+        }
+        
+        // Mostrar erro para o usuário
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao abrir detalhes do imóvel: $fallbackError'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -274,13 +317,11 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                   itemCount: _favoriteProperties.length,
                   itemBuilder: (context, index) {
                     final property = _favoriteProperties[index];
-                    return GestureDetector(
+                    return PropertyCard(
+                      property: property,
+                      isFavorite: true,
                       onTap: () => _navigateToPropertyDetail(property.id),
-                      child: PropertyCard(
-                        property: property,
-                        isFavorite: true,
-                        onFavorite: () => _removeFavorite(property.id),
-                      ),
+                      onFavorite: () => _removeFavorite(property.id),
                     );
                   },
                 )
@@ -289,13 +330,11 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                   itemCount: _favoriteProperties.length,
                   itemBuilder: (context, index) {
                     final property = _favoriteProperties[index];
-                    return GestureDetector(
+                    return PropertyCard(
+                      property: property,
+                      isFavorite: true,
                       onTap: () => _navigateToPropertyDetail(property.id),
-                      child: PropertyCard(
-                        property: property,
-                        isFavorite: true,
-                        onFavorite: () => _removeFavorite(property.id),
-                      ),
+                      onFavorite: () => _removeFavorite(property.id),
                     );
                   },
                 ),
