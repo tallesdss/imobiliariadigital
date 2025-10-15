@@ -44,12 +44,12 @@
   - [x] Descrição completa.
   - [x] Preço e status.
   - [x] Botões:
-    - ⭐ Favoritar
+    - [x] ⭐ Favoritar
     - [x] 🔔 Criar Alerta (baixa preço / vendido)
     - [x] 💬 Mandar mensagem (chat com corretor e/ou ADM)
     - [x] 📞 Ligar para corretor (mock)
   - [x] Mostrar contatos:
-    - Nome + contato do **Corretor**
+    - [x] Nome + contato do **Corretor**
     - [x] Nome + contato do **Administrador**
 - [x] **Chat (Usuário)**
   - [x] Conversas com corretores ou ADM.
@@ -90,18 +90,18 @@
 - [x] **Gestão de Corretores**
   - [x] Listagem de corretores cadastrados.
   - [x] Ações: 
-    - ➕ Adicionar novo corretor (mock de cadastro)
-    - ✏️ Editar dados do corretor
-    - 🚫 Suspender corretor
-    - ❌ Excluir corretor
+    - [x] ➕ Adicionar novo corretor (mock de cadastro)
+    - [x] ✏️ Editar dados do corretor
+    - [x] 🚫 Suspender corretor
+    - [x] ❌ Excluir corretor
 - [x] **Dashboard Administrativo**
   - [x] Estatísticas gerais:
-    - Total de imóveis ativos / vendidos / arquivados
-    - Total de corretores ativos
+    - [x] Total de imóveis ativos / vendidos / arquivados
+    - [x] Total de corretores ativos
   - [x] Ranking de corretores:
-    - Quantidade de imóveis cadastrados
-    - Quantidade de imóveis vendidos (mock)
-    - Status dos imóveis (ativos/arquivados)
+    - [x] Quantidade de imóveis cadastrados
+    - [x] Quantidade de imóveis vendidos (mock)
+    - [x] Status dos imóveis (ativos/arquivados)
   - [x] Gráficos mock de desempenho por corretor.
 - [x] **Mensagens (ADM)**
   - [x] Conversas com usuários ou corretores.
@@ -182,8 +182,8 @@
 - [x] **Cadastrar Imóvel** — Formulário para adicionar um novo imóvel  
 - [x] **Meu Perfil** — Dados pessoais e estatísticas de desempenho  
 - [x] **Mensagens** — Chat com usuários interessados  
-- [ ] **Relatórios** — Visualização e análise de desempenho individual  
-- [ ] **Ajuda** — Acesso a suporte e documentação  
+- [x] **Relatórios** — Visualização e análise de desempenho individual  
+- [x] **Ajuda** — Acesso a suporte e documentação  
 
 ---
 
@@ -200,33 +200,33 @@
 
 ## Etapa 11 -  Responsividade.
 - [x] **Responsividade** — Telas de Comprador
-- [ ] **Responsividade** — Telas de Corretor
-- [ ] **Responsividade** — Telas de Admnistrador
+- [x] **Responsividade** — Telas de Corretor
+- [x] **Responsividade** — Telas de Admnistrador
 
 ## Etapa 12 -  Barra lateral com filtros.
-- [ ] **Barra Lateral com filtros** — Telas de Comprador
+- [x] **Barra Lateral com filtros** — Telas de Comprador
 ## 💰 Filtros de Preço
 
-- [ ] Preço mínimo  
-- [ ] Preço máximo  
-- [ ] Tipo de negociação  
-  - [ ] Venda  
-  - [ ] Aluguel  
-  - [ ] Temporada / Diária  
-- [ ] Valor do condomínio  
-- [ ] Valor do IPTU mensal  
-- [ ] Faixas de preço sugeridas  
-  - [ ] Até R$ 100.000  
-  - [ ] R$ 100.000 – R$ 300.000  
-  - [ ] R$ 300.000 – R$ 500.000  
-  - [ ] R$ 500.000 – R$ 1.000.000  
-  - [ ] Acima de R$ 1.000.000  
-- [ ] Parcelamento / Financiamento disponível  
-- [ ] Aceita proposta / Negociável  
-- [ ] Exibir apenas imóveis com preço informado
+- [x] Preço mínimo  
+- [x] Preço máximo  
+- [x] Tipo de negociação  
+  - [x] Venda  
+  - [x] Aluguel  
+  - [x] Temporada / Diária  
+- [x] Valor do condomínio  
+- [x] Valor do IPTU mensal  
+- [x] Faixas de preço sugeridas  
+  - [x] Até R$ 100.000  
+  - [x] R$ 100.000 – R$ 300.000  
+  - [x] R$ 300.000 – R$ 500.000  
+  - [x] R$ 500.000 – R$ 1.000.000  
+  - [x] Acima de R$ 1.000.000  
+- [x] Parcelamento / Financiamento disponível  
+- [x] Aceita proposta / Negociável  
+- [x] Exibir apenas imóveis com preço informado
 
-- [ ] **Barra Lateral com filtros** — Telas de Corretor
-- [ ] **Barra Lateral com filtros** — Telas de Admnistrador
+- [x] **Barra Lateral com filtros** — Telas de Corretor
+- [x] **Barra Lateral com filtros** — Telas de Admnistrador
 
 ---
 
