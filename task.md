@@ -1,15 +1,15 @@
-# 📌 PRD – Projeto Flutter (Template Imobiliária Digital SaaS – Somente Frontend)
+# 📌 PRD – Projeto Flutter (Imobiliária Digital - Plataforma Completa de Produção)
 
 ---
 
 ## Etapa 1 — Objetivo
-- [x] Criar um **template funcional em Flutter** (somente frontend).
-- [x] Tema: **Imobiliária Digital SaaS** com perfis distintos:
+- [x] Criar uma **plataforma completa de produção** em Flutter com backend integrado.
+- [x] Tema: **Imobiliária Digital** com perfis distintos:
   - Usuário (comprador)
   - Corretor imobiliário
   - Administrador (gestor da plataforma)
 - [x] Implementar navegação completa entre telas.
-- [x] Usar **LocalState / PageState** como armazenamento temporário (mock).
+- [x] Integrar **Supabase** como backend completo para persistência de dados.
 - [x] Preparar design system padronizado.
 
 ---
@@ -167,11 +167,13 @@
 
 ---
 
-## Etapa 9 — Avisos Finais (O que NÃO deve ser feito)
-- [x] Nenhuma lógica de autenticação real.
-- [x] Nenhuma integração com API ou backend.
-- [x] Não implementar lógica de telefonia real.
-- [x] Tudo deve ser mock/fake em LocalState/PageState.
+## Etapa 9 — Integração de Produção (O que foi implementado)
+- [x] Sistema completo de autenticação com Google Sign-In.
+- [x] Integração completa com Supabase (backend, banco de dados, storage).
+- [x] Sistema de upload de imagens e vídeos real.
+- [x] Persistência de dados real com PostgreSQL.
+- [x] Sistema de notificações push integrado.
+- [x] Chat em tempo real com WebSocket.
 
 ## Etapa 10 -  Funcionalidades da Drawer.
 # 📂 Funcionalidades do Drawer
@@ -1301,3 +1303,172 @@
 - **FASE 9-10**: 2-3 semanas (avaliações e analytics)
 
 **Total Estimado: 10-15 semanas para implementação completa**
+
+---
+
+## Etapa 15 — Navegação para Usuários Não Logados
+
+### 🚀 **ESPECIFICAÇÕES - ETAPA 15**
+
+#### **15.1 - Home Pública (Não Logado)**
+- [ ] **Objetivo**: Tela inicial acessível sem login
+- **Especificações**:
+  - Carrosséis horizontais por categoria (Lançamentos, Casas, Apts, Comerciais)
+  - Lista/grade vertical com todos os imóveis ativos
+  - Filtro / Pesquisa (layout mock)
+  - Botão "Entrar" / "Cadastrar" no header
+  - Banner promocional da plataforma
+  - Seção "Por que escolher nossa plataforma?"
+  - Estatísticas gerais (total de imóveis, corretores, etc.)
+- **Arquivos**: `lib/screens/public/public_home_screen.dart`
+- **Tempo estimado**: 3-4 dias
+
+#### **15.2 - Detalhe do Imóvel (Público)**
+- [ ] **Objetivo**: Visualização completa do imóvel sem login
+- **Especificações**:
+  - Carrossel de fotos completo
+  - Playlist de vídeos
+  - Descrição completa
+  - Preço e status
+  - Características técnicas (quartos, banheiros, área, etc.)
+  - Comodidades disponíveis
+  - Localização no mapa
+  - **RESTRIÇÃO**: Não mostrar telefone/contato do corretor
+  - Botão "Entrar para Contatar" (redireciona para login)
+  - Botão "Compartilhar" (funcional)
+  - Botão "Favoritar" (redireciona para login)
+- **Arquivos**: `lib/screens/public/public_property_detail_screen.dart`
+- **Tempo estimado**: 4-5 dias
+
+#### **15.3 - Busca e Filtros (Público)**
+- [ ] **Objetivo**: Sistema de busca sem restrições
+- **Especificações**:
+  - Barra de busca principal
+  - Filtros por preço (mín/máx)
+  - Filtros por tipo de imóvel
+  - Filtros por localização (cidade, bairro)
+  - Filtros por características (quartos, banheiros)
+  - Filtros por comodidades
+  - Ordenação (preço, data, relevância)
+  - Resultados em tempo real
+  - Paginação infinita
+  - Salvar filtros (cookies/localStorage)
+- **Arquivos**: `lib/screens/public/public_search_screen.dart`
+- **Tempo estimado**: 4-5 dias
+
+#### **15.4 - Lista de Imóveis (Pública)**
+- [ ] **Objetivo**: Exibição de resultados de busca
+- **Especificações**:
+  - Grid/Lista responsiva
+  - Cards de imóveis otimizados
+  - Loading states (skeleton)
+  - Empty state com sugestões
+  - Pull-to-refresh
+  - Indicadores de status (disponível, vendido, alugado)
+  - Badges de destaque (novo, promoção)
+  - Ações rápidas (favoritar, compartilhar)
+- **Arquivos**: `lib/screens/public/public_property_list_screen.dart`
+- **Tempo estimado**: 3-4 dias
+
+#### **15.5 - Navegação Pública**
+- [ ] **Objetivo**: Sistema de navegação sem autenticação
+- **Especificações**:
+  - Bottom navigation simplificada (Home, Buscar, Favoritos, Perfil)
+  - Header com logo e botão de login
+  - Drawer lateral com opções públicas
+  - Breadcrumbs para navegação
+  - Histórico de navegação
+  - Deep linking para imóveis específicos
+  - Navegação por categorias
+- **Arquivos**: `lib/screens/public/public_navigation.dart`
+- **Tempo estimado**: 2-3 dias
+
+#### **15.6 - Favoritos (Público)**
+- [ ] **Objetivo**: Sistema de favoritos sem login
+- **Especificações**:
+  - Armazenamento local (localStorage)
+  - Lista de imóveis favoritados
+  - Sincronização com login posterior
+  - Compartilhamento de favoritos
+  - Exportar lista de favoritos
+  - Notificações de mudanças de preço
+  - Comparação entre favoritos
+- **Arquivos**: `lib/screens/public/public_favorites_screen.dart`
+- **Tempo estimado**: 3-4 dias
+
+#### **15.7 - Perfil Público**
+- [ ] **Objetivo**: Informações básicas sem dados pessoais
+- **Especificações**:
+  - Informações da plataforma
+  - Estatísticas gerais (imóveis, corretores)
+  - Depoimentos de usuários
+  - Galeria de imóveis em destaque
+  - Contato da empresa
+  - Redes sociais
+  - Botão de login/cadastro
+- **Arquivos**: `lib/screens/public/public_profile_screen.dart`
+- **Tempo estimado**: 2-3 dias
+
+#### **15.8 - Call-to-Action para Login**
+- [ ] **Objetivo**: Incentivar cadastro/login
+- **Especificações**:
+  - Modais de login em ações restritas
+  - Banner de promoção para cadastro
+  - Benefícios de ter conta
+  - Formulário de cadastro rápido
+  - Login social (Google, Facebook)
+  - Recuperação de senha
+  - Validação de email
+- **Arquivos**: `lib/widgets/public/login_cta_widget.dart`
+- **Tempo estimado**: 3-4 dias
+
+#### **15.9 - Compartilhamento Público**
+- [ ] **Objetivo**: Compartilhar imóveis sem login
+- **Especificações**:
+  - Compartilhar via WhatsApp, Facebook, Instagram
+  - Link direto para o imóvel
+  - Preview do imóvel no compartilhamento
+  - QR Code do imóvel
+  - Compartilhamento por email
+  - Estatísticas de compartilhamentos
+  - Deep linking para app
+- **Arquivos**: `lib/services/public_share_service.dart`
+- **Tempo estimado**: 2-3 dias
+
+#### **15.10 - Responsividade Pública**
+- [ ] **Objetivo**: Adaptação para diferentes dispositivos
+- **Especificações**:
+  - Layout responsivo para mobile/tablet/desktop
+  - Navegação adaptativa
+  - Cards otimizados por tamanho de tela
+  - Filtros laterais em desktop
+  - Grid adaptativo
+  - Touch gestures em mobile
+  - Keyboard navigation em desktop
+- **Arquivos**: `lib/screens/public/responsive_public_layout.dart`
+- **Tempo estimado**: 4-5 dias
+
+### 📋 **RESUMO DA ETAPA 15**
+
+**Total: 10 itens para navegação pública**
+
+**Funcionalidades Principais:**
+1. **Navegação Completa** - Usuários podem navegar por todos os imóveis
+2. **Visualização Completa** - Acesso a fotos, vídeos, descrições, características
+3. **Busca e Filtros** - Sistema completo de busca sem restrições
+4. **Favoritos Locais** - Sistema de favoritos sem necessidade de login
+5. **Compartilhamento** - Compartilhar imóveis em redes sociais
+6. **Call-to-Action** - Incentivos para cadastro/login
+7. **Responsividade** - Adaptação para todos os dispositivos
+
+**Restrições para Usuários Não Logados:**
+- ❌ Não podem ver telefone/contato do corretor
+- ❌ Não podem enviar mensagens
+- ❌ Não podem cadastrar imóveis
+- ❌ Não podem acessar funcionalidades de usuário logado
+- ✅ Podem visualizar todos os imóveis ativos
+- ✅ Podem usar sistema de busca e filtros
+- ✅ Podem favoritar (armazenamento local)
+- ✅ Podem compartilhar imóveis
+
+**Tempo Estimado Total: 30-40 dias**

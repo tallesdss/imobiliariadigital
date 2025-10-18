@@ -1,4 +1,4 @@
-# 📋 Lista de Funcionalidades Pendentes - Imobiliária Digital
+# 📋 Lista de Funcionalidades Pendentes - Imobiliária Digital (Plataforma de Produção)
 
 ## 🎯 **ETAPA 1 - Funcionalidades Administrativas Pendentes** ✅ **CONCLUÍDA**
 
